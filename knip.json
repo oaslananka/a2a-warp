@@ -1,0 +1,5 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "ignoreDependencies": ["search-insights", "better-sqlite3", "jscpd"],
+  "ignoreBinaries": ["gitleaks", "playwright"]
+}

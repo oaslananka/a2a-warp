@@ -1,0 +1,62 @@
+{
+  "name": "create-a2a-warp",
+  "version": "1.0.3",
+  "description": "Project scaffolder for A2A Warp agents.",
+  "keywords": [
+    "a2a",
+    "agent2agent",
+    "ai-agents",
+    "scaffold",
+    "typescript"
+  ],
+  "author": "oaslananka",
+  "license": "Apache-2.0",
+  "homepage": "https://oaslananka.github.io/a2a-warp/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oaslananka/a2a-warp.git",
+    "directory": "packages/create-a2a-agent"
+  },
+  "bugs": {
+    "url": "https://github.com/oaslananka/a2a-warp/issues"
+  },
+  "engines": {
+    "node": ">=22.22.1 <25"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "bin": {
+    "create-a2a-warp": "bin/create-a2a-warp.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "package.json",
+    "bin"
+  ],
+  "scripts": {
+    "build": "node ../../scripts/build-tsc-package.mjs",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@oaslananka/a2a-warp-cli": "workspace:^"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.19"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

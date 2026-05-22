@@ -1,0 +1,85 @@
+name: Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Commit SHA or ref to publish
+        required: true
+      confirm_publish:
+        description: Type A2A-WARP-PUBLISH to publish
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ inputs.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  NODE_VERSION: '24.15.0'
+  NPM_VERSION: '11.14.1'
+
+jobs:
+  publish:
+    name: Publish / npm
+    if: ${{ github.repository == 'oaslananka/a2a-warp' && inputs.confirm_publish == 'A2A-WARP-PUBLISH' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment: npm-publish
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          registry-url: https://registry.npmjs.org
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run lint:identity
+      - run: pnpm run typecheck
+      - run: pnpm run test
+      - run: pnpm run build
+      - run: pnpm run pack:dry-run
+      - name: Pack packages
+        run: |
+          mkdir -p .artifacts/npm
+          pnpm -r --filter './packages/*' --filter './cli' pack --pack-destination .artifacts/npm
+      - name: Smoke install tarballs
+        run: |
+          tmp="$(mktemp -d)"
+          pushd "$tmp"
+          npm init -y
+          npm install -- "${GITHUB_WORKSPACE}"/.artifacts/npm/*.tgz
+          node -e "console.log('smoke install ok')"
+          popd
+      - name: Generate checksums
+        run: |
+          (cd .artifacts/npm && sha256sum -- ./*.tgz > SHA256SUMS)
+      - name: Publish packages with provenance
+        run: |
+          npm_cli=(npx --yes "npm@${NPM_VERSION}")
+          "${npm_cli[@]}" --version
+          for package_file in ./.artifacts/npm/*.tgz; do
+            package_json="$(tar -xOzf "$package_file" package/package.json)"
+            package_name="$(node -e "const fs = require('node:fs'); const pkg = JSON.parse(fs.readFileSync(0, 'utf8')); process.stdout.write(pkg.name);" <<< "$package_json")"
+            package_version="$(node -e "const fs = require('node:fs'); const pkg = JSON.parse(fs.readFileSync(0, 'utf8')); process.stdout.write(pkg.version);" <<< "$package_json")"
+
+            if "${npm_cli[@]}" view "${package_name}@${package_version}" version --silent > /dev/null 2>&1; then
+              echo "Skipping ${package_name}@${package_version}; version already exists on npm."
+              continue
+            fi
+
+            "${npm_cli[@]}" publish "$package_file" --access public --provenance
+          done

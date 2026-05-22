@@ -1,0 +1,66 @@
+import { listFiles, readText, fail } from './check-utils.mjs';
+
+const packageByImport = new Map([
+  ['@oaslananka/a2a-warp', 'core'],
+  ['@oaslananka/a2a-warp-client', 'client'],
+  ['@oaslananka/a2a-warp-adapters', 'adapters'],
+  ['@oaslananka/a2a-warp-registry', 'registry'],
+  ['@oaslananka/a2a-warp-cli', 'cli'],
+  ['@oaslananka/a2a-warp-mcp-bridge', 'mcp-bridge'],
+  ['@oaslananka/a2a-warp-ws', 'ws'],
+  ['@oaslananka/a2a-warp-grpc', 'grpc'],
+  ['@oaslananka/a2a-warp-testing', 'testing'],
+  ['@oaslananka/a2a-warp-codex-bridge', 'codex-bridge'],
+]);
+const disallowed = {
+  core: new Set([
+    'client',
+    'adapters',
+    'registry',
+    'cli',
+    'mcp-bridge',
+    'ws',
+    'grpc',
+    'testing',
+    'codex-bridge',
+  ]),
+  client: new Set([
+    'adapters',
+    'registry',
+    'cli',
+    'mcp-bridge',
+    'ws',
+    'grpc',
+    'testing',
+    'codex-bridge',
+  ]),
+  registry: new Set(['adapters', 'cli', 'mcp-bridge', 'testing', 'codex-bridge']),
+  adapters: new Set(['registry', 'cli', 'mcp-bridge', 'testing', 'codex-bridge']),
+  'mcp-bridge': new Set(['registry', 'adapters', 'cli', 'testing', 'codex-bridge']),
+};
+function ownerForFile(file) {
+  if (file.startsWith('packages/core/')) return 'core';
+  if (file.startsWith('packages/client/')) return 'client';
+  if (file.startsWith('packages/adapters/')) return 'adapters';
+  if (file.startsWith('packages/registry/')) return 'registry';
+  if (file.startsWith('packages/mcp-bridge/')) return 'mcp-bridge';
+  if (file.startsWith('packages/ws/')) return 'ws';
+  if (file.startsWith('packages/grpc/')) return 'grpc';
+  if (file.startsWith('packages/testing/')) return 'testing';
+  if (file.startsWith('packages/codex-bridge/')) return 'codex-bridge';
+  if (file.startsWith('cli/')) return 'cli';
+  return undefined;
+}
+const failures = [];
+for (const file of listFiles().filter((file) => /\.(ts|tsx|mts|mjs|js)$/.test(file))) {
+  const owner = ownerForFile(file);
+  if (!owner) continue;
+  const text = readText(file);
+  for (const [specifier, target] of packageByImport) {
+    if (text.includes(`'${specifier}'`) || text.includes(`"${specifier}"`)) {
+      if (disallowed[owner]?.has(target))
+        failures.push(`${file}: ${owner} must not import ${target}`);
+    }
+  }
+}
+if (failures.length > 0) fail('Workspace graph validation failed.', failures);

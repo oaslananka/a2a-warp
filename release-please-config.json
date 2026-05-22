@@ -1,0 +1,84 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "release-type": "node",
+  "separate-pull-requests": false,
+  "plugins": [
+    {
+      "type": "node-workspace"
+    },
+    {
+      "type": "linked-versions",
+      "groupName": "A2A Warp packages",
+      "components": [
+        "@oaslananka/a2a-warp",
+        "@oaslananka/a2a-warp-client",
+        "@oaslananka/a2a-warp-adapters",
+        "@oaslananka/a2a-warp-registry",
+        "@oaslananka/a2a-warp-cli",
+        "create-a2a-warp",
+        "@oaslananka/a2a-warp-mcp-bridge",
+        "@oaslananka/a2a-warp-ws",
+        "@oaslananka/a2a-warp-grpc",
+        "@oaslananka/a2a-warp-testing",
+        "@oaslananka/a2a-warp-codex-bridge"
+      ]
+    }
+  ],
+  "packages": {
+    "packages/core": {
+      "package-name": "@oaslananka/a2a-warp",
+      "component": "@oaslananka/a2a-warp",
+      "changelog-path": "CHANGELOG.md"
+    },
+    "packages/client": {
+      "package-name": "@oaslananka/a2a-warp-client",
+      "component": "@oaslananka/a2a-warp-client",
+      "changelog-path": "CHANGELOG.md"
+    },
+    "packages/adapters": {
+      "package-name": "@oaslananka/a2a-warp-adapters",
+      "component": "@oaslananka/a2a-warp-adapters",
+      "changelog-path": "CHANGELOG.md"
+    },
+    "packages/registry": {
+      "package-name": "@oaslananka/a2a-warp-registry",
+      "component": "@oaslananka/a2a-warp-registry",
+      "changelog-path": "CHANGELOG.md"
+    },
+    "cli": {
+      "package-name": "@oaslananka/a2a-warp-cli",
+      "component": "@oaslananka/a2a-warp-cli",
+      "changelog-path": "CHANGELOG.md"
+    },
+    "packages/create-a2a-agent": {
+      "package-name": "create-a2a-warp",
+      "component": "create-a2a-warp",
+      "changelog-path": "CHANGELOG.md"
+    },
+    "packages/mcp-bridge": {
+      "package-name": "@oaslananka/a2a-warp-mcp-bridge",
+      "component": "@oaslananka/a2a-warp-mcp-bridge",
+      "changelog-path": "CHANGELOG.md"
+    },
+    "packages/ws": {
+      "package-name": "@oaslananka/a2a-warp-ws",
+      "component": "@oaslananka/a2a-warp-ws",
+      "changelog-path": "CHANGELOG.md"
+    },
+    "packages/grpc": {
+      "package-name": "@oaslananka/a2a-warp-grpc",
+      "component": "@oaslananka/a2a-warp-grpc",
+      "changelog-path": "CHANGELOG.md"
+    },
+    "packages/testing": {
+      "package-name": "@oaslananka/a2a-warp-testing",
+      "component": "@oaslananka/a2a-warp-testing",
+      "changelog-path": "CHANGELOG.md"
+    },
+    "packages/codex-bridge": {
+      "package-name": "@oaslananka/a2a-warp-codex-bridge",
+      "component": "@oaslananka/a2a-warp-codex-bridge",
+      "changelog-path": "CHANGELOG.md"
+    }
+  }
+}

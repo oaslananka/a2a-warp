@@ -1,0 +1,61 @@
+{
+  "name": "@oaslananka/a2a-warp-mcp-bridge",
+  "version": "1.0.3",
+  "description": "Bridge utilities for mapping Agent2Agent agents and MCP tools.",
+  "keywords": [
+    "a2a",
+    "mcp",
+    "model-context-protocol",
+    "agent2agent",
+    "typescript"
+  ],
+  "author": "oaslananka",
+  "license": "Apache-2.0",
+  "homepage": "https://oaslananka.github.io/a2a-warp/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oaslananka/a2a-warp.git",
+    "directory": "packages/mcp-bridge"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "node ../../scripts/build-tsc-package.mjs",
+    "test": "vitest run",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@oaslananka/a2a-warp": "workspace:^"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.6"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "package.json"
+  ],
+  "bugs": {
+    "url": "https://github.com/oaslananka/a2a-warp/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "sideEffects": false,
+  "engines": {
+    "node": ">=22.22.1 <25"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "name": "a2a-warp-demo",
+  "version": "1.0.0",
+  "description": "Working multi-agent demo for a2a-warp",
+  "private": true,
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx main.ts",
+    "start": "node dist/main.js",
+    "smoke-test": "tsx run-demo.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.96.0",
+    "@oaslananka/a2a-warp": "workspace:*",
+    "@oaslananka/a2a-warp-adapters": "workspace:*",
+    "@oaslananka/a2a-warp-registry": "workspace:*",
+    "dotenv": "^17.4.2",
+    "openai": "^6.38.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.19",
+    "tsx": "^4.22.3",
+    "typescript": "^6.0.3"
+  },
+  "type": "module",
+  "engines": {
+    "node": "^22.13.0 || ^24.0.0",
+    "pnpm": ">=11 <12"
+  }
+}

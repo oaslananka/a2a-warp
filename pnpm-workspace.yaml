@@ -1,0 +1,43 @@
+packages:
+  - apps/*
+  - cli
+  - docs-site
+  - packages/*
+
+engineStrict: true
+strictPeerDependencies: true
+autoInstallPeers: false
+injectWorkspacePackages: true
+
+overrides:
+  '@typescript-eslint/eslint-plugin': 8.59.3
+  '@typescript-eslint/parser': 8.59.3
+  '@typescript-eslint/project-service': 8.59.3
+  '@typescript-eslint/scope-manager': 8.59.3
+  '@typescript-eslint/tsconfig-utils': 8.59.3
+  '@typescript-eslint/type-utils': 8.59.3
+  '@typescript-eslint/types': 8.59.3
+  '@typescript-eslint/typescript-estree': 8.59.3
+  '@typescript-eslint/utils': 8.59.3
+  '@typescript-eslint/visitor-keys': 8.59.3
+  '@hono/node-server': 1.19.14
+  hono: 4.12.21
+  langsmith: 0.7.1
+  postcss: 8.5.15
+  protobufjs: 7.6.0
+  smol-toml: 1.6.1
+  typescript-eslint: 8.59.3
+  uuid: 14.0.0
+  vitepress>vite: 6.4.2
+
+allowBuilds:
+  esbuild: true
+  libxmljs2: true
+  protobufjs: true
+  tree-sitter: true
+
+minimumReleaseAgeExclude:
+  - tsx@4.22.3
+  - hono@4.12.21
+  - postcss@8.5.15
+  - protobufjs@7.6.0
