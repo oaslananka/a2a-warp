@@ -45,7 +45,7 @@ function renderPackageJson(name: string, adapter: ScaffoldAdapter): string {
       version: '0.1.0',
       private: true,
       type: 'module',
-      packageManager: 'pnpm@11.1.3',
+      packageManager: 'pnpm@11.2.2',
       scripts: {
         dev: 'tsx src/index.ts',
         build: 'tsc -p tsconfig.json',

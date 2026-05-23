@@ -1,6 +1,6 @@
 name: CI
 
-on:
+'on':
   push:
     branches: [main]
   pull_request:
@@ -21,7 +21,7 @@ defaults:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
-  NODE_VERSION: '24.15.0'
+  NODE_VERSION: '24.16.0'
 
 jobs:
   identity:
@@ -205,13 +205,13 @@ jobs:
         include:
           - os: ubuntu-latest
             runner: ubuntu-latest
-            node: '22.22.1'
+            node: '22.22.3'
           - os: windows-latest
             runner: windows-2025-vs2026
-            node: '24.15.0'
+            node: '24.16.0'
           - os: macos-latest
             runner: macos-latest
-            node: '24.15.0'
+            node: '24.16.0'
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:

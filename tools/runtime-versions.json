@@ -1,0 +1,6 @@
+{
+  "node": "24.16.0",
+  "nodeCompatibility": ["22.22.3", "24.16.0"],
+  "pnpm": "11.2.2",
+  "npmForPublish": "11.15.0"
+}

@@ -16,9 +16,9 @@ The required status checks are:
 - `CI / public-surface`
 - `CI / command-surface`
 - `CI / no-generated-artifacts`
-- `CI / compatibility-smoke (ubuntu-latest, node 22.22.1)`
-- `CI / compatibility-smoke (windows-latest, node 24.15.0)`
-- `CI / compatibility-smoke (macos-latest, node 24.15.0)`
+- `CI / compatibility-smoke (ubuntu-latest, node 22.22.3)`
+- `CI / compatibility-smoke (windows-latest, node 24.16.0)`
+- `CI / compatibility-smoke (macos-latest, node 24.16.0)`
 - `Docs / build`
 - `Docs / links`
 - `Docs / command-parity`
