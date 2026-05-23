@@ -165,6 +165,7 @@ describe('Registry Integration', () => {
     const server = new RegistryServer({
       storage,
       allowLocalhost: true,
+      allowPrivateNetworks: true,
       allowUnresolvedHostnames: true,
     });
     await (
