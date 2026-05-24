@@ -1,4 +1,5 @@
 import { createServer } from 'node:http';
+import { promises as dns } from 'node:dns';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { exportJWK, generateKeyPair, SignJWT } from 'jose';
 import { JwtAuthMiddleware } from '../src/auth/JwtAuthMiddleware.js';
@@ -10,6 +11,7 @@ function encodeSegment(value: Record<string, unknown>): string {
 describe('JwtAuthMiddleware', () => {
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.useRealTimers();
   });
 
   it('validates api keys from headers', async () => {
@@ -119,6 +121,7 @@ describe('JwtAuthMiddleware', () => {
           audience: '@oaslananka/a2a-warp',
         },
       ],
+      outboundPolicy: { allowLocalhost: true },
     });
 
     try {
@@ -211,6 +214,195 @@ describe('JwtAuthMiddleware', () => {
     ).rejects.toThrow('Unknown security scheme: missing');
   });
 
+  it('blocks oidc discovery from localhost by default', async () => {
+    const middleware = new JwtAuthMiddleware({
+      securitySchemes: [
+        {
+          type: 'openIdConnect',
+          id: 'oidc',
+          openIdConnectUrl: 'http://127.0.0.1/.well-known/openid-configuration',
+          audience: '@oaslananka/a2a-warp',
+        },
+      ],
+    });
+
+    await expect(
+      middleware.authenticateRequest({
+        header(name: string) {
+          return name === 'authorization' ? 'Bearer a.b.c' : undefined;
+        },
+        query: {},
+      } as never),
+    ).rejects.toThrow('SSRF Prevention: Private IP addresses are not allowed');
+  });
+
+  it('fetches oidc discovery and jwks through the outbound fetch policy', async () => {
+    const { publicKey, privateKey } = await generateKeyPair('RS256');
+    const jwk = await exportJWK(publicKey);
+    jwk.use = 'sig';
+    jwk.kid = 'policy-key';
+    const issuerBaseUrl = 'https://issuer.invalid';
+
+    vi.spyOn(dns, 'resolve').mockRejectedValue(new Error('dns disabled'));
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, _init) => {
+      const url = input.toString();
+      if (url === `${issuerBaseUrl}/.well-known/openid-configuration`) {
+        return new Response(
+          JSON.stringify({
+            issuer: issuerBaseUrl,
+            jwks_uri: `${issuerBaseUrl}/jwks`,
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
+
+      if (url === `${issuerBaseUrl}/jwks`) {
+        return new Response(JSON.stringify({ keys: [jwk] }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      return new Response('not found', { status: 404 });
+    });
+
+    const token = await new SignJWT({})
+      .setProtectedHeader({ alg: 'RS256', kid: 'policy-key' })
+      .setSubject('oidc-policy-user')
+      .setIssuer(issuerBaseUrl)
+      .setAudience('@oaslananka/a2a-warp')
+      .setExpirationTime('2h')
+      .sign(privateKey);
+
+    const middleware = new JwtAuthMiddleware({
+      securitySchemes: [
+        {
+          type: 'openIdConnect',
+          id: 'oidc',
+          openIdConnectUrl: `${issuerBaseUrl}/.well-known/openid-configuration`,
+          audience: '@oaslananka/a2a-warp',
+        },
+      ],
+      outboundPolicy: { allowUnresolvedHostnames: true, timeoutMs: 5000, retries: 0 },
+    });
+
+    const result = await middleware.authenticateRequest({
+      header(name: string) {
+        return name === 'authorization' ? `Bearer ${token}` : undefined;
+      },
+      query: {},
+    } as never);
+
+    expect(result.subject).toBe('oidc-policy-user');
+    expect(
+      fetchSpy.mock.calls.map(([input, init]) => ({
+        url: input.toString(),
+        hasSignal: init?.signal instanceof AbortSignal,
+      })),
+    ).toEqual([
+      { url: `${issuerBaseUrl}/.well-known/openid-configuration`, hasSignal: true },
+      { url: `${issuerBaseUrl}/jwks`, hasSignal: true },
+    ]);
+  });
+
+  it('times out oidc discovery requests through the outbound policy', async () => {
+    vi.useFakeTimers();
+    vi.spyOn(dns, 'resolve').mockRejectedValue(new Error('dns disabled'));
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (_input, init) => {
+      if (!init?.signal) {
+        throw new Error('fetch policy signal missing');
+      }
+
+      return new Promise<Response>((_resolve, reject) => {
+        init.signal?.addEventListener(
+          'abort',
+          () =>
+            reject(
+              init.signal?.reason instanceof Error ? init.signal.reason : new Error('aborted'),
+            ),
+          { once: true },
+        );
+      });
+    });
+
+    const middleware = new JwtAuthMiddleware({
+      securitySchemes: [
+        {
+          type: 'openIdConnect',
+          id: 'oidc',
+          openIdConnectUrl: 'https://issuer.invalid/.well-known/openid-configuration',
+          audience: '@oaslananka/a2a-warp',
+        },
+      ],
+      outboundPolicy: { allowUnresolvedHostnames: true, timeoutMs: 25, retries: 0 },
+    });
+
+    const rejection = middleware
+      .authenticateRequest({
+        header(name: string) {
+          return name === 'authorization' ? 'Bearer a.b.c' : undefined;
+        },
+        query: {},
+      } as never)
+      .then(
+        () => undefined,
+        (error: unknown) => error,
+      );
+
+    await vi.advanceTimersByTimeAsync(25);
+    const error = await rejection;
+    expect(error).toBeInstanceOf(Error);
+    expect((error as Error).message).toContain('Fetch timed out after 25ms');
+  });
+
+  it('rejects invalid jwks urls discovered from oidc configuration', async () => {
+    const server = createServer((req, res) => {
+      if (req.url === '/.well-known/openid-configuration') {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(
+          JSON.stringify({
+            issuer: 'http://issuer.example',
+            jwks_uri: 'not-a-url',
+          }),
+        );
+        return;
+      }
+
+      res.writeHead(404);
+      res.end();
+    });
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', () => resolve()));
+    const address = server.address();
+    if (!address || typeof address === 'string') {
+      throw new Error('Failed to get OIDC test server address');
+    }
+
+    const middleware = new JwtAuthMiddleware({
+      securitySchemes: [
+        {
+          type: 'openIdConnect',
+          id: 'oidc',
+          openIdConnectUrl: `http://127.0.0.1:${address.port}/.well-known/openid-configuration`,
+          audience: '@oaslananka/a2a-warp',
+        },
+      ],
+      outboundPolicy: { allowLocalhost: true },
+    });
+
+    try {
+      await expect(
+        middleware.authenticateRequest({
+          header(name: string) {
+            return name === 'authorization' ? 'Bearer a.b.c' : undefined;
+          },
+          query: {},
+        } as never),
+      ).rejects.toThrow('Invalid URL format');
+    } finally {
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+    }
+  });
+
   it('validates oidc tokens through discovery and jwks', async () => {
     const { publicKey, privateKey } = await generateKeyPair('RS256');
     const jwk = await exportJWK(publicKey);
@@ -263,6 +455,7 @@ describe('JwtAuthMiddleware', () => {
           audience: '@oaslananka/a2a-warp',
         },
       ],
+      outboundPolicy: { allowLocalhost: true },
     });
 
     try {
@@ -305,6 +498,7 @@ describe('JwtAuthMiddleware', () => {
           audience: '@oaslananka/a2a-warp',
         },
       ],
+      outboundPolicy: { allowLocalhost: true },
     });
 
     try {
