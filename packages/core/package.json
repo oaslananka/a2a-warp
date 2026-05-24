@@ -27,7 +27,7 @@
   "scripts": {
     "build": "node ../../scripts/build-tsc-package.mjs",
     "typecheck": "tsc -b",
-    "test": "vitest run"
+    "test": "vitest run --root ../.. --config vitest.config.ts --project unit packages/core/tests"
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.1",
