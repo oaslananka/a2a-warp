@@ -1,18 +1,26 @@
 import { execFile } from 'node:child_process';
 import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { describe, expect, it } from 'vitest';
 
 const execFileAsync = promisify(execFile);
 const nodePath = process.execPath;
-const cliEntry = resolve(process.cwd(), 'cli', 'dist', 'index.js');
+const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+const cliEntry = resolve(repoRoot, 'cli', 'dist', 'index.js');
+const cliPackagePath = resolve(repoRoot, 'cli', 'package.json');
+
+async function readCliPackageVersion(): Promise<string> {
+  const packageJson = JSON.parse(await readFile(cliPackagePath, 'utf8')) as { version: string };
+  return packageJson.version;
+}
 
 describe('a2a CLI', () => {
   it('prints help output', async () => {
     const { stdout } = await execFileAsync(nodePath, [cliEntry, '--help'], {
-      cwd: process.cwd(),
+      cwd: repoRoot,
     });
 
     expect(stdout).toContain('A2A Warp developer CLI');
@@ -24,21 +32,23 @@ describe('a2a CLI', () => {
   });
 
   it('prints the launch version', async () => {
+    const expectedVersion = await readCliPackageVersion();
     const { stdout } = await execFileAsync(nodePath, [cliEntry, '--version'], {
-      cwd: process.cwd(),
+      cwd: repoRoot,
     });
 
-    expect(stdout.trim()).toBe('1.0.0');
+    expect(stdout.trim()).toBe(expectedVersion);
   });
 
   it('reports local doctor diagnostics as JSON', async () => {
+    const expectedVersion = await readCliPackageVersion();
     const { stdout } = await execFileAsync(nodePath, [cliEntry, '--json', 'doctor'], {
-      cwd: process.cwd(),
+      cwd: repoRoot,
     });
 
     const payload = JSON.parse(stdout);
     expect(payload.cli).toBe('a2a-warp');
-    expect(payload.version).toBe('1.0.0');
+    expect(payload.version).toBe(expectedVersion);
     expect(payload.node).toMatch(/^v/);
     expect(payload.platform).toBe(process.platform);
   });
@@ -59,7 +69,7 @@ describe('a2a CLI', () => {
     );
 
     const { stdout } = await execFileAsync(nodePath, [cliEntry, '--json', 'validate', cardPath], {
-      cwd: process.cwd(),
+      cwd: repoRoot,
     });
 
     const payload = JSON.parse(stdout);
