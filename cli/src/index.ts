@@ -16,6 +16,7 @@ import {
 import { RegistryServer } from '@oaslananka/a2a-warp-registry';
 import { discoverAgent } from './commands/discover.js';
 import { scaffoldAgent, type ScaffoldAdapter } from './commands/scaffold.js';
+import { CLI_VERSION } from './version.js';
 
 interface CliOptions {
   json?: boolean;
@@ -207,7 +208,7 @@ async function benchmarkAgent(
 const program = new Command();
 program
   .name('a2a-warp')
-  .version('1.0.0')
+  .version(CLI_VERSION)
   .description('A2A Warp developer CLI')
   .option('--json', 'Machine-readable JSON output');
 
@@ -395,7 +396,7 @@ program.command('doctor').action(() => {
   emitResult(
     {
       cli: 'a2a-warp',
-      version: '1.0.0',
+      version: CLI_VERSION,
       node: process.version,
       platform: process.platform,
     },
