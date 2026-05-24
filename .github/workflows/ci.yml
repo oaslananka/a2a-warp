@@ -166,6 +166,7 @@ jobs:
       - run: pnpm run build
       - run: pnpm run ui:install:browsers
       - run: pnpm run ui:test:e2e
+      - run: pnpm run ui:test:a11y
       - name: Upload Playwright traces
         if: ${{ failure() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
