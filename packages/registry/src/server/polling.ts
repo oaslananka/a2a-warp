@@ -71,14 +71,10 @@ export function createRegistryPolling(
               throw new Error('Unsafe URL during health check', { cause: error });
             }
 
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 5000);
-            const response = await fetchWithPolicy(
-              validatedUrl.toString(),
-              { signal: controller.signal },
-              { timeoutMs: 5000, retries: 0 },
-            );
-            clearTimeout(timeoutId);
+            const response = await fetchWithPolicy(validatedUrl.toString(), undefined, {
+              timeoutMs: 5000,
+              retries: 0,
+            });
 
             const status = response.ok ? 'healthy' : 'unhealthy';
             const consecutiveFailures = response.ok ? 0 : (agent.consecutiveFailures ?? 0) + 1;
@@ -152,8 +148,23 @@ export function createRegistryPolling(
         return;
       }
 
-      const tasks = (await response.json()) as Task[];
+      const tasks = await response.json();
+      if (!Array.isArray(tasks)) {
+        scheduleNextTaskPoll(agent);
+        logger.debug('Skipping task poll response with non-array payload', {
+          agentId: agent.id,
+        });
+        return;
+      }
+
       for (const task of tasks) {
+        if (!isPollableTask(task)) {
+          logger.debug('Skipping malformed task payload during registry polling', {
+            agentId: agent.id,
+          });
+          continue;
+        }
+
         const taskEvent = taskProjection.recordTask(agent, task);
         if (taskEvent) {
           context.taskEvents.emit('task_updated', taskEvent);
@@ -217,4 +228,37 @@ export function createRegistryPolling(
 
 function buildAgentUrl(baseUrl: string, path: string): string {
   return new URL(path, baseUrl).toString();
+}
+
+function isPollableTask(value: unknown): value is Task {
+  if (!isRecord(value) || typeof value['id'] !== 'string' || !isTaskStatus(value['status'])) {
+    return false;
+  }
+
+  if (!Array.isArray(value['history']) || !value['history'].every(hasSafeParts)) {
+    return false;
+  }
+
+  return (
+    value['artifacts'] === undefined ||
+    (Array.isArray(value['artifacts']) && value['artifacts'].every(hasSafeParts))
+  );
+}
+
+function isTaskStatus(value: unknown): value is Task['status'] {
+  return (
+    isRecord(value) && typeof value['state'] === 'string' && typeof value['timestamp'] === 'string'
+  );
+}
+
+function hasSafeParts(value: unknown): value is { parts: Array<Record<string, unknown>> } {
+  return isRecord(value) && Array.isArray(value['parts']) && value['parts'].every(isSafePart);
+}
+
+function isSafePart(value: unknown): value is Record<string, unknown> {
+  return isRecord(value) && (value['type'] !== 'text' || typeof value['text'] === 'string');
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
 }

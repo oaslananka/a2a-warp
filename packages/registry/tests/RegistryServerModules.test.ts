@@ -316,6 +316,72 @@ describe('RegistryServer control-plane modules', () => {
     });
   });
 
+  it('ignores malformed task polling responses without emitting task events', async () => {
+    const { context, polling } = createRouteHarness({
+      allowLocalhost: true,
+      taskPollingBatchSize: 10,
+    });
+    const agent = createRegisteredAgent('3006', 'Malformed Polling Agent');
+    await context.store.upsert(agent);
+
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const url = toUrl(input);
+      if (url === 'http://localhost:3006/tasks?limit=20') {
+        return new Response(
+          JSON.stringify([
+            { id: 'missing-status', history: [] },
+            createTask('valid-task', '2026-04-06T10:06:00.000Z'),
+          ]),
+          {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          },
+        );
+      }
+
+      return new Response('Not found', { status: 404 });
+    });
+
+    const taskEvents: unknown[] = [];
+    context.taskEvents.on('task_updated', (event) => taskEvents.push(event));
+
+    await polling.pollAgentTasks(agent);
+
+    expect(taskEvents).toHaveLength(1);
+    expect(taskEvents[0]).toMatchObject({ taskId: 'valid-task' });
+    expect(context.recentTasks.has('3006:missing-status')).toBe(false);
+    expect(context.nextTaskPollAt.get(agent.id)).toBeGreaterThan(Date.now());
+  });
+
+  it('schedules the next task poll for non-array task responses', async () => {
+    const { context, polling } = createRouteHarness({
+      allowLocalhost: true,
+      taskPollingBatchSize: 10,
+    });
+    const agent = createRegisteredAgent('3007', 'Non Array Polling Agent');
+    await context.store.upsert(agent);
+
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const url = toUrl(input);
+      if (url === 'http://localhost:3007/tasks?limit=20') {
+        return new Response(JSON.stringify({ tasks: [] }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      return new Response('Not found', { status: 404 });
+    });
+
+    const taskEvents: unknown[] = [];
+    context.taskEvents.on('task_updated', (event) => taskEvents.push(event));
+
+    await polling.pollAgentTasks(agent);
+
+    expect(taskEvents).toEqual([]);
+    expect(context.nextTaskPollAt.get(agent.id)).toBeGreaterThan(Date.now());
+  });
+
   it('normalizes registry update events through the SSE module', () => {
     const { sse } = createRouteHarness();
     const agent = createRegisteredAgent('3005', 'SSE Agent');
