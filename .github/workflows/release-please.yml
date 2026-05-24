@@ -32,10 +32,11 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+      - uses: ./.github/actions/setup-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-          package-manager-cache: false
+          install: 'false'
+          cache: 'false'
       - name: Validate release config
         run: node scripts/check-release-config.mjs
       - name: Create or update release pull request
