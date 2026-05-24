@@ -106,12 +106,38 @@ describe('A2A Protocol v1.0 Compliance', () => {
       expect(task.artifacts?.length ?? 0).toBeGreaterThan(0);
     });
 
+    it('accepts valid ISO timestamps with timezone offsets', async () => {
+      const client = new A2AClient(handle.url, { headers: authHeaders });
+      const createdTask = await client.sendMessage({
+        message: createUserMessage('hello offset timestamp', {
+          timestamp: '2026-04-06T13:00:00+03:00',
+        }),
+      });
+
+      const task = await waitForTaskState(client, createdTask.id, ['COMPLETED']);
+      expect(task.status.state).toBe('COMPLETED');
+    });
+
     it('invalid params return InvalidParams', async () => {
       const body = await postJsonRpc<{ error: { code: number } }>(
         handle.url,
         'message/send',
         {
           message: {},
+        },
+        authHeaders,
+      );
+
+      expect(body.error).toBeDefined();
+      expect(body.error.code).toBe(ErrorCodes.InvalidParams);
+    });
+
+    it('invalid message timestamps return InvalidParams', async () => {
+      const body = await postJsonRpc<{ error: { code: number } }>(
+        handle.url,
+        'message/send',
+        {
+          message: createUserMessage('invalid timestamp', { timestamp: 'not-a-date' }),
         },
         authHeaders,
       );
