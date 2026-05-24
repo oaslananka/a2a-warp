@@ -53,6 +53,17 @@ describe('a2a CLI', () => {
     expect(payload.platform).toBe(process.platform);
   });
 
+  it('accepts pnpm script argument separators before a command', async () => {
+    const expectedVersion = await readCliPackageVersion();
+    const { stdout } = await execFileAsync(nodePath, [cliEntry, '--', 'doctor', '--json'], {
+      cwd: repoRoot,
+    });
+
+    const payload = JSON.parse(stdout);
+    expect(payload.cli).toBe('a2a-warp');
+    expect(payload.version).toBe(expectedVersion);
+  });
+
   it('validates an agent card and emits JSON', async () => {
     const tempDir = await mkdtemp(join(tmpdir(), 'a2a-cli-validate-'));
     const cardPath = join(tempDir, 'agent-card.json');

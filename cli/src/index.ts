@@ -418,7 +418,12 @@ program
     emitResult({ output: resolve(commandOptions.output), name: card.name }, options);
   });
 
-void program.parseAsync(process.argv).catch((error: unknown) => {
+function normalizeScriptArgv(argv: string[]): string[] {
+  if (argv[2] !== '--') return argv;
+  return [argv[0] ?? '', argv[1] ?? '', ...argv.slice(3)];
+}
+
+void program.parseAsync(normalizeScriptArgv(process.argv)).catch((error: unknown) => {
   writeError(`CLI failed: ${String(error)}`);
   process.exitCode = 1;
 });
