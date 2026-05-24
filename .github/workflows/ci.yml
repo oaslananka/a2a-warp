@@ -112,6 +112,42 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm run test:integration
 
+  mutation:
+    name: CI / mutation
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Detect mutation-relevant changes
+        id: changes
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+            changed_files="$(git diff --name-only FETCH_HEAD...HEAD)"
+            if grep -Eq '^(packages/(core|adapters|registry)/|vitest\.config\.ts$|stryker\.config\.json$)' <<< "$changed_files"; then
+              echo "run=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "run=false" >> "$GITHUB_OUTPUT"
+              echo "No mutation-relevant changes detected."
+            fi
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.changes.outputs.run == 'true'
+        run: corepack enable
+      - if: steps.changes.outputs.run == 'true'
+        run: pnpm install --frozen-lockfile
+      - if: steps.changes.outputs.run == 'true'
+        run: pnpm run build
+      - if: steps.changes.outputs.run == 'true'
+        run: pnpm run test:mutation
+
   build:
     name: CI / build
     runs-on: ubuntu-latest

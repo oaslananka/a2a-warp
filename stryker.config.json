@@ -1,20 +1,33 @@
 {
   "packageManager": "pnpm",
-  "reporters": ["html", "clear-text", "progress"],
+  "plugins": ["@stryker-mutator/vitest-runner"],
+  "reporters": ["clear-text", "progress"],
   "testRunner": "vitest",
+  "coverageAnalysis": "perTest",
+  "ignoreStatic": true,
+  "cleanTempDir": "always",
   "vitest": {
     "configFile": "vitest.config.ts"
   },
+  "testFiles": [
+    "packages/core/tests/TaskManager.test.ts",
+    "packages/core/tests/compat.test.ts",
+    "packages/core/tests/jsonrpc-errors.test.ts",
+    "packages/adapters/tests/contract.test.ts",
+    "packages/registry/tests/SkillMatcher.test.ts"
+  ],
   "mutate": [
-    "packages/core/src/**/*.ts",
-    "packages/adapters/src/**/*.ts",
-    "packages/registry/src/**/*.ts",
-    "!**/*.test.ts",
-    "!**/index.ts"
+    "packages/core/src/server/TaskManager.ts",
+    "packages/core/src/types/jsonrpc.ts",
+    "packages/core/src/utils/compat.ts",
+    "packages/core/src/utils/errors.ts",
+    "packages/core/src/utils/schema-validator.ts",
+    "packages/adapters/src/custom/contract.ts",
+    "packages/registry/src/SkillMatcher.ts"
   ],
   "thresholds": {
-    "high": 70,
-    "low": 50,
-    "break": 0
+    "high": 80,
+    "low": 70,
+    "break": 60
   }
 }
