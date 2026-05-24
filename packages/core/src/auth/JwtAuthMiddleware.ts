@@ -5,12 +5,14 @@
 
 import { timingSafeEqual } from 'node:crypto';
 import type { NextFunction, Request, Response } from 'express';
-import { createRemoteJWKSet, jwtVerify, type JWTPayload } from 'jose';
+import { createRemoteJWKSet, customFetch, jwtVerify, type JWTPayload } from 'jose';
 import {
   attachRequestContext,
   createAuthenticatedRequestContext,
   type RequestWithContext,
 } from './requestContext.js';
+import { fetchWithPolicy, type FetchPolicyOptions } from '../net/fetchWithPolicy.js';
+import { validateSafeUrl, type SafeUrlOptions } from '../security/url.js';
 import type {
   ApiKeyCredential,
   ApiKeyCredentialSource,
@@ -21,10 +23,16 @@ import type {
   RequestContext,
 } from '../types/auth.js';
 
+export type JwtAuthOutboundPolicyOptions = SafeUrlOptions & FetchPolicyOptions;
+
+const DEFAULT_AUTH_OUTBOUND_TIMEOUT_MS = 5000;
+const DEFAULT_AUTH_OUTBOUND_RETRIES = 0;
+
 export interface JwtAuthMiddlewareOptions {
   securitySchemes: AuthScheme[];
   security?: Record<string, string[]>[];
   apiKeys?: ApiKeyCredentialSource;
+  outboundPolicy?: JwtAuthOutboundPolicyOptions;
 }
 
 /**
@@ -149,7 +157,12 @@ export class JwtAuthMiddleware {
     scheme: OpenIdConnectAuthScheme,
   ): Promise<AuthValidationResult> {
     const token = this.readBearerToken(req);
-    const discoveryResponse = await fetch(scheme.openIdConnectUrl);
+    const discoveryUrl = await this.validateOutboundUrl(scheme.openIdConnectUrl);
+    const discoveryResponse = await fetchWithPolicy(
+      discoveryUrl,
+      undefined,
+      this.createFetchPolicyOptions(),
+    );
     if (!discoveryResponse.ok) {
       throw new Error(`Failed to fetch OIDC configuration: ${discoveryResponse.status}`);
     }
@@ -163,7 +176,7 @@ export class JwtAuthMiddleware {
       throw new Error('OIDC configuration is missing jwks_uri');
     }
 
-    const remoteSet = this.getRemoteSet(jwksUri);
+    const remoteSet = await this.getRemoteSet(jwksUri);
 
     const verifyOptions = {
       ...(scheme.audience ? { audience: scheme.audience } : {}),
@@ -191,7 +204,7 @@ export class JwtAuthMiddleware {
     }
 
     const token = this.readBearerToken(req);
-    const { payload } = await jwtVerify(token, this.getRemoteSet(scheme.jwksUri), {
+    const { payload } = await jwtVerify(token, await this.getRemoteSet(scheme.jwksUri), {
       ...(scheme.audience ? { audience: scheme.audience } : {}),
       ...(scheme.issuer ? { issuer: scheme.issuer } : {}),
       algorithms: scheme.algorithms ?? ['RS256', 'ES256'],
@@ -206,14 +219,54 @@ export class JwtAuthMiddleware {
     });
   }
 
-  private getRemoteSet(jwksUri: string): ReturnType<typeof createRemoteJWKSet> {
-    let remoteSet = this.remoteSets.get(jwksUri);
+  private async getRemoteSet(jwksUri: string): Promise<ReturnType<typeof createRemoteJWKSet>> {
+    const jwksUrl = await this.validateOutboundUrl(jwksUri);
+    const cacheKey = jwksUrl.toString();
+    let remoteSet = this.remoteSets.get(cacheKey);
     if (!remoteSet) {
-      remoteSet = createRemoteJWKSet(new URL(jwksUri));
-      this.remoteSets.set(jwksUri, remoteSet);
+      remoteSet = createRemoteJWKSet(jwksUrl, {
+        timeoutDuration: this.options.outboundPolicy?.timeoutMs ?? DEFAULT_AUTH_OUTBOUND_TIMEOUT_MS,
+        [customFetch]: async (url, init) => {
+          const safeUrl = await this.validateOutboundUrl(url);
+          return fetchWithPolicy(safeUrl, init, this.createFetchPolicyOptions(init.signal));
+        },
+      });
+      this.remoteSets.set(cacheKey, remoteSet);
     }
 
     return remoteSet;
+  }
+
+  private async validateOutboundUrl(url: string | URL): Promise<URL> {
+    return validateSafeUrl(url.toString(), this.createSafeUrlOptions());
+  }
+
+  private createSafeUrlOptions(): SafeUrlOptions {
+    const policy = this.options.outboundPolicy;
+    return {
+      ...(policy?.allowLocalhost !== undefined ? { allowLocalhost: policy.allowLocalhost } : {}),
+      ...(policy?.allowPrivateNetworks !== undefined
+        ? { allowPrivateNetworks: policy.allowPrivateNetworks }
+        : {}),
+      ...(policy?.allowUnresolvedHostnames !== undefined
+        ? { allowUnresolvedHostnames: policy.allowUnresolvedHostnames }
+        : {}),
+      ...(policy?.allowedHostnames !== undefined
+        ? { allowedHostnames: policy.allowedHostnames }
+        : {}),
+    };
+  }
+
+  private createFetchPolicyOptions(signal?: AbortSignal): FetchPolicyOptions {
+    const policy = this.options.outboundPolicy;
+    return {
+      timeoutMs: policy?.timeoutMs ?? DEFAULT_AUTH_OUTBOUND_TIMEOUT_MS,
+      retries: policy?.retries ?? DEFAULT_AUTH_OUTBOUND_RETRIES,
+      ...(policy?.backoffBaseMs !== undefined ? { backoffBaseMs: policy.backoffBaseMs } : {}),
+      ...(policy?.backoffMaxMs !== undefined ? { backoffMaxMs: policy.backoffMaxMs } : {}),
+      ...(policy?.jitter !== undefined ? { jitter: policy.jitter } : {}),
+      ...(signal ? { signal } : policy?.signal ? { signal: policy.signal } : {}),
+    };
   }
 
   private resultFromJwtPayload(args: {

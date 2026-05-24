@@ -212,7 +212,9 @@ describe('PushNotificationService', () => {
       history: [],
     } as Task;
 
-    fetchWithPolicyMock.mockResolvedValueOnce(new Response(null, { status: 500 }));
+    fetchWithPolicyMock
+      .mockResolvedValue(new Response(JSON.stringify({ ok: true }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(null, { status: 500 }));
 
     await expect(
       service.sendNotification({ url: 'https://example.com/webhook' }, task),
@@ -220,14 +222,13 @@ describe('PushNotificationService', () => {
     await expect(
       service.sendNotification({ url: 'https://example.com/webhook' }, task),
     ).resolves.toBeUndefined();
+    expect(fetchWithPolicyMock).toHaveBeenCalledTimes(1);
 
     await new Promise((resolve) => setTimeout(resolve, 20));
 
-    fetchWithPolicyMock.mockResolvedValueOnce(
-      new Response(JSON.stringify({ ok: true }), { status: 200 }),
-    );
     await expect(
       service.sendNotification({ url: 'https://example.com/webhook' }, task),
     ).resolves.toBeUndefined();
+    expect(fetchWithPolicyMock).toHaveBeenCalledTimes(2);
   });
 });
