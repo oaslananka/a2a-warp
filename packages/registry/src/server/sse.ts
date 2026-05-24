@@ -5,6 +5,8 @@ import type { RegistryServerContext } from './types.js';
 export interface RegistrySseController {
   configure(res: Response): void;
   closeAllClients(): void;
+  serializeData(payload: unknown): string;
+  writeData(res: Response, payload: unknown, eventName?: string): void;
   normalizeAgentStreamPayload(
     payload: unknown,
   ): RegisteredAgent | { id: string; deleted: true } | null;
@@ -33,8 +35,26 @@ export function createRegistrySse(context: RegistryServerContext): RegistrySseCo
       }
       context.sseClients.clear();
     },
+    serializeData: serializeSseData,
+    writeData(res: Response, payload: unknown, eventName?: string): void {
+      const eventLine = eventName ? `event: ${eventName}\n` : '';
+      res.write(`${eventLine}data: ${serializeSseData(payload)}\n\n`);
+    },
     normalizeAgentStreamPayload,
   };
+}
+
+function serializeSseData(payload: unknown): string {
+  return JSON.stringify(payload).replace(/[<>&\u2028\u2029]/g, (character) => {
+    const replacements: Record<string, string> = {
+      '<': '\\u003c',
+      '>': '\\u003e',
+      '&': '\\u0026',
+      '\u2028': '\\u2028',
+      '\u2029': '\\u2029',
+    };
+    return replacements[character] ?? character;
+  });
 }
 
 function normalizeAgentStreamPayload(

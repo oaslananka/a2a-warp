@@ -328,4 +328,18 @@ describe('RegistryServer control-plane modules', () => {
     });
     expect(sse.normalizeAgentStreamPayload({ type: 'ignored' })).toBeNull();
   });
+
+  it('escapes HTML-sensitive characters while preserving JSON payloads for SSE', () => {
+    const { sse } = createRouteHarness();
+    const payload = {
+      text: '</script><img src=x onerror=alert(1)>&',
+    };
+
+    const serialized = sse.serializeData(payload);
+
+    expect(serialized).not.toContain('<');
+    expect(serialized).not.toContain('>');
+    expect(serialized).not.toContain('&');
+    expect(JSON.parse(serialized)).toEqual(payload);
+  });
 });

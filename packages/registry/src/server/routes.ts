@@ -53,7 +53,7 @@ export function registerRegistryRoutes(
     }
     sse.configure(res);
     const listener = (payload: unknown) => {
-      res.write(`event: registry_update\ndata: ${JSON.stringify(payload)}\n\n`);
+      sse.writeData(res, payload, 'registry_update');
     };
     context.events.on('registry_update', listener);
     res.on('close', () => {
@@ -72,7 +72,7 @@ export function registerRegistryRoutes(
       if (!normalized) {
         return;
       }
-      res.write(`data: ${JSON.stringify(normalized)}\n\n`);
+      sse.writeData(res, normalized);
     };
 
     context.events.on('registry_update', listener);
@@ -183,11 +183,11 @@ export function registerRegistryRoutes(
     sse.configure(res);
 
     for (const taskEvent of taskProjection.getRecentTasks(10)) {
-      res.write(`data: ${JSON.stringify(taskEvent)}\n\n`);
+      sse.writeData(res, taskEvent);
     }
 
     const listener = (payload: unknown) => {
-      res.write(`data: ${JSON.stringify(payload)}\n\n`);
+      sse.writeData(res, payload);
     };
 
     context.taskEvents.on('task_updated', listener);
