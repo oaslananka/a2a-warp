@@ -52,6 +52,8 @@ export const JsonRpcRequestSchema = z.object({
   id: z.union([z.string(), z.number(), z.null()]).optional(),
 });
 
+const IsoDateTimeSchema = z.iso.datetime({ offset: true });
+
 export const PartSchema = z.union([
   z.object({ type: z.literal('text'), text: z.string() }),
   z.object({
@@ -83,7 +85,7 @@ export const MessageSchema = z.object({
   ),
   parts: z.array(PartSchema),
   messageId: z.string(),
-  timestamp: z.string(), // ISO8601
+  timestamp: IsoDateTimeSchema,
   contextId: z.string().optional(),
 });
 
