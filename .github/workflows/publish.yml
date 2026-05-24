@@ -33,6 +33,7 @@ jobs:
     timeout-minutes: 30
     environment: npm-publish
     permissions:
+      attestations: write
       contents: read
       id-token: write
     steps:
@@ -52,10 +53,8 @@ jobs:
       - run: pnpm run test
       - run: pnpm run build
       - run: pnpm run pack:dry-run
-      - name: Pack packages
-        run: |
-          mkdir -p .artifacts/npm
-          pnpm -r --filter './packages/*' --filter './cli' pack --pack-destination .artifacts/npm
+      - name: Generate release artifacts
+        run: pnpm run release:artifacts
       - name: Smoke install tarballs
         run: |
           tmp="$(mktemp -d)"
@@ -64,9 +63,15 @@ jobs:
           npm install -- "${GITHUB_WORKSPACE}"/.artifacts/npm/*.tgz
           node -e "console.log('smoke install ok')"
           popd
-      - name: Generate checksums
-        run: |
-          (cd .artifacts/npm && sha256sum -- ./*.tgz > SHA256SUMS)
+      - name: Validate release artifacts
+        run: pnpm run release:validate
+      - name: Attest release artifacts
+        uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
+        with:
+          subject-path: |
+            .artifacts/npm/*.tgz
+            .artifacts/npm/SHA256SUMS
+            .artifacts/sbom/a2a-warp.cdx.json
       - name: Publish packages with provenance
         run: |
           npm_cli=(npx --yes "npm@${NPM_VERSION}")
