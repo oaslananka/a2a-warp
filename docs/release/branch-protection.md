@@ -10,6 +10,7 @@ The required status checks are:
 - `CI / typecheck`
 - `CI / unit`
 - `CI / integration`
+- `CI / mutation`
 - `CI / build`
 - `CI / package-dry-run`
 - `CI / workspace-graph`
