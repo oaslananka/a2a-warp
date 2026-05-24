@@ -261,6 +261,7 @@ export default function App() {
               <input
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
+                aria-label="Search agents"
                 placeholder="Search by name, skill, tag, or tenant"
                 className="w-full rounded-lg border border-white/10 bg-slate-950/45 py-2.5 pl-9 pr-3 text-sm text-slate-100 outline-none transition focus:border-cyan-300/35"
               />
@@ -272,6 +273,7 @@ export default function App() {
                   key={filter}
                   type="button"
                   onClick={() => setStatusFilter(filter)}
+                  aria-pressed={statusFilter === filter}
                   className={classNames(
                     'rounded-lg border px-3 py-2 text-sm transition',
                     statusFilter === filter
@@ -289,6 +291,7 @@ export default function App() {
             <select
               value={capabilityFilter}
               onChange={(event) => setCapabilityFilter(event.target.value as CapabilityFilter)}
+              aria-label="Filter by capability"
               className="rounded-lg border border-white/10 bg-slate-950/45 px-3 py-2 text-sm text-slate-100 outline-none"
             >
               <option value="all">All capabilities</option>
@@ -298,6 +301,7 @@ export default function App() {
             <select
               value={tenantFilter}
               onChange={(event) => setTenantFilter(event.target.value)}
+              aria-label="Filter by tenant"
               className="rounded-lg border border-white/10 bg-slate-950/45 px-3 py-2 text-sm text-slate-100 outline-none"
             >
               <option value="all">All tenants</option>
@@ -355,7 +359,11 @@ export default function App() {
                     body="Try clearing one of the filters or register a public agent."
                   />
                 ) : (
-                  <div className="overflow-x-auto">
+                  <div
+                    className="overflow-x-auto"
+                    tabIndex={0}
+                    aria-label="Fleet table scroll area"
+                  >
                     <table className="min-w-full divide-y divide-white/8 text-sm">
                       <thead className="bg-white/4 text-left text-xs uppercase tracking-[0.18em] text-slate-400">
                         <tr>
@@ -647,6 +655,7 @@ function ViewButton({
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={active}
       className={classNames(
         'rounded-md px-3 py-2 text-sm transition',
         active

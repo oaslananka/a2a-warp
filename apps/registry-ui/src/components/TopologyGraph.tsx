@@ -111,6 +111,8 @@ export function TopologyGraph({ agents, selectedAgentId, onSelect }: TopologyGra
               className="cursor-pointer"
               onClick={() => onSelect(agent)}
               role="button"
+              aria-label={`Select ${agent.card.name} in topology`}
+              aria-pressed={isSelected}
               tabIndex={0}
               onKeyDown={(event) => {
                 if (event.key === 'Enter' || event.key === ' ') {
