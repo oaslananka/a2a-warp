@@ -4,6 +4,7 @@ import type {
   AgentCard,
   JwtAuthMiddleware,
   JwtAuthMiddlewareOptions,
+  OutboundPolicyOptions,
   RateLimitConfig,
   RateLimitStore,
   Task,
@@ -18,6 +19,7 @@ export interface RegistryServerOptions {
   allowLocalhost?: boolean;
   allowPrivateNetworks?: boolean;
   allowUnresolvedHostnames?: boolean;
+  outboundPolicy?: OutboundPolicyOptions;
   allowedOrigins?: string[];
   requireOrigin?: boolean;
   bodyLimit?: string;

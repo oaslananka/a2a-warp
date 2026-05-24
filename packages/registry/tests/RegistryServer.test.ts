@@ -39,6 +39,23 @@ describe('RegistryServer', () => {
     expect(response.body.url).toBe('https://example.com/agent');
   });
 
+  it('applies outbound policy scheme restrictions during registration', async () => {
+    server = new RegistryServer({
+      allowLocalhost: true,
+      outboundPolicy: { allowLocalhost: true, allowedSchemes: ['https'] },
+    });
+
+    const response = await request(server.getExpressApp())
+      .post('/agents/register')
+      .send({
+        agentUrl: 'http://localhost:3001',
+        agentCard: { name: 'Test', version: '1.0', protocolVersion: '1.0' },
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toContain('Unsupported URL protocol');
+  });
+
   it('enforces authentication when required', async () => {
     server = new RegistryServer({
       requireAuth: true,

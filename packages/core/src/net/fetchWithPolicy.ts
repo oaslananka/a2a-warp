@@ -1,6 +1,8 @@
 import { logger } from '../utils/logger.js';
 import { a2aWarpTracer, SpanStatusCode } from '../telemetry/tracer.js';
 
+export type FetchTelemetryLabels = Record<string, string | number | boolean>;
+
 export interface FetchPolicyOptions {
   /** Maximum time in milliseconds to wait for a single fetch attempt. Default: 30000 (30s) */
   timeoutMs?: number;
@@ -14,6 +16,8 @@ export interface FetchPolicyOptions {
   jitter?: boolean;
   /** AbortSignal to cancel the entire operation (including retries) */
   signal?: AbortSignal;
+  /** Additional span attributes to attach to outbound HTTP telemetry. */
+  telemetryLabels?: FetchTelemetryLabels;
 }
 
 export class FetchTimeoutError extends Error {
@@ -90,6 +94,7 @@ export async function fetchWithPolicy(
 
     const span = a2aWarpTracer.startSpan('http.request', {
       attributes: {
+        ...(options.telemetryLabels ?? {}),
         'http.method': method,
         'http.url': urlString,
         'http.attempt': attempt + 1,

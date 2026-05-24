@@ -9,7 +9,7 @@ import type { JwtAuthMiddlewareOptions } from '../auth/JwtAuthMiddleware.js';
 import { JwtAuthMiddleware } from '../auth/JwtAuthMiddleware.js';
 import type { RateLimitConfig, RateLimitStore } from '../middleware/rateLimiter.js';
 import { createRateLimiter, InMemoryRateLimitStore } from '../middleware/rateLimiter.js';
-import type { SafeUrlOptions } from '../security/url.js';
+import type { OutboundPolicyOptions } from '../net/OutboundPolicy.js';
 import { InMemoryTaskStorage } from '../storage/InMemoryTaskStorage.js';
 import type { ITaskStorage } from '../storage/ITaskStorage.js';
 import { RuntimeMetrics } from '../telemetry/RuntimeMetrics.js';
@@ -56,6 +56,7 @@ export interface A2AServerOptions {
   allowLocalhost?: boolean;
   allowPrivateNetworks?: boolean;
   allowUnresolvedHostnames?: boolean;
+  outboundPolicy?: OutboundPolicyOptions;
   allowedOrigins?: string[];
   requireOrigin?: boolean;
   bodyLimit?: string;
@@ -87,7 +88,9 @@ export abstract class A2AServer {
     this.agentCard = agentCard;
     this.taskManager = new TaskManager(options.taskStorage ?? new InMemoryTaskStorage());
     this.streamer = new SSEStreamer();
-    this.pushNotificationService = new PushNotificationService();
+    this.pushNotificationService = new PushNotificationService({
+      outboundPolicy: this.createOutboundPolicyOptions(),
+    });
     this.authMiddleware = options.auth ? new JwtAuthMiddleware(options.auth) : undefined;
     this.runtimeMetrics = new RuntimeMetrics({
       serviceName: agentCard.name,
@@ -261,14 +264,21 @@ export abstract class A2AServer {
   private async normalizePushNotificationConfig(
     config: PushNotificationConfig,
   ): Promise<PushNotificationConfig> {
-    return normalizePushNotificationConfig(config, this.createSafeUrlOptions());
+    return normalizePushNotificationConfig(config, this.createOutboundPolicyOptions());
   }
 
-  private createSafeUrlOptions(): SafeUrlOptions {
+  private createOutboundPolicyOptions(): OutboundPolicyOptions {
+    const policy = this.options.outboundPolicy ?? {};
     return {
-      allowLocalhost: this.options.allowLocalhost ?? process.env['NODE_ENV'] !== 'production',
-      allowPrivateNetworks: this.options.allowPrivateNetworks ?? false,
-      allowUnresolvedHostnames: this.options.allowUnresolvedHostnames ?? false,
+      ...policy,
+      allowLocalhost:
+        policy.allowLocalhost ??
+        this.options.allowLocalhost ??
+        process.env['NODE_ENV'] !== 'production',
+      allowPrivateNetworks:
+        policy.allowPrivateNetworks ?? this.options.allowPrivateNetworks ?? false,
+      allowUnresolvedHostnames:
+        policy.allowUnresolvedHostnames ?? this.options.allowUnresolvedHostnames ?? false,
     };
   }
 

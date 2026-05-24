@@ -236,6 +236,29 @@ describe('JwtAuthMiddleware', () => {
     ).rejects.toThrow('SSRF Prevention: Private IP addresses are not allowed');
   });
 
+  it('honors outbound policy scheme restrictions for oidc discovery', async () => {
+    const middleware = new JwtAuthMiddleware({
+      securitySchemes: [
+        {
+          type: 'openIdConnect',
+          id: 'oidc',
+          openIdConnectUrl: 'http://127.0.0.1/.well-known/openid-configuration',
+          audience: '@oaslananka/a2a-warp',
+        },
+      ],
+      outboundPolicy: { allowLocalhost: true, allowedSchemes: ['https'] },
+    });
+
+    await expect(
+      middleware.authenticateRequest({
+        header(name: string) {
+          return name === 'authorization' ? 'Bearer a.b.c' : undefined;
+        },
+        query: {},
+      } as never),
+    ).rejects.toThrow('Unsupported URL protocol');
+  });
+
   it('fetches oidc discovery and jwks through the outbound fetch policy', async () => {
     const { publicKey, privateKey } = await generateKeyPair('RS256');
     const jwk = await exportJWK(publicKey);

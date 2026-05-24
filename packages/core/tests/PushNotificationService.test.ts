@@ -1,27 +1,27 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { fetchWithPolicy } from '../src/net/fetchWithPolicy.js';
+import { validateAndFetch } from '../src/net/OutboundPolicy.js';
 import { PushNotificationService } from '../src/server/PushNotificationService.js';
 import type { Task } from '../src/types/task.js';
-import type * as FetchWithPolicyModule from '../src/net/fetchWithPolicy.js';
+import type * as OutboundPolicyModule from '../src/net/OutboundPolicy.js';
 
-vi.mock('../src/net/fetchWithPolicy.js', async (importOriginal) => {
-  const actual = await importOriginal<typeof FetchWithPolicyModule>();
+vi.mock('../src/net/OutboundPolicy.js', async (importOriginal) => {
+  const actual = await importOriginal<typeof OutboundPolicyModule>();
   return {
     ...actual,
-    fetchWithPolicy: vi.fn(),
+    validateAndFetch: vi.fn(),
   };
 });
 
-const fetchWithPolicyMock = vi.mocked(fetchWithPolicy);
+const validateAndFetchMock = vi.mocked(validateAndFetch);
 
 describe('PushNotificationService', () => {
   afterEach(() => {
-    fetchWithPolicyMock.mockReset();
+    validateAndFetchMock.mockReset();
   });
 
   it('sends notification with default and auth headers', async () => {
     const service = new PushNotificationService();
-    fetchWithPolicyMock.mockResolvedValue(
+    validateAndFetchMock.mockResolvedValue(
       new Response(JSON.stringify({ ok: true }), { status: 200 }),
     );
 
@@ -38,7 +38,7 @@ describe('PushNotificationService', () => {
       } as Task,
     );
 
-    expect(fetchWithPolicyMock).toHaveBeenCalledWith(
+    expect(validateAndFetchMock).toHaveBeenCalledWith(
       'https://example.com/webhook',
       expect.objectContaining({
         method: 'POST',
@@ -47,7 +47,13 @@ describe('PushNotificationService', () => {
           Authorization: 'Bearer secret',
         }),
       }),
-      { retries: 0, timeoutMs: 10000 },
+      expect.objectContaining({
+        retries: 0,
+        timeoutMs: 10000,
+        telemetryLabels: expect.objectContaining({
+          'a2a.outbound.operation': 'push-notification',
+        }),
+      }),
     );
   });
 
@@ -65,7 +71,7 @@ describe('PushNotificationService', () => {
 
   it('supports apiKey query delivery', async () => {
     const service = new PushNotificationService();
-    fetchWithPolicyMock.mockResolvedValue(
+    validateAndFetchMock.mockResolvedValue(
       new Response(JSON.stringify({ ok: true }), { status: 200 }),
     );
 
@@ -82,16 +88,16 @@ describe('PushNotificationService', () => {
       } as Task,
     );
 
-    expect(fetchWithPolicyMock).toHaveBeenCalledWith(
+    expect(validateAndFetchMock).toHaveBeenCalledWith(
       'https://example.com/webhook?api_key=secret',
       expect.any(Object),
-      { retries: 0, timeoutMs: 10000 },
+      expect.objectContaining({ retries: 0, timeoutMs: 10000 }),
     );
   });
 
   it('supports apiKey header delivery and openIdConnect bearer delivery', async () => {
     const service = new PushNotificationService();
-    fetchWithPolicyMock.mockResolvedValue(
+    validateAndFetchMock.mockResolvedValue(
       new Response(JSON.stringify({ ok: true }), { status: 200 }),
     );
 
@@ -122,7 +128,7 @@ describe('PushNotificationService', () => {
       task,
     );
 
-    expect(fetchWithPolicyMock).toHaveBeenNthCalledWith(
+    expect(validateAndFetchMock).toHaveBeenNthCalledWith(
       1,
       'https://example.com/header',
       expect.objectContaining({
@@ -131,9 +137,9 @@ describe('PushNotificationService', () => {
           'x-api-key': 'header-secret',
         }),
       }),
-      { retries: 0, timeoutMs: 10000 },
+      expect.objectContaining({ retries: 0, timeoutMs: 10000 }),
     );
-    expect(fetchWithPolicyMock).toHaveBeenNthCalledWith(
+    expect(validateAndFetchMock).toHaveBeenNthCalledWith(
       2,
       'https://example.com/oidc',
       expect.objectContaining({
@@ -141,13 +147,13 @@ describe('PushNotificationService', () => {
           Authorization: 'Bearer oidc-secret',
         }),
       }),
-      { retries: 0, timeoutMs: 10000 },
+      expect.objectContaining({ retries: 0, timeoutMs: 10000 }),
     );
   });
 
   it('throws when webhook delivery fails and when retries are exhausted', async () => {
     const service = new PushNotificationService();
-    fetchWithPolicyMock.mockResolvedValue(new Response(null, { status: 500 }));
+    validateAndFetchMock.mockResolvedValue(new Response(null, { status: 500 }));
 
     await expect(
       service.sendNotification(
@@ -177,7 +183,7 @@ describe('PushNotificationService', () => {
         successThreshold: 1,
       },
     });
-    fetchWithPolicyMock.mockResolvedValue(new Response(null, { status: 500 }));
+    validateAndFetchMock.mockResolvedValue(new Response(null, { status: 500 }));
 
     const task = {
       id: 'task-1',
@@ -195,7 +201,7 @@ describe('PushNotificationService', () => {
       service.sendNotification({ url: 'https://example.com/webhook' }, task),
     ).resolves.toBeUndefined();
 
-    expect(fetchWithPolicyMock).toHaveBeenCalledTimes(2);
+    expect(validateAndFetchMock).toHaveBeenCalledTimes(2);
   });
 
   it('recovers after the circuit timeout and allows successful delivery', async () => {
@@ -212,7 +218,7 @@ describe('PushNotificationService', () => {
       history: [],
     } as Task;
 
-    fetchWithPolicyMock
+    validateAndFetchMock
       .mockResolvedValue(new Response(JSON.stringify({ ok: true }), { status: 200 }))
       .mockResolvedValueOnce(new Response(null, { status: 500 }));
 
@@ -222,13 +228,13 @@ describe('PushNotificationService', () => {
     await expect(
       service.sendNotification({ url: 'https://example.com/webhook' }, task),
     ).resolves.toBeUndefined();
-    expect(fetchWithPolicyMock).toHaveBeenCalledTimes(1);
+    expect(validateAndFetchMock).toHaveBeenCalledTimes(1);
 
     await new Promise((resolve) => setTimeout(resolve, 20));
 
     await expect(
       service.sendNotification({ url: 'https://example.com/webhook' }, task),
     ).resolves.toBeUndefined();
-    expect(fetchWithPolicyMock).toHaveBeenCalledTimes(2);
+    expect(validateAndFetchMock).toHaveBeenCalledTimes(2);
   });
 });

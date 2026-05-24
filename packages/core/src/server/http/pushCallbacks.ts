@@ -1,5 +1,4 @@
-import type { SafeUrlOptions } from '../../security/url.js';
-import { validateSafeUrl } from '../../security/url.js';
+import { validateUrl, type OutboundPolicyOptions } from '../../net/OutboundPolicy.js';
 import { ErrorCodes, JsonRpcError } from '../../types/jsonrpc.js';
 import type { MessageSendParams, Task } from '../../types/task.js';
 import type { RuntimeMetrics } from '../../telemetry/RuntimeMetrics.js';
@@ -21,10 +20,10 @@ export interface TaskObserverDependencies {
 
 export async function normalizePushNotificationConfig(
   config: PushNotificationConfig,
-  options: SafeUrlOptions,
+  options: OutboundPolicyOptions,
 ): Promise<PushNotificationConfig> {
   try {
-    await validateSafeUrl(config.url, options);
+    await validateUrl(config.url, options);
     return { ...config };
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);

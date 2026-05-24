@@ -11,8 +11,11 @@ import {
   createAuthenticatedRequestContext,
   type RequestWithContext,
 } from './requestContext.js';
-import { fetchWithPolicy, type FetchPolicyOptions } from '../net/fetchWithPolicy.js';
-import { validateSafeUrl, type SafeUrlOptions } from '../security/url.js';
+import {
+  validateAndFetch,
+  validateUrl,
+  type OutboundPolicyOptions,
+} from '../net/OutboundPolicy.js';
 import type {
   ApiKeyCredential,
   ApiKeyCredentialSource,
@@ -23,7 +26,7 @@ import type {
   RequestContext,
 } from '../types/auth.js';
 
-export type JwtAuthOutboundPolicyOptions = SafeUrlOptions & FetchPolicyOptions;
+export type JwtAuthOutboundPolicyOptions = OutboundPolicyOptions;
 
 const DEFAULT_AUTH_OUTBOUND_TIMEOUT_MS = 5000;
 const DEFAULT_AUTH_OUTBOUND_RETRIES = 0;
@@ -157,11 +160,10 @@ export class JwtAuthMiddleware {
     scheme: OpenIdConnectAuthScheme,
   ): Promise<AuthValidationResult> {
     const token = this.readBearerToken(req);
-    const discoveryUrl = await this.validateOutboundUrl(scheme.openIdConnectUrl);
-    const discoveryResponse = await fetchWithPolicy(
-      discoveryUrl,
+    const discoveryResponse = await validateAndFetch(
+      scheme.openIdConnectUrl,
       undefined,
-      this.createFetchPolicyOptions(),
+      this.createOutboundPolicyOptions(),
     );
     if (!discoveryResponse.ok) {
       throw new Error(`Failed to fetch OIDC configuration: ${discoveryResponse.status}`);
@@ -227,8 +229,7 @@ export class JwtAuthMiddleware {
       remoteSet = createRemoteJWKSet(jwksUrl, {
         timeoutDuration: this.options.outboundPolicy?.timeoutMs ?? DEFAULT_AUTH_OUTBOUND_TIMEOUT_MS,
         [customFetch]: async (url, init) => {
-          const safeUrl = await this.validateOutboundUrl(url);
-          return fetchWithPolicy(safeUrl, init, this.createFetchPolicyOptions(init.signal));
+          return validateAndFetch(url, init, this.createOutboundPolicyOptions(init.signal));
         },
       });
       this.remoteSets.set(cacheKey, remoteSet);
@@ -238,34 +239,16 @@ export class JwtAuthMiddleware {
   }
 
   private async validateOutboundUrl(url: string | URL): Promise<URL> {
-    return validateSafeUrl(url.toString(), this.createSafeUrlOptions());
+    return validateUrl(url, this.createOutboundPolicyOptions());
   }
 
-  private createSafeUrlOptions(): SafeUrlOptions {
-    const policy = this.options.outboundPolicy;
+  private createOutboundPolicyOptions(signal?: AbortSignal): OutboundPolicyOptions {
+    const policy = this.options.outboundPolicy ?? {};
     return {
-      ...(policy?.allowLocalhost !== undefined ? { allowLocalhost: policy.allowLocalhost } : {}),
-      ...(policy?.allowPrivateNetworks !== undefined
-        ? { allowPrivateNetworks: policy.allowPrivateNetworks }
-        : {}),
-      ...(policy?.allowUnresolvedHostnames !== undefined
-        ? { allowUnresolvedHostnames: policy.allowUnresolvedHostnames }
-        : {}),
-      ...(policy?.allowedHostnames !== undefined
-        ? { allowedHostnames: policy.allowedHostnames }
-        : {}),
-    };
-  }
-
-  private createFetchPolicyOptions(signal?: AbortSignal): FetchPolicyOptions {
-    const policy = this.options.outboundPolicy;
-    return {
-      timeoutMs: policy?.timeoutMs ?? DEFAULT_AUTH_OUTBOUND_TIMEOUT_MS,
-      retries: policy?.retries ?? DEFAULT_AUTH_OUTBOUND_RETRIES,
-      ...(policy?.backoffBaseMs !== undefined ? { backoffBaseMs: policy.backoffBaseMs } : {}),
-      ...(policy?.backoffMaxMs !== undefined ? { backoffMaxMs: policy.backoffMaxMs } : {}),
-      ...(policy?.jitter !== undefined ? { jitter: policy.jitter } : {}),
-      ...(signal ? { signal } : policy?.signal ? { signal: policy.signal } : {}),
+      ...policy,
+      timeoutMs: policy.timeoutMs ?? DEFAULT_AUTH_OUTBOUND_TIMEOUT_MS,
+      retries: policy.retries ?? DEFAULT_AUTH_OUTBOUND_RETRIES,
+      ...(signal ? { signal } : {}),
     };
   }
 
