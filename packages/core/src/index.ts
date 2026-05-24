@@ -36,5 +36,6 @@ export * from './telemetry/index.js';
 export * from './auth/index.js';
 export * from './security/url.js';
 export * from './security/AgentCardSigner.js';
+export * from './net/OutboundPolicy.js';
 export * from './net/fetchWithPolicy.js';
 export * from './server/RealtimeTransport.js';

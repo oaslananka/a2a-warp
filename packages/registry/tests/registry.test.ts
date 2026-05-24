@@ -179,4 +179,44 @@ describe('Registry Integration', () => {
 
     await server.stop();
   });
+
+  it('applies outbound policy scheme restrictions during scheduled health checks', async () => {
+    const storage = new InMemoryStorage();
+    const agent = {
+      id: 'scheme-blocked',
+      url: 'http://localhost:3001',
+      card: {
+        protocolVersion: '1.0' as const,
+        name: 'Scheme Blocked',
+        description: 'desc',
+        url: 'http://localhost:3001',
+        version: '1.0',
+      },
+      status: 'unknown' as const,
+      tags: [],
+      skills: [],
+      registeredAt: new Date().toISOString(),
+    };
+    await storage.upsert(agent);
+
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(new Response(null, { status: 200 }));
+
+    const server = new RegistryServer({
+      storage,
+      allowLocalhost: true,
+      outboundPolicy: { allowLocalhost: true, allowedSchemes: ['https'] },
+    });
+    await (
+      server as unknown as {
+        executeHealthChecks: (agents: (typeof agent)[]) => Promise<void>;
+      }
+    ).executeHealthChecks([agent]);
+
+    expect(fetchSpy).not.toHaveBeenCalled();
+    expect((await storage.get('scheme-blocked'))?.status).toBe('unhealthy');
+
+    await server.stop();
+  });
 });

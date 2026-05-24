@@ -1,9 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import type { Express, Request, Response } from 'express';
-import { logger, normalizeAgentCard, validateSafeUrl, type AgentCard } from '@oaslananka/a2a-warp';
+import { logger, normalizeAgentCard, validateUrl, type AgentCard } from '@oaslananka/a2a-warp';
 import type { RegisteredAgent } from '../storage/IAgentStorage.js';
 import type { RegistryAuthController } from './auth.js';
 import type { RegistryMetricsController } from './metrics.js';
+import { createRegistryOutboundPolicy } from './outboundPolicy.js';
 import type { RegistryPollingController } from './polling.js';
 import type { RegistrySseController } from './sse.js';
 import type { RegistryTaskProjectionController } from './taskProjection.js';
@@ -100,11 +101,12 @@ export function registerRegistryRoutes(
     }
 
     try {
-      await validateSafeUrl(agentUrl, {
-        allowLocalhost: context.options.allowLocalhost ?? false,
-        allowPrivateNetworks: context.options.allowPrivateNetworks ?? false,
-        allowUnresolvedHostnames: context.options.allowUnresolvedHostnames ?? false,
-      });
+      await validateUrl(
+        agentUrl,
+        createRegistryOutboundPolicy(context, {
+          telemetryLabels: { 'a2a.registry.operation': 'registration' },
+        }),
+      );
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
       res.status(400).json({ error: `Invalid agentUrl: ${message}` });

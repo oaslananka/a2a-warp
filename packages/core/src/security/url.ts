@@ -58,6 +58,7 @@ export interface SafeUrlOptions {
   allowPrivateNetworks?: boolean;
   allowUnresolvedHostnames?: boolean;
   allowedHostnames?: string[];
+  resolveHostname?: (hostname: string) => Promise<string[]>;
 }
 
 /**
@@ -114,7 +115,7 @@ export async function validateSafeUrl(
 
   let addresses: string[];
   try {
-    addresses = await dns.resolve(hostname);
+    addresses = await (options.resolveHostname ?? dns.resolve)(hostname);
   } catch (err: unknown) {
     if (allowUnresolvedHostnames) {
       return url;

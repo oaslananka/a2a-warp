@@ -6,11 +6,12 @@
 import type { PushNotificationConfig, Task } from '../types/task.js';
 import { logger } from '../utils/logger.js';
 import { CircuitBreaker, CircuitOpenError, type CircuitBreakerOptions } from './CircuitBreaker.js';
-import { fetchWithPolicy } from '../net/fetchWithPolicy.js';
+import { validateAndFetch, type OutboundPolicyOptions } from '../net/OutboundPolicy.js';
 
 export interface PushNotificationServiceOptions {
   circuitBreaker?: CircuitBreakerOptions;
   maxConcurrent?: number;
+  outboundPolicy?: OutboundPolicyOptions;
 }
 
 type QueuedNotification = {
@@ -100,14 +101,14 @@ export class PushNotificationService {
           }
         }
 
-        const response = await fetchWithPolicy(
+        const response = await validateAndFetch(
           url,
           {
             method: 'POST',
             headers,
             body: JSON.stringify(task),
           },
-          { retries: 0, timeoutMs: 10000 },
+          this.createOutboundPolicyOptions(),
         );
 
         if (!response.ok) {
@@ -136,6 +137,19 @@ export class PushNotificationService {
     const breaker = new CircuitBreaker(`push:${url}`, this.options.circuitBreaker);
     this.breakers.set(url, breaker);
     return breaker;
+  }
+
+  private createOutboundPolicyOptions(): OutboundPolicyOptions {
+    const policy = this.options.outboundPolicy ?? {};
+    return {
+      ...policy,
+      timeoutMs: policy.timeoutMs ?? 10000,
+      retries: policy.retries ?? 0,
+      telemetryLabels: {
+        ...(policy.telemetryLabels ?? {}),
+        'a2a.outbound.operation': 'push-notification',
+      },
+    };
   }
 
   /**

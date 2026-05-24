@@ -1,5 +1,6 @@
-import { fetchWithPolicy, logger, validateSafeUrl, type Task } from '@oaslananka/a2a-warp';
+import { logger, validateAndFetch, type Task } from '@oaslananka/a2a-warp';
 import type { RegisteredAgent } from '../storage/IAgentStorage.js';
+import { createRegistryOutboundPolicy } from './outboundPolicy.js';
 import type { RegistryServerContext } from './types.js';
 import {
   createRegistryTaskProjection,
@@ -60,21 +61,15 @@ export function createRegistryPolling(
           await new Promise((resolve) => setTimeout(resolve, jitterMs));
 
           try {
-            let validatedUrl: URL;
-            try {
-              validatedUrl = await validateSafeUrl(buildAgentUrl(agent.url, '/health'), {
-                allowLocalhost: context.options.allowLocalhost ?? false,
-                allowPrivateNetworks: context.options.allowPrivateNetworks ?? false,
-                allowUnresolvedHostnames: context.options.allowUnresolvedHostnames ?? false,
-              });
-            } catch (error: unknown) {
-              throw new Error('Unsafe URL during health check', { cause: error });
-            }
-
-            const response = await fetchWithPolicy(validatedUrl.toString(), undefined, {
-              timeoutMs: 5000,
-              retries: 0,
-            });
+            const response = await validateAndFetch(
+              buildAgentUrl(agent.url, '/health'),
+              undefined,
+              createRegistryOutboundPolicy(context, {
+                timeoutMs: 5000,
+                retries: 0,
+                telemetryLabels: { 'a2a.registry.operation': 'health-check' },
+              }),
+            );
 
             const status = response.ok ? 'healthy' : 'unhealthy';
             const consecutiveFailures = response.ok ? 0 : (agent.consecutiveFailures ?? 0) + 1;
@@ -134,15 +129,15 @@ export function createRegistryPolling(
 
   const pollAgentTasks = async (agent: RegisteredAgent): Promise<void> => {
     try {
-      const validatedUrl = await validateSafeUrl(buildAgentUrl(agent.url, '/tasks?limit=20'), {
-        allowLocalhost: context.options.allowLocalhost ?? false,
-        allowPrivateNetworks: context.options.allowPrivateNetworks ?? false,
-        allowUnresolvedHostnames: context.options.allowUnresolvedHostnames ?? false,
-      });
-      const response = await fetchWithPolicy(validatedUrl.toString(), undefined, {
-        timeoutMs: 5_000,
-        retries: 0,
-      });
+      const response = await validateAndFetch(
+        buildAgentUrl(agent.url, '/tasks?limit=20'),
+        undefined,
+        createRegistryOutboundPolicy(context, {
+          timeoutMs: 5_000,
+          retries: 0,
+          telemetryLabels: { 'a2a.registry.operation': 'task-poll' },
+        }),
+      );
 
       if (!response.ok) {
         return;
