@@ -3,120 +3,23 @@
  * Zod-based validation for A2A messages and configurations.
  */
 
-import { z } from 'zod';
+import type { z } from 'zod';
 import { JsonRpcError, ErrorCodes } from '../types/jsonrpc.js';
 import type { MessageSendParams, TaskListParams } from '../types/task.js';
-import { normalizeMessageRole } from './compat.js';
+import { MessageSendParamsSchema, TaskListParamsSchema } from '../schemas/public.js';
 
-const AuthSchemeSchema = z.union([
-  z.object({
-    type: z.literal('apiKey'),
-    id: z.string(),
-    in: z.enum(['header', 'query']),
-    name: z.string(),
-    description: z.string().optional(),
-  }),
-  z.object({
-    type: z.literal('http'),
-    id: z.string(),
-    scheme: z.literal('bearer'),
-    bearerFormat: z.string().optional(),
-    jwksUri: z.string().url().optional(),
-    audience: z.union([z.string(), z.array(z.string())]).optional(),
-    issuer: z.string().optional(),
-    algorithms: z.array(z.string()).optional(),
-    description: z.string().optional(),
-  }),
-  z.object({
-    type: z.literal('openIdConnect'),
-    id: z.string(),
-    openIdConnectUrl: z.string().url(),
-    audience: z.union([z.string(), z.array(z.string())]).optional(),
-    issuer: z.string().optional(),
-    jwksUri: z.string().url().optional(),
-    algorithms: z.array(z.string()).optional(),
-    description: z.string().optional(),
-  }),
-]);
-
-const A2AExtensionSchema = z.object({
-  uri: z.string().url(),
-  version: z.string().optional(),
-  required: z.boolean().optional(),
-});
-
-export const JsonRpcRequestSchema = z.object({
-  jsonrpc: z.literal('2.0'),
-  method: z.string(),
-  params: z.union([z.record(z.string(), z.unknown()), z.array(z.unknown())]).optional(),
-  id: z.union([z.string(), z.number(), z.null()]).optional(),
-});
-
-const IsoDateTimeSchema = z.iso.datetime({ offset: true });
-
-export const PartSchema = z.union([
-  z.object({ type: z.literal('text'), text: z.string() }),
-  z.object({
-    type: z.literal('file'),
-    file: z.object({
-      name: z.string().optional(),
-      mimeType: z.string(),
-      bytes: z.string().optional(),
-      uri: z.string().optional(),
-    }),
-  }),
-  z.object({ type: z.literal('data'), data: z.record(z.string(), z.unknown()) }),
-]);
-
-export const MessageSchema = z.object({
-  kind: z.literal('message').optional(),
-  role: z.preprocess(
-    (value) => {
-      if (typeof value !== 'string') {
-        return value;
-      }
-      try {
-        return normalizeMessageRole(value);
-      } catch {
-        return value;
-      }
-    },
-    z.enum(['ROLE_USER', 'ROLE_AGENT']),
-  ),
-  parts: z.array(PartSchema),
-  messageId: z.string(),
-  timestamp: IsoDateTimeSchema,
-  contextId: z.string().optional(),
-});
-
-export const PushNotificationConfigSchema = z.object({
-  id: z.string().optional(),
-  url: z.string().url(),
-  token: z.string().optional(),
-  authentication: AuthSchemeSchema.optional(),
-  metadata: z.record(z.string(), z.unknown()).optional(),
-});
-
-export const MessageRequestConfigurationSchema = z.object({
-  blocking: z.boolean().optional(),
-  acceptedOutputModes: z.array(z.string()).optional(),
-  pushNotificationConfig: PushNotificationConfigSchema.optional(),
-  extensions: z.array(A2AExtensionSchema).optional(),
-});
-
-export const MessageSendParamsSchema = z.object({
-  message: MessageSchema,
-  taskId: z.string().optional(),
-  sessionId: z.string().optional(),
-  contextId: z.string().optional(),
-  configuration: MessageRequestConfigurationSchema.optional(),
-});
-
-export const TaskListParamsSchema = z.object({
-  contextId: z.string().optional(),
-  limit: z.number().int().positive().max(500).optional(),
-  offset: z.number().int().min(0).optional(),
-});
+export {
+  A2AExtensionSchema,
+  AuthSchemeSchema,
+  IsoDateTimeSchema,
+  JsonRpcRequestSchema,
+  MessageRequestConfigurationSchema,
+  MessageSchema,
+  MessageSendParamsSchema,
+  PartSchema,
+  PushNotificationConfigSchema,
+  TaskListParamsSchema,
+} from '../schemas/public.js';
 
 /**
  * Validates a payload against a zod schema.

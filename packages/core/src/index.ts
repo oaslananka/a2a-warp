@@ -3,6 +3,7 @@ export * from './types/auth.js';
 export * from './types/extensions.js';
 export * from './types/jsonrpc.js';
 export * from './types/task.js';
+export * from './schemas/public.js';
 export * from './utils/logger.js';
 export * from './utils/schema-validator.js';
 export * from './utils/compat.js';
