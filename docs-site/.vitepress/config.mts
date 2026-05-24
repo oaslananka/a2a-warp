@@ -79,6 +79,7 @@ export default defineConfig({
           text: 'Protocol',
           items: [
             { text: 'Compatibility', link: '/protocol/compliance' },
+            { text: 'JSON Schemas', link: '/protocol/schemas' },
             { text: 'Agent Cards', link: '/protocol/agent-card' },
             { text: 'Task Lifecycle', link: '/protocol/task-lifecycle' },
             { text: 'Extensions', link: '/protocol/extensions' },

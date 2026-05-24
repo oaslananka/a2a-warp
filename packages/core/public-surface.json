@@ -1,3 +1,3 @@
 {
-  "exports": [".", "./auth", "./middleware", "./telemetry"]
+  "exports": [".", "./auth", "./middleware", "./schemas", "./telemetry"]
 }

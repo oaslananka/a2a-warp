@@ -116,6 +116,19 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - run: pnpm run test:conformance
 
+  schemas:
+    name: CI / schemas
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - run: pnpm run schemas:check
+
   mutation:
     name: CI / mutation
     runs-on: ubuntu-latest

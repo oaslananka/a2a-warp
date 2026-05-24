@@ -78,6 +78,11 @@
       "types": "./dist/auth.d.ts",
       "import": "./dist/auth.js",
       "default": "./dist/auth.js"
+    },
+    "./schemas": {
+      "types": "./dist/schemas/public.d.ts",
+      "import": "./dist/schemas/public.js",
+      "default": "./dist/schemas/public.js"
     }
   },
   "files": [
