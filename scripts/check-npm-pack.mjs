@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, rmSync } from 'node:fs';
-import { join } from 'node:path';
+import { isAbsolute, join } from 'node:path';
 import { getWorkspacePackages, fail } from './check-utils.mjs';
 
 const failures = [];
@@ -54,6 +54,10 @@ function parsePackFilename(output) {
   return packResult.filename;
 }
 
+function resolvePackFilename(filename, packDestination) {
+  return isAbsolute(filename) ? filename : join(packDestination, filename);
+}
+
 function smokePackedCli() {
   const tempDir = mkdtempSync(join(process.cwd(), 'cli', '.pack-smoke-'));
   const extractDir = join(tempDir, 'extract');
@@ -61,7 +65,7 @@ function smokePackedCli() {
 
   try {
     const packOutput = runPnpm(['--dir', 'cli', 'pack', '--json', '--pack-destination', tempDir]);
-    const tarball = parsePackFilename(packOutput);
+    const tarball = resolvePackFilename(parsePackFilename(packOutput), tempDir);
     execFileSync('tar', ['-xzf', tarball, '-C', extractDir], {
       encoding: 'utf8',
       stdio: 'pipe',
