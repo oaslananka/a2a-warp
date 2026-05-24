@@ -29,4 +29,20 @@ if (/npm_token/i.test(text)) failures.push('release-please config must not refer
 const publishWorkflow = readText('.github/workflows/publish.yml');
 if (publishWorkflow.includes('A2A-WARP-1.0.0'))
   failures.push('publish workflow confirmation must not pin a stale package version');
+if (!/attestations:\s*write/.test(publishWorkflow))
+  failures.push('publish workflow must grant attestations: write for artifact provenance');
+if (
+  !publishWorkflow.includes(
+    'actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32',
+  )
+)
+  failures.push('publish workflow must pin actions/attest-build-provenance v4.1.0 by commit SHA');
+if (!publishWorkflow.includes('pnpm run release:artifacts'))
+  failures.push('publish workflow must use release:artifacts for release artifact generation');
+if (!publishWorkflow.includes('pnpm run release:validate'))
+  failures.push('publish workflow must validate prepared release artifacts before publish');
+if (!publishWorkflow.includes('.artifacts/npm/SHA256SUMS'))
+  failures.push('publish workflow must attest the npm SHA256SUMS file');
+if (!publishWorkflow.includes('.artifacts/sbom/a2a-warp.cdx.json'))
+  failures.push('publish workflow must attest the CycloneDX SBOM');
 if (failures.length > 0) fail('Release config validation failed.', failures);
