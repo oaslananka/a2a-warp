@@ -1,6 +1,6 @@
 name: Publish
 
-on:
+'on':
   workflow_dispatch:
     inputs:
       ref:
@@ -22,8 +22,8 @@ defaults:
     shell: bash
 
 env:
-  NODE_VERSION: '24.15.0'
-  NPM_VERSION: '11.14.1'
+  NODE_VERSION: '24.16.0'
+  NPM_VERSION: '11.15.0'
 
 jobs:
   publish:

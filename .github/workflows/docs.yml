@@ -1,6 +1,6 @@
 name: Docs
 
-on:
+'on':
   push:
     branches: [main]
   pull_request:
@@ -19,7 +19,7 @@ defaults:
     shell: bash
 
 env:
-  NODE_VERSION: '24.15.0'
+  NODE_VERSION: '24.16.0'
 
 jobs:
   build:
