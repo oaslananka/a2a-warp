@@ -126,9 +126,11 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - name: Detect mutation-relevant changes
         id: changes
+        env:
+          BASE_REF: ${{ github.base_ref }}
         run: |
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+          if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+            git fetch --no-tags --depth=1 origin "$BASE_REF"
             changed_files="$(git diff --name-only FETCH_HEAD...HEAD)"
             if grep -Eq '^(packages/(core|adapters|registry)/|vitest\.config\.ts$|stryker\.config\.json$)' <<< "$changed_files"; then
               echo "run=true" >> "$GITHUB_OUTPUT"
