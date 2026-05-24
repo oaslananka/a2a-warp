@@ -178,6 +178,32 @@ describe('A2AServer edge cases', () => {
     });
   });
 
+  it('rejects JSON-RPC batch arrays before method dispatch', async () => {
+    const server = new EdgeHarnessServer();
+
+    const response = await request(server.getExpressApp())
+      .post('/rpc')
+      .send([
+        {
+          jsonrpc: '2.0',
+          id: 'batch-message',
+          method: 'message/send',
+          params: { message: createMessage('batch') },
+        },
+      ]);
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      jsonrpc: '2.0',
+      error: expect.objectContaining({
+        code: ErrorCodes.InvalidRequest,
+        message: 'Batch requests are not supported',
+      }),
+      id: null,
+    });
+    expect(server.getTaskManager().getAllTasks()).toHaveLength(0);
+  });
+
   it('preserves falsy JSON-RPC ids and returns protocol parse errors for invalid JSON', async () => {
     const server = new EdgeHarnessServer();
 

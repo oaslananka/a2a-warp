@@ -115,6 +115,10 @@ export function createJsonRpcHttpHandler(deps: JsonRpcHttpHandlerDependencies): 
   return async (req, res) => {
     let idempotency: IdempotencyResolution | null | undefined;
     try {
+      if (Array.isArray(req.body)) {
+        throw new JsonRpcError(ErrorCodes.InvalidRequest, 'Batch requests are not supported');
+      }
+
       const rpcReq = validateRequest(JsonRpcRequestSchema, req.body) as JsonRpcRequest;
       let requestContext = getRequestContext(req);
       if (deps.authMiddleware) {
