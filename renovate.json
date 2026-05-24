@@ -11,6 +11,7 @@
   "prHourlyLimit": 3,
   "prConcurrentLimit": 6,
   "minimumReleaseAge": "3 days",
+  "internalChecksFilter": "strict",
   "packageRules": [
     {
       "matchUpdateTypes": ["minor", "patch"],
@@ -39,13 +40,22 @@
       "matchPackageNames": ["/^@opentelemetry\\//"]
     },
     {
+      "description": "Keep registry UI dependency updates visible as one workspace-scoped PR.",
+      "groupName": "registry UI dependencies",
+      "matchFileNames": ["apps/registry-ui/**"]
+    },
+    {
+      "description": "Keep docs site dependency updates visible as one workspace-scoped PR.",
+      "groupName": "docs site dependencies",
+      "matchFileNames": ["docs-site/**"]
+    },
+    {
       "matchManagers": ["github-actions", "dockerfile", "docker-compose"],
       "pinDigests": true,
       "automerge": false,
       "labels": ["area:deps", "area:ci"]
     }
   ],
-  "ignorePaths": ["apps/registry-ui/**", "docs-site/**"],
   "vulnerabilityAlerts": {
     "enabled": true,
     "labels": ["area:deps", "type:security"]

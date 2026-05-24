@@ -13,3 +13,11 @@ As of the May 2026 dependency refresh:
   receives the current Vite security patch without forcing VitePress onto warning-producing
   Rolldown-backed Vite 8.
 - `protobufjs` remains on the latest v7 line (`7.6.0` as of the May 2026 review) because `@grpc/proto-loader@0.8.1` declares `^7.5.5`; overriding it to v8 would exceed the supported dependency contract.
+
+## Update Policy
+
+Renovate must evaluate every workspace package, including `apps/registry-ui` and `docs-site`. UI and documentation dependencies are grouped into workspace-scoped pull requests so changes to browser tooling and the VitePress site are reviewed with their own CI signal instead of being hidden behind broad repository updates.
+
+The repository keeps `minimumReleaseAge` at 3 days while Renovate automerge remains disabled. The shorter delay gives maintainers timely visibility into security and compatibility updates, while the merge still requires review plus the full protected-branch CI gate. Renovate also uses `internalChecksFilter: strict`, so updates that have not satisfied the release-age check remain pending instead of opening branches early.
+
+If third-party dependency automerge is enabled later, raise the third-party `minimumReleaseAge` policy to 14 days before enabling automerge. Internal workspace packages and emergency security fixes can keep separate package rules only when the rule documents the narrower risk and required CI coverage.
