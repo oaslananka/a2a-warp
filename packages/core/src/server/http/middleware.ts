@@ -44,12 +44,14 @@ export function isOriginAllowed(policy: OriginPolicy): boolean {
     return !policy.requireOrigin;
   }
 
+  const origin = policy.origin;
   const allowedOrigins = policy.allowedOrigins ?? [];
   if (allowedOrigins.length === 0) {
     logger.warn('allowedOrigins is not configured; cross-origin request rejected');
     return false;
   }
 
+  let originHostname: string | undefined;
   return allowedOrigins.some((pattern) => {
     if (pattern === policy.origin) {
       return true;
@@ -58,7 +60,9 @@ export function isOriginAllowed(policy: OriginPolicy): boolean {
       return false;
     }
     try {
-      return new URL(policy.origin ?? '').hostname.endsWith(pattern.slice(1));
+      originHostname ??= new URL(origin).hostname;
+      const wildcardDomain = pattern.slice(2);
+      return originHostname === wildcardDomain || originHostname.endsWith(`.${wildcardDomain}`);
     } catch {
       return false;
     }

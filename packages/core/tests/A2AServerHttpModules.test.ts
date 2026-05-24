@@ -56,6 +56,13 @@ describe('A2AServer HTTP module helpers', () => {
     ).toBe(true);
     expect(
       isOriginAllowed({
+        origin: 'https://example.com',
+        allowedOrigins: ['*.example.com'],
+        requireOrigin: true,
+      }),
+    ).toBe(true);
+    expect(
+      isOriginAllowed({
         origin: undefined,
         allowedOrigins: ['https://app.example.com'],
         requireOrigin: true,

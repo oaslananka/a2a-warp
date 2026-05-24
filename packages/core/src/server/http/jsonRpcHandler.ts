@@ -27,6 +27,7 @@ import { normalizeMessage } from '../../utils/compat.js';
 import { logger } from '../../utils/logger.js';
 import {
   JsonRpcRequestSchema,
+  PushNotificationConfigSchema,
   validateMessageSendParams,
   validateRequest,
   validateTaskListParams,
@@ -299,10 +300,13 @@ export async function handleRpcRequest(
         if (!canAccessTask(task, context.requestContext, deps.authMiddleware)) {
           throw new JsonRpcError(ErrorCodes.Unauthorized, 'Unauthorized task access');
         }
-        const pushNotificationConfig = await deps.normalizePushNotificationConfig(
-          rawPushNotificationConfig as PushNotificationConfig,
-        );
-        return deps.taskManager.setPushNotification(taskId, pushNotificationConfig);
+        const pushNotificationConfig = validateRequest(
+          PushNotificationConfigSchema,
+          rawPushNotificationConfig,
+        ) as PushNotificationConfig;
+        const normalizedPushNotificationConfig =
+          await deps.normalizePushNotificationConfig(pushNotificationConfig);
+        return deps.taskManager.setPushNotification(taskId, normalizedPushNotificationConfig);
       }
 
       case 'tasks/pushNotification/get': {

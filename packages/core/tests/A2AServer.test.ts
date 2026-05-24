@@ -479,6 +479,29 @@ describe('A2AServer', () => {
       code: ErrorCodes.InvalidParams,
     });
 
+    const task = server.createTask();
+    await expect(
+      server.callRpc({
+        jsonrpc: '2.0',
+        id: 'push-set-invalid-auth',
+        method: 'tasks/pushNotification/set',
+        params: {
+          taskId: task.id,
+          pushNotificationConfig: {
+            url: 'https://example.com/hook',
+            authentication: {
+              type: 'apiKey',
+              id: 'webhook-key',
+              in: 'cookie',
+              name: 'x-webhook-key',
+            },
+          },
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: ErrorCodes.InvalidParams,
+    });
+
     await expect(
       server.callRpc({
         jsonrpc: '2.0',

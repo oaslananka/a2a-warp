@@ -92,6 +92,7 @@ export const PushNotificationConfigSchema = z.object({
   url: z.string().url(),
   token: z.string().optional(),
   authentication: AuthSchemeSchema.optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const MessageRequestConfigurationSchema = z.object({

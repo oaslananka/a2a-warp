@@ -16,6 +16,7 @@ import type { IdempotencyStoredResult, IdempotencyStore } from '../IdempotencySt
 import type { SSEStreamer } from '../SSEStreamer.js';
 import type { TaskManager, TaskUpdatedEvent } from '../TaskManager.js';
 import { decorateIdempotentResult, type IdempotencyResolution } from './idempotency.js';
+import { isTerminalTaskState } from './lifecycleErrors.js';
 
 export const STREAM_PATHS = ['/stream', '/a2a/stream'] as const;
 
@@ -187,7 +188,7 @@ export async function handleStreamingRpc(
       close();
       return;
     }
-    if (['COMPLETED', 'FAILED', 'CANCELED'].includes(nextTask.status.state)) {
+    if (isTerminalTaskState(nextTask.status.state)) {
       close();
     }
   };
