@@ -1,14 +1,16 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const isCi = !!process.env['CI'];
+
 export default defineConfig({
   testDir: './tests',
   fullyParallel: true,
-  forbidOnly: !!process.env['CI'],
-  retries: process.env['CI'] ? 2 : 0,
-  ...(process.env['CI'] ? { workers: 1 } : {}),
-  reporter: 'html',
+  forbidOnly: isCi,
+  retries: isCi ? 2 : 0,
+  ...(isCi ? { workers: 1 } : {}),
+  reporter: isCi ? 'github' : 'html',
   use: {
-    baseURL: 'http://localhost:5173',
+    baseURL: 'http://127.0.0.1:5173',
     trace: 'on-first-retry',
   },
   projects: [
@@ -18,9 +20,11 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'pnpm run dev -- --port 5173',
-    url: 'http://localhost:5173',
-    reuseExistingServer: !process.env['CI'],
+    command: isCi
+      ? 'pnpm run preview --host 127.0.0.1 --port 5173'
+      : 'pnpm run dev --host 127.0.0.1 --port 5173',
+    url: 'http://127.0.0.1:5173',
+    reuseExistingServer: !isCi,
     timeout: 120 * 1000,
   },
 });

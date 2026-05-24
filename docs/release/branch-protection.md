@@ -11,6 +11,7 @@ The required status checks are:
 - `CI / unit`
 - `CI / integration`
 - `CI / mutation`
+- `CI / ui-e2e`
 - `CI / build`
 - `CI / package-dry-run`
 - `CI / workspace-graph`
