@@ -8,6 +8,7 @@ Implementation target: A2A protocolVersion `1.0` plus compatibility normalizatio
 | ----------------------------------- | -------------------------------------------- | ----------------------------------------------------------------- |
 | Agent Cards / discovery metadata    | Implemented                                  | `packages/core/tests/agent-card.test.ts`                          |
 | JSON-RPC request/response envelopes | Implemented                                  | `tests/integration/a2a-protocol-compliance.test.ts`               |
+| JSON-RPC batch requests             | Explicitly rejected with `InvalidRequest`    | `packages/core/tests/A2AServerEdge.test.ts`                       |
 | Messages, tasks, artifacts          | Implemented                                  | core and integration tests                                        |
 | Task status transitions             | Implemented                                  | `packages/core/tests/TaskManager.test.ts`                         |
 | Streaming/SSE                       | Implemented                                  | `packages/core/tests/SSEStreamer.test.ts` and client stream tests |
