@@ -35,6 +35,7 @@
           { "context": "CI / unit" },
           { "context": "CI / integration" },
           { "context": "CI / mutation" },
+          { "context": "CI / ui-e2e" },
           { "context": "CI / build" },
           { "context": "CI / package-dry-run" },
           { "context": "CI / workspace-graph" },
