@@ -26,8 +26,8 @@ import type {
 import { normalizeMessage } from '../../utils/compat.js';
 import { logger } from '../../utils/logger.js';
 import {
-  JsonRpcRequestSchema,
   PushNotificationConfigSchema,
+  validateJsonRpcRequest,
   validateMessageSendParams,
   validateRequest,
   validateTaskListParams,
@@ -119,7 +119,7 @@ export function createJsonRpcHttpHandler(deps: JsonRpcHttpHandlerDependencies): 
         throw new JsonRpcError(ErrorCodes.InvalidRequest, 'Batch requests are not supported');
       }
 
-      const rpcReq = validateRequest(JsonRpcRequestSchema, req.body) as JsonRpcRequest;
+      const rpcReq = validateJsonRpcRequest(req.body);
       let requestContext = getRequestContext(req);
       if (deps.authMiddleware) {
         try {

@@ -44,4 +44,28 @@ describe('logger', () => {
     expect(stdout).not.toHaveBeenCalled();
     expect(stderr).not.toHaveBeenCalled();
   });
+
+  it('redacts secret-like values in structured and pretty logs', () => {
+    process.env['NODE_ENV'] = 'production';
+    process.env['LOG_LEVEL'] = 'info';
+    const stdout = vi.spyOn(process.stdout, 'write').mockReturnValue(true);
+
+    logger.info('sensitive context', {
+      Authorization: 'Bearer production-token',
+      apiKey: 'api-key-value',
+      nested: {
+        token: 'nested-token-value',
+        client_secret: 'nested-client-secret-value',
+      },
+      safe: 'visible',
+    });
+
+    const output = String(stdout.mock.calls[0]?.[0] ?? '');
+    expect(output).toContain('"safe":"visible"');
+    expect(output).toContain('[REDACTED]');
+    expect(output).not.toContain('production-token');
+    expect(output).not.toContain('api-key-value');
+    expect(output).not.toContain('nested-token-value');
+    expect(output).not.toContain('nested-client-secret-value');
+  });
 });

@@ -149,12 +149,12 @@ describe('A2AServer', () => {
     const invalidPayload = (await invalidRpcResponse.json()) as {
       error: { code: number; message: string; data?: unknown };
     };
-    expect(invalidPayload.error.code).toBe(ErrorCodes.InvalidParams);
-    expect(invalidPayload.error.message).toBe('Invalid parameters');
+    expect(invalidPayload.error.code).toBe(ErrorCodes.InvalidRequest);
+    expect(invalidPayload.error.message).toBe('Invalid JSON-RPC request');
     expect(invalidPayload.error.data).toEqual([
       expect.objectContaining({
         '@type': 'type.googleapis.com/google.rpc.ErrorInfo',
-        reason: 'INVALID_PARAMETERS',
+        reason: 'INVALID_REQUEST',
         domain: 'a2a-protocol.org',
       }),
     ]);
