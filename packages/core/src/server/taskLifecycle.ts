@@ -34,7 +34,7 @@ export interface TaskUpdatedEvent {
 
 const TERMINAL_TASK_STATES = new Set<TerminalTaskState>(['COMPLETED', 'FAILED', 'CANCELED']);
 
-const TASK_TRANSITIONS: Record<TaskState, ReadonlySet<TaskState>> = {
+export const TASK_TRANSITIONS: Record<TaskState, ReadonlySet<TaskState>> = {
   SUBMITTED: new Set([
     'SUBMITTED',
     'QUEUED',
