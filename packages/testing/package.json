@@ -27,7 +27,7 @@
   "scripts": {
     "build": "node ../../scripts/build-tsc-package.mjs",
     "typecheck": "tsc -b",
-    "test": "vitest run"
+    "test": "vitest run --root ../.. --project unit packages/testing/tests"
   },
   "dependencies": {
     "@oaslananka/a2a-warp": "workspace:*"

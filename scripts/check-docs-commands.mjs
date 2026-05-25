@@ -1,6 +1,6 @@
 import { readText, fail } from './check-utils.mjs';
 
-const required = ['validate', 'discover', 'send', 'monitor', 'benchmark', 'doctor'];
+const required = ['validate', 'discover', 'send', 'monitor', 'benchmark', 'conformance', 'doctor'];
 const failures = [];
 for (const command of required) {
   const path = `docs/cli/${command}.md`;

@@ -1,0 +1,116 @@
+import type { AgentCard, MessageSendParams, Task } from '@oaslananka/a2a-warp';
+import { describe, expect, it } from 'vitest';
+import {
+  createConformanceMessageParams,
+  hasRequiredConformanceFailures,
+  runConformanceSuite,
+} from '../src/conformance.js';
+
+const completedTask = {
+  id: 'task-1',
+  contextId: 'ctx-a2a-1-2',
+  status: {
+    state: 'COMPLETED',
+    timestamp: '2026-05-24T13:00:01+03:00',
+  },
+  history: [],
+  artifacts: [
+    {
+      artifactId: 'artifact-1',
+      parts: [{ type: 'text', text: 'ok' }],
+      index: 0,
+      lastChunk: true,
+    },
+  ],
+} satisfies Task;
+
+function createAgentCard(overrides: Partial<AgentCard> = {}): AgentCard {
+  return {
+    protocolVersion: '1.2',
+    name: 'Fixture Agent',
+    description: 'Conformance fixture endpoint',
+    url: 'http://agent.test',
+    version: '1.0.0',
+    capabilities: {
+      streaming: false,
+      pushNotifications: false,
+      stateTransitionHistory: true,
+      extendedAgentCard: true,
+    },
+    defaultInputModes: ['text/plain', 'application/json'],
+    defaultOutputModes: ['text/plain'],
+    skills: [{ id: 'echo', name: 'Echo', description: 'Echoes fixtures' }],
+    ...overrides,
+  };
+}
+
+describe('conformance fixture runner', () => {
+  it('emits endpoint metadata, package version, skipped capabilities and passing cases', async () => {
+    const sentMessages: MessageSendParams[] = [];
+    const client = {
+      resolveCard: async () => createAgentCard(),
+      sendMessage: async (params: MessageSendParams) => {
+        sentMessages.push(params);
+        return completedTask;
+      },
+    };
+
+    const report = await runConformanceSuite({
+      client,
+      endpointUrl: 'http://agent.test',
+      packageVersion: '1.0.3',
+      protocolVersion: '1.2',
+    });
+
+    expect(report.schemaVersion).toBe('1.0');
+    expect(report.package.name).toBe('a2a-warp');
+    expect(report.package.version).toBe('1.0.3');
+    expect(report.endpoint.url).toBe('http://agent.test');
+    expect(report.endpoint.agentName).toBe('Fixture Agent');
+    expect(report.endpoint.protocolVersion).toBe('1.2');
+    expect(report.summary.failed).toBe(0);
+    expect(report.summary.passed).toBeGreaterThan(0);
+    expect(report.skippedCapabilities.map((item) => item.capability)).toEqual([
+      'streaming',
+      'pushNotifications',
+    ]);
+    expect(report.cases.map((item) => item.id)).toEqual([
+      'agent-card',
+      'protocol-version',
+      'message-send',
+      'capability.streaming',
+      'capability.pushNotifications',
+      'capability.stateTransitionHistory',
+      'capability.extendedAgentCard',
+    ]);
+    expect(hasRequiredConformanceFailures(report)).toBe(false);
+    expect(sentMessages[0]).toEqual(createConformanceMessageParams('1.2'));
+  });
+
+  it('marks required cases as failed when a fixture-backed request fails', async () => {
+    const client = {
+      resolveCard: async () => createAgentCard(),
+      sendMessage: async () => {
+        throw new Error('RPC rejected the message fixture');
+      },
+    };
+
+    const report = await runConformanceSuite({
+      client,
+      endpointUrl: 'http://agent.test',
+      packageVersion: '1.0.3',
+      protocolVersion: '1.2',
+    });
+
+    expect(report.summary.failed).toBe(1);
+    expect(report.cases).toContainEqual(
+      expect.objectContaining({
+        id: 'message-send',
+        required: true,
+        status: 'fail',
+        message: 'RPC rejected the message fixture',
+      }),
+    );
+    expect(hasRequiredConformanceFailures(report)).toBe(true);
+  });
+});

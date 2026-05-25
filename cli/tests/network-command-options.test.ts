@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createBenchmarkCommand } from '../src/commands/benchmark.js';
+import { createConformanceCommand } from '../src/commands/conformance.js';
 import { createDiscoverCommand } from '../src/commands/discover.js';
 import { createExportCardCommand } from '../src/commands/export-card.js';
 import { createHealthCommand } from '../src/commands/health.js';
@@ -36,6 +37,7 @@ describe('network command option surface', () => {
       createMonitorCommand(jsonOptions),
       createBenchmarkCommand(jsonOptions),
       createExportCardCommand(jsonOptions),
+      createConformanceCommand(jsonOptions),
     ];
 
     for (const command of commands) {

@@ -20,6 +20,7 @@ const required = [
   'validate',
   'monitor',
   'benchmark',
+  'conformance',
   'doctor',
   'export-card',
 ];
