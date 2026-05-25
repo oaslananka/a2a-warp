@@ -1,17 +1,18 @@
-# a2a-warp send
+# a2a-warp export-card
 
 <!-- Synced from scripts/generate-command-docs.mjs. -->
 
-Sends a text message to an A2A endpoint and emits the resulting task response.
+Resolves an endpoint Agent Card and writes the normalized card document to a local JSON file.
 
 ## Usage
 
 ```text
-Usage: a2a-warp send [options] <url> <message>
+Usage: a2a-warp export-card [options] <url>
 
-Sends a text message to an A2A endpoint and emits the resulting task response.
+Resolves an endpoint Agent Card and writes the normalized card document to a local JSON file.
 
 Options:
+  --output <path>          Output path (default: "agent-card.json")
   --header <key:value...>  HTTP header to send; accepts one or more key:value entries
   --bearer-token <token>   Bearer token sent as Authorization: Bearer <token>
   --api-key <name:value>   API key header as name:value; repeat for multiple keys
@@ -24,26 +25,14 @@ Options:
 
 ## Examples
 
-### Send a text message. (Linux/macOS)
+### Export an Agent Card to a file. (Linux/macOS)
 
 ```bash
-a2a-warp send http://127.0.0.1:3000 "hello"
+a2a-warp export-card http://127.0.0.1:3000 --output ./agent-card.json
 ```
 
-### Send a text message. (PowerShell)
+### Export an Agent Card to a file. (PowerShell)
 
 ```powershell
-a2a-warp send http://127.0.0.1:3000 "hello"
-```
-
-### Send with bearer authentication. (Linux/macOS)
-
-```bash
-a2a-warp send http://127.0.0.1:3000 "hello" --bearer-token "$A2A_TOKEN"
-```
-
-### Send with bearer authentication. (PowerShell)
-
-```powershell
-a2a-warp send http://127.0.0.1:3000 "hello" --bearer-token $env:A2A_TOKEN
+a2a-warp export-card http://127.0.0.1:3000 --output .\agent-card.json
 ```

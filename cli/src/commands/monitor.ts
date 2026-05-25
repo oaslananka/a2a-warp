@@ -2,6 +2,21 @@ import { Command } from 'commander';
 import type { A2AClient } from '@oaslananka/a2a-warp';
 import { emitResult, type CliOptions, type RootOptionsProvider } from '../io.js';
 import { addNetworkOptions, createA2AClient, type NetworkCommandOptions } from '../network.js';
+import { applyCommandDoc, type CliCommandDoc } from './doc-metadata.js';
+
+export const monitorCommandDoc = {
+  path: ['monitor'],
+  summary: 'Poll task status snapshots.',
+  description:
+    'Polls task status snapshots from an A2A endpoint and emits task state summaries for each cycle.',
+  examples: [
+    {
+      title: 'Poll three task status snapshots.',
+      bash: ['a2a-warp monitor http://127.0.0.1:3000 --cycles 3'],
+      powershell: ['a2a-warp monitor http://127.0.0.1:3000 --cycles 3'],
+    },
+  ],
+} satisfies CliCommandDoc;
 
 interface MonitorCommandOptions extends NetworkCommandOptions {
   interval: string;
@@ -71,7 +86,7 @@ async function monitorTasks(
 
 export function createMonitorCommand(getOptions: RootOptionsProvider): Command {
   return addNetworkOptions(
-    new Command('monitor')
+    applyCommandDoc(new Command('monitor'), monitorCommandDoc)
       .argument('<url>')
       .option('--interval <ms>', 'Polling interval in milliseconds', '2000')
       .option('--cycles <count>', 'Number of polling cycles before exit')

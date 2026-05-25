@@ -65,7 +65,13 @@ describe('registry command', () => {
 
     expect(command.name()).toBe('registry');
     expect(commandNames(command)).toEqual(['start', 'list', 'export', 'import']);
-    expectCommandHelp(command, ['Registry operations', 'start', 'list', 'export', 'import']);
+    expectCommandHelp(command, [
+      'Starts a local registry, lists registered agents',
+      'start',
+      'list',
+      'export',
+      'import',
+    ]);
   });
 
   it('exports a versioned registry document to a JSON file', async () => {

@@ -1,6 +1,26 @@
 import { mkdirSync, existsSync, writeFileSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { Command } from 'commander';
+import { applyCommandDoc, type CliCommandDoc } from './doc-metadata.js';
+
+export const scaffoldCommandDoc = {
+  path: ['scaffold'],
+  summary: 'Create an A2A agent project scaffold.',
+  description:
+    'Creates a new A2A agent project from a local template, with optional auth, rate limiting, provider adapter, and Dockerfile output.',
+  examples: [
+    {
+      title: 'Create a custom agent scaffold.',
+      bash: ['a2a-warp scaffold demo-agent --adapter custom'],
+      powershell: ['a2a-warp scaffold demo-agent --adapter custom'],
+    },
+    {
+      title: 'Create an OpenAI agent scaffold with auth and Docker support.',
+      bash: ['a2a-warp scaffold openai-agent --adapter openai --auth --docker'],
+      powershell: ['a2a-warp scaffold openai-agent --adapter openai --auth --docker'],
+    },
+  ],
+} satisfies CliCommandDoc;
 
 type ScaffoldAdapter =
   | 'custom'
@@ -433,7 +453,7 @@ export function scaffoldAgent(name: string, options: ScaffoldOptions): void {
 }
 
 export function createScaffoldCommand(): Command {
-  return new Command('scaffold')
+  return applyCommandDoc(new Command('scaffold'), scaffoldCommandDoc)
     .argument('<agent-name>')
     .option('--adapter <adapter>', 'Adapter template to use', 'custom')
     .option('--auth', 'Include API key authentication')
