@@ -215,10 +215,13 @@ function syncRulesetCompatibilityContexts(path, expectedContexts) {
 function syncBranchProtectionCompatibilityContexts(path, expectedContexts) {
   const original = readText(path);
   const expectedBlock = expectedContexts.map((context) => `- \`${context}\``).join('\n');
-  const updated = original.replace(
-    /(?:- `CI \/ compatibility-smoke \([^)]+\)`\n?)+/,
-    `${expectedBlock}\n`,
-  );
+  const compatibilityBlockPattern = /(?:- `CI \/ compatibility-smoke \([^)]+\)`\n?)+/;
+  let updated = original.replace(compatibilityBlockPattern, `${expectedBlock}\n`);
+  if (updated === original && !compatibilityBlockPattern.test(original)) {
+    updated = original.includes('- `Docs / build`')
+      ? original.replace('- `Docs / build`', `${expectedBlock}\n- \`Docs / build\``)
+      : `${original.trimEnd()}\n\n${expectedBlock}\n`;
+  }
   writeOrExpect(path, original, updated);
 }
 

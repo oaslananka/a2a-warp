@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -72,10 +72,27 @@ describe('runtime version manifest checks', () => {
 
     await expect(execRuntimeCheck(workspace)).resolves.toBeDefined();
   });
+
+  it('writes missing branch protection docs compatibility contexts', async () => {
+    const workspace = await createRuntimeWorkspace({
+      branchProtectionContexts: ['CI / identity', 'Docs / build'],
+    });
+
+    await expect(execRuntimeCheck(workspace, ['--write'])).resolves.toBeDefined();
+
+    const doc = await readFile(join(workspace, 'docs/release/branch-protection.md'), 'utf8');
+    expect(doc).toContain(`- \`CI / identity\`
+- \`CI / compatibility-smoke (ubuntu-latest, node 22.22.3)\`
+- \`CI / compatibility-smoke (windows-latest, node 24.16.0)\`
+- \`CI / compatibility-smoke (macos-latest, node 24.16.0)\`
+- \`Docs / build\``);
+    await expect(execRuntimeCheck(workspace)).resolves.toBeDefined();
+  });
 });
 
 async function createRuntimeWorkspace(
   options: {
+    branchProtectionContexts?: string[];
     compatibilityRows?: Array<{ os: string; runner: string; node: string }>;
     compatibilityRowsYaml?: string;
     rulesetContexts?: string[];
@@ -94,6 +111,7 @@ async function createRuntimeWorkspace(
     'CI / compatibility-smoke (windows-latest, node 24.16.0)',
     'CI / compatibility-smoke (macos-latest, node 24.16.0)',
   ];
+  const branchProtectionContexts = options.branchProtectionContexts ?? rulesetContexts;
 
   await writeFixture(root, 'tools/runtime-versions.json', `${JSON.stringify(manifest, null, 2)}\n`);
   await writeFixture(root, '.node-version', `${manifest.node}\n`);
@@ -130,14 +148,14 @@ async function createRuntimeWorkspace(
   await writeFixture(
     root,
     'docs/release/branch-protection.md',
-    branchProtectionDoc(rulesetContexts),
+    branchProtectionDoc(branchProtectionContexts),
   );
 
   return root;
 }
 
-async function execRuntimeCheck(cwd: string) {
-  return execFileAsync('node', [scriptPath], { cwd });
+async function execRuntimeCheck(cwd: string, args: string[] = []) {
+  return execFileAsync('node', [scriptPath, ...args], { cwd });
 }
 
 async function writeFixture(root: string, path: string, content: string): Promise<void> {
