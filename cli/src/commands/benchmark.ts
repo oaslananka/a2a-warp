@@ -2,6 +2,21 @@ import { Command } from 'commander';
 import { emitResult, withSpinner, type RootOptionsProvider } from '../io.js';
 import { createCliMessage } from '../message.js';
 import { addNetworkOptions, createA2AClient, type NetworkCommandOptions } from '../network.js';
+import { applyCommandDoc, type CliCommandDoc } from './doc-metadata.js';
+
+export const benchmarkCommandDoc = {
+  path: ['benchmark'],
+  summary: 'Run request benchmarks against an A2A endpoint.',
+  description:
+    'Runs a local request benchmark against an A2A endpoint and reports request counts, failures, latency, and total duration.',
+  examples: [
+    {
+      title: 'Run a 25 request benchmark with five concurrent workers.',
+      bash: ['a2a-warp benchmark http://127.0.0.1:3000 --requests 25 --concurrency 5'],
+      powershell: ['a2a-warp benchmark http://127.0.0.1:3000 --requests 25 --concurrency 5'],
+    },
+  ],
+} satisfies CliCommandDoc;
 
 interface BenchmarkCommandOptions extends NetworkCommandOptions {
   requests: string;
@@ -58,7 +73,7 @@ async function benchmarkAgent(
 
 export function createBenchmarkCommand(getOptions: RootOptionsProvider): Command {
   return addNetworkOptions(
-    new Command('benchmark')
+    applyCommandDoc(new Command('benchmark'), benchmarkCommandDoc)
       .argument('<url>')
       .option('--requests <count>', 'Number of requests to send', '25')
       .option('--concurrency <count>', 'Number of concurrent workers', '5')

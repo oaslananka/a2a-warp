@@ -17,6 +17,39 @@ import {
 } from '../io.js';
 import { addNetworkOptions, createA2AClient, type NetworkCommandOptions } from '../network.js';
 import { CLI_VERSION } from '../version.js';
+import { applyCommandDoc, type CliCommandDoc } from './doc-metadata.js';
+
+export const conformanceCommandDoc = {
+  path: ['conformance'],
+  summary: 'Run the A2A conformance fixture suite.',
+  description:
+    'Runs the A2A conformance fixture suite against an endpoint, emits a machine-readable report, and can write JUnit XML for CI systems.',
+  examples: [
+    {
+      title: 'Run conformance fixtures and emit JSON.',
+      bash: ['a2a-warp conformance http://127.0.0.1:3000 --protocol-version 1.2 --json'],
+      powershell: ['a2a-warp conformance http://127.0.0.1:3000 --protocol-version 1.2 --json'],
+    },
+    {
+      title: 'Write a JUnit report.',
+      bash: ['a2a-warp conformance http://127.0.0.1:3000 --junit ./reports/a2a-conformance.xml'],
+      powershell: [
+        'a2a-warp conformance http://127.0.0.1:3000 --junit .\\reports\\a2a-conformance.xml',
+      ],
+    },
+  ],
+  additionalMarkdown: [
+    '## Report Behavior',
+    '',
+    '`--json` emits a stable conformance report with package metadata, endpoint capability metadata, pass/fail/skip counts, case results, and skipped optional capabilities.',
+    '',
+    'Case `status` is one of `pass`, `fail`, or `skip`. Required failures increment `summary.requiredFailed` and make the command return a nonzero exit code.',
+    '',
+    '## JUnit Output',
+    '',
+    'Use `--junit <path>` to write CI-compatible JUnit XML. The XML includes one `<testcase>` per report case, `<failure>` entries for failed cases, and `<skipped>` entries for skipped optional capabilities.',
+  ].join('\n'),
+} satisfies CliCommandDoc;
 
 interface ConformanceCommandOptions extends NetworkCommandOptions {
   protocolVersion?: string;
@@ -98,7 +131,7 @@ function mergeCliOptions(
 
 export function createConformanceCommand(getOptions: RootOptionsProvider): Command {
   const command = addNetworkOptions(
-    new Command('conformance')
+    applyCommandDoc(new Command('conformance'), conformanceCommandDoc)
       .argument('<url>')
       .option('--protocol-version <version>', 'Protocol fixture version to run: 1.0 or 1.2', '1.2')
       .option('--json', 'Machine-readable JSON output')

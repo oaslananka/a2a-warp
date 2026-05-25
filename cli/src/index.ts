@@ -18,6 +18,8 @@ import { createValidateCommand } from './commands/validate.js';
 import { writeError, type CliOptions } from './io.js';
 import { CLI_VERSION } from './version.js';
 
+export { cliCommandDocs, commandDocKey, type CliCommandDoc } from './commands/docs.js';
+
 export function createProgram(): Command {
   const program = new Command();
   const getOptions = (): CliOptions => program.opts<CliOptions>();

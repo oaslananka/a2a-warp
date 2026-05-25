@@ -2,6 +2,25 @@ import { Command } from 'commander';
 import { emitResult, withSpinner, type CliOptions, type RootOptionsProvider } from '../io.js';
 import { createCliMessage } from '../message.js';
 import { addNetworkOptions, createA2AClient, type NetworkCommandOptions } from '../network.js';
+import { applyCommandDoc, type CliCommandDoc } from './doc-metadata.js';
+
+export const sendCommandDoc = {
+  path: ['send'],
+  summary: 'Send a text message to an A2A endpoint.',
+  description: 'Sends a text message to an A2A endpoint and emits the resulting task response.',
+  examples: [
+    {
+      title: 'Send a text message.',
+      bash: ['a2a-warp send http://127.0.0.1:3000 "hello"'],
+      powershell: ['a2a-warp send http://127.0.0.1:3000 "hello"'],
+    },
+    {
+      title: 'Send with bearer authentication.',
+      bash: ['a2a-warp send http://127.0.0.1:3000 "hello" --bearer-token "$A2A_TOKEN"'],
+      powershell: ['a2a-warp send http://127.0.0.1:3000 "hello" --bearer-token $env:A2A_TOKEN'],
+    },
+  ],
+} satisfies CliCommandDoc;
 
 async function sendMessageToAgent(
   url: string,
@@ -18,7 +37,7 @@ async function sendMessageToAgent(
 
 export function createSendCommand(getOptions: RootOptionsProvider): Command {
   return addNetworkOptions(
-    new Command('send')
+    applyCommandDoc(new Command('send'), sendCommandDoc)
       .argument('<url>')
       .argument('<message>')
       .action(async (url: string, message: string, commandOptions: NetworkCommandOptions) => {

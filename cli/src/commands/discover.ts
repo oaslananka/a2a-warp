@@ -2,6 +2,30 @@ import { Command } from 'commander';
 import { type AgentSkill } from '@oaslananka/a2a-warp';
 import { emitResult, withSpinner, type RootOptionsProvider } from '../io.js';
 import { addNetworkOptions, createA2AClient, type NetworkCommandOptions } from '../network.js';
+import { applyCommandDoc, type CliCommandDoc } from './doc-metadata.js';
+
+export const discoverCommandDoc = {
+  path: ['discover'],
+  summary: 'Resolve and print an endpoint Agent Card.',
+  description:
+    'Discovers an A2A endpoint Agent Card and prints human-readable details or machine-readable JSON.',
+  examples: [
+    {
+      title: 'Discover an Agent Card.',
+      bash: ['a2a-warp discover http://127.0.0.1:3000'],
+      powershell: ['a2a-warp discover http://127.0.0.1:3000'],
+    },
+    {
+      title: 'Discover with tenant and request headers.',
+      bash: [
+        'a2a-warp discover http://127.0.0.1:3000 --header "x-tenant:demo" --request-id "req-1"',
+      ],
+      powershell: [
+        'a2a-warp discover http://127.0.0.1:3000 --header "x-tenant:demo" --request-id "req-1"',
+      ],
+    },
+  ],
+} satisfies CliCommandDoc;
 
 export async function discoverAgent(
   url: string,
@@ -29,15 +53,15 @@ export async function discoverAgent(
 }
 
 export function createDiscoverCommand(getOptions: RootOptionsProvider): Command {
-  return addNetworkOptions(new Command('discover').argument('<url>')).action(
-    async (url: string, commandOptions: NetworkCommandOptions) => {
-      const options = getOptions();
-      const card = await withSpinner(`Discovering ${url}`, options, () =>
-        discoverAgent(url, options, commandOptions),
-      );
-      if (options.json) {
-        emitResult(card, options);
-      }
-    },
-  );
+  return addNetworkOptions(
+    applyCommandDoc(new Command('discover'), discoverCommandDoc).argument('<url>'),
+  ).action(async (url: string, commandOptions: NetworkCommandOptions) => {
+    const options = getOptions();
+    const card = await withSpinner(`Discovering ${url}`, options, () =>
+      discoverAgent(url, options, commandOptions),
+    );
+    if (options.json) {
+      emitResult(card, options);
+    }
+  });
 }

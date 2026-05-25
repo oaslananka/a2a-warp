@@ -8,6 +8,12 @@ describe('task command', () => {
 
     expect(command.name()).toBe('task');
     expect(commandNames(command)).toEqual(['send', 'stream', 'status', 'cancel']);
-    expectCommandHelp(command, ['Task lifecycle commands', 'send', 'stream', 'status', 'cancel']);
+    expectCommandHelp(command, [
+      'Runs task lifecycle operations including',
+      'send',
+      'stream',
+      'status',
+      'cancel',
+    ]);
   });
 });
