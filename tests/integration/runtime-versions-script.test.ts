@@ -19,6 +19,8 @@ const manifest = {
   npmForPublish: '11.15.0',
 };
 
+type RulesetEntry = { context: string; integration_id?: number };
+
 describe('runtime version manifest checks', () => {
   afterEach(async () => {
     await Promise.all(
@@ -88,14 +90,134 @@ describe('runtime version manifest checks', () => {
 - \`Docs / build\``);
     await expect(execRuntimeCheck(workspace)).resolves.toBeDefined();
   });
+
+  it('accepts compatibility include rows that start with an auxiliary key', async () => {
+    const workspace = await createRuntimeWorkspace({
+      compatibilityRowsYaml: `          - label: minimum
+            node: '22.22.3'
+            runner: ubuntu-latest
+            os: ubuntu-latest
+          - label: windows-primary
+            runner: windows-2025-vs2026
+            node: '24.16.0'
+            os: windows-latest
+          - label: macos-primary
+            os: macos-latest
+            node: '24.16.0'
+            runner: macos-latest`,
+    });
+
+    await expect(execRuntimeCheck(workspace)).resolves.toBeDefined();
+  });
+
+  it('stops compatibility parsing before matrix exclude rows', async () => {
+    const workspace = await createRuntimeWorkspace({
+      compatibilityRowsYaml: `          - os: ubuntu-latest
+            runner: ubuntu-latest
+            node: '22.22.3'
+          - os: windows-latest
+            runner: windows-2025-vs2026
+            node: '24.16.0'
+          - os: macos-latest
+            runner: macos-latest
+            node: '24.16.0'
+        exclude:
+          - os: ubuntu-latest
+            node: '24.16.0'`,
+    });
+
+    await expect(execRuntimeCheck(workspace)).resolves.toBeDefined();
+  });
+
+  it('stops compatibility parsing at commented next-job headers', async () => {
+    const workspace = await createRuntimeWorkspace({
+      ciWorkflowSuffix: `
+  lint: # code quality
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            node: '24.16.0'
+`,
+    });
+
+    await expect(execRuntimeCheck(workspace)).resolves.toBeDefined();
+  });
+
+  it('does not rewrite dependent contexts when matrix parsing fails in write mode', async () => {
+    const workspace = await createRuntimeWorkspace({
+      compatibilityRowsYaml: `          - os: ubuntu-latest
+            node: '22.22.3'`,
+    });
+    const rulesetPath = join(workspace, '.github/rulesets/main.json');
+    const docPath = join(workspace, 'docs/release/branch-protection.md');
+    const rulesetBefore = await readFile(rulesetPath, 'utf8');
+    const docBefore = await readFile(docPath, 'utf8');
+
+    await expect(execRuntimeCheck(workspace, ['--write'])).rejects.toMatchObject({
+      stderr: expect.stringContaining('compatibility matrix row missing runner'),
+    });
+
+    await expect(readFile(rulesetPath, 'utf8')).resolves.toBe(rulesetBefore);
+    await expect(readFile(docPath, 'utf8')).resolves.toBe(docBefore);
+  });
+
+  it('preserves ruleset integration IDs when writing compatibility contexts', async () => {
+    const workspace = await createRuntimeWorkspace({
+      branchProtectionContexts: [
+        'CI / compatibility-smoke (ubuntu-latest, node 22.22.1)',
+        'CI / compatibility-smoke (windows-latest, node 24.15.0)',
+        'CI / compatibility-smoke (macos-latest, node 24.15.0)',
+      ],
+      rulesetContexts: [
+        {
+          context: 'CI / compatibility-smoke (ubuntu-latest, node 22.22.1)',
+          integration_id: 15368,
+        },
+        {
+          context: 'CI / compatibility-smoke (windows-latest, node 24.15.0)',
+          integration_id: 15368,
+        },
+        {
+          context: 'CI / compatibility-smoke (macos-latest, node 24.15.0)',
+          integration_id: 15368,
+        },
+      ],
+    });
+
+    await expect(execRuntimeCheck(workspace, ['--write'])).resolves.toBeDefined();
+
+    const rulesetJson = JSON.parse(
+      await readFile(join(workspace, '.github/rulesets/main.json'), 'utf8'),
+    );
+    const statusRule = rulesetJson.rules.find(
+      (rule: { type: string }) => rule.type === 'required_status_checks',
+    );
+    expect(statusRule.parameters.required_status_checks).toEqual([
+      {
+        context: 'CI / compatibility-smoke (ubuntu-latest, node 22.22.3)',
+        integration_id: 15368,
+      },
+      {
+        context: 'CI / compatibility-smoke (windows-latest, node 24.16.0)',
+        integration_id: 15368,
+      },
+      {
+        context: 'CI / compatibility-smoke (macos-latest, node 24.16.0)',
+        integration_id: 15368,
+      },
+    ]);
+    await expect(execRuntimeCheck(workspace)).resolves.toBeDefined();
+  });
 });
 
 async function createRuntimeWorkspace(
   options: {
     branchProtectionContexts?: string[];
+    ciWorkflowSuffix?: string;
     compatibilityRows?: Array<{ os: string; runner: string; node: string }>;
     compatibilityRowsYaml?: string;
-    rulesetContexts?: string[];
+    rulesetContexts?: Array<string | RulesetEntry>;
   } = {},
 ): Promise<string> {
   const root = await mkdtemp(join(tmpdir(), 'a2a-runtime-versions-'));
@@ -106,12 +228,13 @@ async function createRuntimeWorkspace(
     { os: 'windows-latest', runner: 'windows-2025-vs2026', node: '24.16.0' },
     { os: 'macos-latest', runner: 'macos-latest', node: '24.16.0' },
   ];
-  const rulesetContexts = options.rulesetContexts ?? [
+  const defaultCompatibilityContexts = [
     'CI / compatibility-smoke (ubuntu-latest, node 22.22.3)',
     'CI / compatibility-smoke (windows-latest, node 24.16.0)',
     'CI / compatibility-smoke (macos-latest, node 24.16.0)',
   ];
-  const branchProtectionContexts = options.branchProtectionContexts ?? rulesetContexts;
+  const rulesetContexts = options.rulesetContexts ?? defaultCompatibilityContexts;
+  const branchProtectionContexts = options.branchProtectionContexts ?? defaultCompatibilityContexts;
 
   await writeFixture(root, 'tools/runtime-versions.json', `${JSON.stringify(manifest, null, 2)}\n`);
   await writeFixture(root, '.node-version', `${manifest.node}\n`);
@@ -138,7 +261,7 @@ async function createRuntimeWorkspace(
   await writeFixture(
     root,
     '.github/workflows/ci.yml',
-    ciWorkflow(compatibilityRows, options.compatibilityRowsYaml),
+    ciWorkflow(compatibilityRows, options.compatibilityRowsYaml, options.ciWorkflowSuffix),
   );
   for (const workflow of ['docs.yml', 'release-please.yml', 'security.yml']) {
     await writeFixture(root, `.github/workflows/${workflow}`, workflowWithNodeEnv());
@@ -167,6 +290,7 @@ async function writeFixture(root: string, path: string, content: string): Promis
 function ciWorkflow(
   rows: Array<{ os: string; runner: string; node: string }>,
   matrixRowsOverride?: string,
+  suffix = '',
 ): string {
   const matrixRows =
     matrixRowsOverride ??
@@ -191,6 +315,7 @@ jobs:
       matrix:
         include:
 ${matrixRows}
+${suffix}
 `;
 }
 
@@ -211,7 +336,7 @@ env:
 `;
 }
 
-function ruleset(contexts: string[]): string {
+function ruleset(contexts: Array<string | RulesetEntry>): string {
   return `${JSON.stringify(
     {
       name: 'main-protection',
@@ -219,7 +344,9 @@ function ruleset(contexts: string[]): string {
         {
           type: 'required_status_checks',
           parameters: {
-            required_status_checks: contexts.map((context) => ({ context })),
+            required_status_checks: contexts.map((entry) =>
+              typeof entry === 'string' ? { context: entry } : entry,
+            ),
           },
         },
       ],

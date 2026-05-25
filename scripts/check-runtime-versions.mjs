@@ -5,6 +5,7 @@ const write = process.argv.includes('--write');
 const manifestPath = 'tools/runtime-versions.json';
 const semverPattern = /^\d+\.\d+\.\d+$/;
 const compatibilityContextPrefix = 'CI / compatibility-smoke (';
+const compatibilityMatrixKeys = new Set(['os', 'runner', 'node']);
 const failures = [];
 
 function readRuntimeManifest() {
@@ -120,49 +121,81 @@ function completeCompatibilityRow(row, path) {
   return row;
 }
 
+function lineIndent(line) {
+  return /^\s*/.exec(line)?.[0].length ?? 0;
+}
+
 function readCompatibilityMatrix(path) {
   const rows = [];
   let inCompatibilityJob = false;
   let inInclude = false;
+  let includeIndent;
   let current;
 
+  const completeCurrent = () => {
+    const completed = completeCompatibilityRow(current, path);
+    if (completed) rows.push(completed);
+    current = undefined;
+  };
+
   for (const line of readText(path).split(/\r?\n/)) {
-    if (/^  compatibility-smoke:\s*$/.test(line)) {
+    if (/^  compatibility-smoke:\s*(?:#.*)?$/.test(line)) {
       inCompatibilityJob = true;
       continue;
     }
-    if (inCompatibilityJob && /^  [A-Za-z0-9_-]+:\s*$/.test(line)) {
+    if (inCompatibilityJob && /^  [A-Za-z0-9_-]+:\s*(?:#.*)?$/.test(line)) {
+      completeCurrent();
       break;
     }
     if (!inCompatibilityJob) continue;
-    if (/^\s+include:\s*$/.test(line)) {
+
+    const includeMatch = /^(\s+)include:\s*(?:#.*)?$/.exec(line);
+    if (includeMatch) {
       inInclude = true;
+      includeIndent = includeMatch[1].length;
       continue;
     }
     if (!inInclude) continue;
 
-    const itemMatch = /^\s+-\s+(os|runner|node):\s*(.+?)\s*$/.exec(line);
-    if (itemMatch) {
-      const completed = completeCompatibilityRow(current, path);
-      if (completed) rows.push(completed);
-      current = { [itemMatch[1]]: stripYamlScalar(itemMatch[2]) };
+    if (
+      includeIndent !== undefined &&
+      line.trim() !== '' &&
+      lineIndent(line) <= includeIndent &&
+      /^\s*[A-Za-z0-9_-]+:\s*(?:#.*)?$/.test(line)
+    ) {
+      completeCurrent();
+      inInclude = false;
+      includeIndent = undefined;
       continue;
     }
 
-    const keyMatch = /^\s+(os|runner|node):\s*(.+?)\s*$/.exec(line);
-    if (keyMatch && current) {
+    const itemMatch = /^\s+-\s+([A-Za-z0-9_-]+):\s*(.*?)\s*$/.exec(line);
+    if (itemMatch) {
+      completeCurrent();
+      current = {};
+      if (compatibilityMatrixKeys.has(itemMatch[1])) {
+        current[itemMatch[1]] = stripYamlScalar(itemMatch[2]);
+      }
+      continue;
+    }
+
+    const keyMatch = /^\s+([A-Za-z0-9_-]+):\s*(.*?)\s*$/.exec(line);
+    if (keyMatch && current && compatibilityMatrixKeys.has(keyMatch[1])) {
       current[keyMatch[1]] = stripYamlScalar(keyMatch[2]);
     }
   }
 
-  const completed = completeCompatibilityRow(current, path);
-  if (completed) rows.push(completed);
+  completeCurrent();
   if (rows.length === 0) failures.push(`${path}: compatibility matrix include rows not found`);
   return rows;
 }
 
 function compatibilityContext(row) {
   return `CI / compatibility-smoke (${row.os}, node ${row.node})`;
+}
+
+function compatibilityContextOs(context) {
+  return /^CI \/ compatibility-smoke \(([^,]+), node [^)]+\)$/.exec(context)?.[1];
 }
 
 function readRulesetCompatibilityContexts(path) {
@@ -196,7 +229,20 @@ function syncRulesetCompatibilityContexts(path, expectedContexts) {
   const nonCompatibilityContexts = contexts.filter(
     (entry) => !entry?.context?.startsWith(compatibilityContextPrefix),
   );
-  const compatibilityContexts = expectedContexts.map((context) => ({ context }));
+  const existingCompatibilityContexts = contexts.filter((entry) =>
+    entry?.context?.startsWith(compatibilityContextPrefix),
+  );
+  const existingCompatibilityByOs = new Map();
+  for (const entry of existingCompatibilityContexts) {
+    const os = compatibilityContextOs(entry.context);
+    if (os && !existingCompatibilityByOs.has(os)) existingCompatibilityByOs.set(os, entry);
+  }
+  const compatibilityContexts = expectedContexts.map((context, index) => {
+    const os = compatibilityContextOs(context);
+    const source =
+      (os && existingCompatibilityByOs.get(os)) ?? existingCompatibilityContexts[index] ?? {};
+    return { ...source, context };
+  });
   const insertAt =
     firstCompatibilityIndex === -1 ? nonCompatibilityContexts.length : firstCompatibilityIndex;
   const updatedContexts = [
@@ -301,14 +347,17 @@ if (failures.length === 0) {
     syncWorkflowEnv(path, manifest);
   }
   syncScaffoldPackageManager(manifest);
+  const failuresBeforeMatrixRead = failures.length;
   const compatibilityRows = readCompatibilityMatrix('.github/workflows/ci.yml');
-  const expectedCompatibilityContexts = compatibilityRows.map(compatibilityContext);
-  syncRulesetCompatibilityContexts('.github/rulesets/main.json', expectedCompatibilityContexts);
-  syncBranchProtectionCompatibilityContexts(
-    'docs/release/branch-protection.md',
-    expectedCompatibilityContexts,
-  );
-  validateCompatibilityConfiguration(manifest, compatibilityRows, expectedCompatibilityContexts);
+  if (failures.length === failuresBeforeMatrixRead) {
+    const expectedCompatibilityContexts = compatibilityRows.map(compatibilityContext);
+    syncRulesetCompatibilityContexts('.github/rulesets/main.json', expectedCompatibilityContexts);
+    syncBranchProtectionCompatibilityContexts(
+      'docs/release/branch-protection.md',
+      expectedCompatibilityContexts,
+    );
+    validateCompatibilityConfiguration(manifest, compatibilityRows, expectedCompatibilityContexts);
+  }
 }
 
 if (failures.length > 0) fail('Runtime version check failed.', failures);
