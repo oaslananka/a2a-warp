@@ -56,10 +56,16 @@ describe('network command option surface', () => {
     }
 
     const registryList = registryCommand.commands.find((command) => command.name() === 'list');
+    const registryExport = registryCommand.commands.find((command) => command.name() === 'export');
+    const registryImport = registryCommand.commands.find((command) => command.name() === 'import');
     const registryStart = registryCommand.commands.find((command) => command.name() === 'start');
     expect(registryList).toBeDefined();
+    expect(registryExport).toBeDefined();
+    expect(registryImport).toBeDefined();
     expect(registryStart).toBeDefined();
     expectCommandHelp(registryList!, sharedOptionSnippets);
+    expectCommandHelp(registryExport!, sharedOptionSnippets);
+    expectCommandHelp(registryImport!, sharedOptionSnippets);
     expect(registryStart!.helpInformation()).not.toContain('--bearer-token');
   });
 

@@ -1,6 +1,15 @@
 import { randomUUID } from 'node:crypto';
 import type { Express, Request, Response } from 'express';
-import { logger, normalizeAgentCard, validateUrl, type AgentCard } from '@oaslananka/a2a-warp';
+import {
+  logger,
+  normalizeAgentCard,
+  REGISTRY_EXPORT_SCHEMA_ID,
+  RegistryExportDocumentSchema,
+  validateUrl,
+  type AgentCard,
+  type RegistryExportDocument,
+  type RequestContext,
+} from '@oaslananka/a2a-warp';
 import type { RegisteredAgent } from '../storage/IAgentStorage.js';
 import type { RegistryAuthController } from './auth.js';
 import type { RegistryMetricsController } from './metrics.js';
@@ -20,6 +29,13 @@ export interface RegistryRouteControllers {
   polling: Pick<RegistryPollingController, 'refreshTaskSnapshots'>;
   sse: RegistrySseController;
   taskProjection: RegistryTaskProjectionController;
+}
+
+interface RegistryImportResult {
+  imported: number;
+  updated: number;
+  skipped: number;
+  total: number;
 }
 
 export function registerRegistryRoutes(
@@ -159,6 +175,61 @@ export function registerRegistryRoutes(
         ? auth.filterAgentsByContext(result.items, requestContext)
         : result.items,
     );
+  });
+
+  app.get('/admin/agents/export', async (req, res) => {
+    const requestContext = await auth.authenticateControlPlane(req, res);
+    if (!requestContext) {
+      return;
+    }
+
+    const result = await context.store.list({
+      ...(requestContext.tenantId
+        ? { tenantId: requestContext.tenantId, includePublic: true }
+        : {}),
+      limit: Number.MAX_SAFE_INTEGER,
+    });
+    const agents = auth.shouldEnforceTenantIsolation(requestContext)
+      ? auth.filterAgentsByContext(result.items, requestContext)
+      : result.items;
+
+    res.json(createRegistryExportDocument(agents));
+  });
+
+  app.post('/admin/agents/import', async (req, res) => {
+    const requestContext = await auth.authenticateControlPlane(req, res);
+    if (!requestContext) {
+      return;
+    }
+
+    const parsed = RegistryExportDocumentSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({
+        error: 'Invalid registry export document',
+        issues: parsed.error.issues.map((issue) => ({
+          path: issue.path.join('.'),
+          message: issue.message,
+        })),
+      });
+      return;
+    }
+
+    for (const agent of parsed.data.agents) {
+      try {
+        await validateUrl(
+          agent.url,
+          createRegistryOutboundPolicy(context, {
+            telemetryLabels: { 'a2a.registry.operation': 'import' },
+          }),
+        );
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        res.status(400).json({ error: `Invalid agentUrl: ${message}` });
+        return;
+      }
+    }
+
+    res.json(await importRegistryDocument(parsed.data, context, requestContext));
   });
 
   app.get('/tasks/recent', async (req, res) => {
@@ -360,6 +431,118 @@ function routeParam(value: string | string[] | undefined): string | undefined {
 
 function emitRegistryEvent(context: RegistryServerContext, payload: unknown): void {
   context.events.emit('registry_update', payload);
+}
+
+function createRegistryExportDocument(agents: RegisteredAgent[]): RegistryExportDocument {
+  return {
+    $schema: REGISTRY_EXPORT_SCHEMA_ID,
+    schemaVersion: '1',
+    exportedAt: new Date().toISOString(),
+    agents,
+    metadata: {
+      source: 'a2a-warp-registry',
+      agentCount: agents.length,
+      tenants: uniqueSortedStrings(agents.map((agent) => agent.tenantId)),
+      publicAgents: agents.filter((agent) => agent.isPublic === true).length,
+    },
+  };
+}
+
+async function importRegistryDocument(
+  document: RegistryExportDocument,
+  context: RegistryServerContext,
+  requestContext: RequestContext,
+): Promise<RegistryImportResult> {
+  const agentsByUrl = new Map((await context.store.getAll()).map((agent) => [agent.url, agent]));
+  const result: RegistryImportResult = {
+    imported: 0,
+    updated: 0,
+    skipped: 0,
+    total: document.agents.length,
+  };
+
+  for (const agent of document.agents) {
+    const existingById = await context.store.get(agent.id);
+    const existing = existingById ?? agentsByUrl.get(agent.url) ?? null;
+    const importedAgent = normalizeImportedAgent(
+      agent,
+      existing?.id ?? agent.id,
+      requestContext.tenantId,
+    );
+
+    if (!existing) {
+      await context.store.upsert(importedAgent);
+      agentsByUrl.set(importedAgent.url, importedAgent);
+      result.imported += 1;
+      emitRegistryEvent(context, { type: 'imported', agent: importedAgent });
+      continue;
+    }
+
+    if (areRegisteredAgentsEqual(existing, importedAgent)) {
+      result.skipped += 1;
+      continue;
+    }
+
+    await context.store.upsert(importedAgent);
+    agentsByUrl.set(importedAgent.url, importedAgent);
+    result.updated += 1;
+    emitRegistryEvent(context, { type: 'updated', agent: importedAgent });
+  }
+
+  return result;
+}
+
+function normalizeImportedAgent(
+  agent: RegistryExportDocument['agents'][number],
+  id: string,
+  requestTenantId: string | undefined,
+): RegisteredAgent {
+  const card = normalizeAgentCard(agent.card as AgentCard);
+  const tenantId = requestTenantId ?? agent.tenantId;
+
+  return {
+    id,
+    url: agent.url,
+    card,
+    status: agent.status,
+    tags: createRegisteredAgentTags(card),
+    skills: createRegisteredAgentSkills(card),
+    registeredAt: agent.registeredAt,
+    ...(agent.lastHeartbeatAt ? { lastHeartbeatAt: agent.lastHeartbeatAt } : {}),
+    ...(agent.consecutiveFailures !== undefined
+      ? { consecutiveFailures: agent.consecutiveFailures }
+      : {}),
+    ...(agent.lastSuccessAt ? { lastSuccessAt: agent.lastSuccessAt } : {}),
+    ...(tenantId ? { tenantId } : {}),
+    ...(typeof agent.isPublic === 'boolean' ? { isPublic: agent.isPublic } : {}),
+  };
+}
+
+function areRegisteredAgentsEqual(left: RegisteredAgent, right: RegisteredAgent): boolean {
+  return stableJson(left) === stableJson(right);
+}
+
+function stableJson(value: unknown): string {
+  return JSON.stringify(sortJson(value));
+}
+
+function sortJson(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(sortJson);
+  }
+  if (!value || typeof value !== 'object') {
+    return value;
+  }
+
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, entryValue]) => [key, sortJson(entryValue)]),
+  );
+}
+
+function uniqueSortedStrings(values: Array<string | undefined>): string[] {
+  return Array.from(new Set(values.filter((value): value is string => Boolean(value)))).sort();
 }
 
 function toRegisteredAgent(

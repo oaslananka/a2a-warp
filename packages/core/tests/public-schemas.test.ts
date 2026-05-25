@@ -5,7 +5,9 @@ import {
   ExtensibleArtifactSchema,
   JsonRpcEnvelopeSchema,
   MessageSchema,
+  REGISTRY_EXPORT_SCHEMA_ID,
   RegisteredAgentSchema,
+  RegistryExportDocumentSchema,
   RegistryTaskEventSchema,
   TaskSchema,
   publicJsonSchemaDefinitions,
@@ -62,6 +64,7 @@ describe('public protocol schemas', () => {
       'artifact.schema.json',
       'json-rpc.schema.json',
       'registry-agent.schema.json',
+      'registry-export.schema.json',
       'registry-task-event.schema.json',
     ]);
 
@@ -113,5 +116,31 @@ describe('public protocol schemas', () => {
         task,
       }).taskId,
     ).toBe('task-1');
+    expect(
+      RegistryExportDocumentSchema.parse({
+        $schema: REGISTRY_EXPORT_SCHEMA_ID,
+        schemaVersion: '1',
+        exportedAt: timestamp,
+        agents: [
+          {
+            id: 'agent-1',
+            url: 'https://agent.example.com/a2a',
+            card: agentCard,
+            status: 'healthy',
+            tags: ['planning'],
+            skills: ['Plan'],
+            registeredAt: timestamp,
+            tenantId: 'tenant-a',
+            isPublic: true,
+          },
+        ],
+        metadata: {
+          source: 'a2a-warp-registry',
+          agentCount: 1,
+          tenants: ['tenant-a'],
+          publicAgents: 1,
+        },
+      }).agents[0]?.id,
+    ).toBe('agent-1');
   });
 });

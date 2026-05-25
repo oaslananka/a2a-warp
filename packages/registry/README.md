@@ -2,6 +2,10 @@
 
 Registry server, discovery API, health polling, matching, and storage helpers.
 
+## Export And Import
+
+The registry control plane supports `GET /admin/agents/export` and `POST /admin/agents/import` for moving registered agent records between registries. Exported documents use `https://oaslananka.github.io/a2a-warp/schemas/registry-export.schema.json`; imports are idempotent when records match existing agents by `id` or `url`.
+
 ## Redis Storage
 
 `RedisStorage` accepts the original JSON key/value client shape:

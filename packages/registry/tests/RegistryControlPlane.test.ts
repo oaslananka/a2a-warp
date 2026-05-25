@@ -1,15 +1,19 @@
 import request from 'supertest';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { AgentCard, Task } from '@oaslananka/a2a-warp';
+import {
+  REGISTRY_EXPORT_SCHEMA_ID,
+  RegistryExportDocumentSchema,
+} from '../../core/src/schemas/public.js';
 import { RegistryServer } from '../src/RegistryServer.js';
 
-function createAgentCard(name: string): AgentCard {
+function createAgentCard(name: string, url = 'http://localhost:0'): AgentCard {
   return {
     protocolVersion: '1.0',
     name,
     description: `${name} description`,
     version: '1.0.0',
-    url: 'http://localhost:0',
+    url,
     capabilities: {
       streaming: true,
       pushNotifications: false,
@@ -80,6 +84,154 @@ function toUrl(input: RequestInfo | URL): string {
 describe('RegistryServer control plane endpoints', () => {
   afterEach(() => {
     vi.restoreAllMocks();
+  });
+
+  it('exports an empty registry as a versioned document that matches the public schema', async () => {
+    const server = new RegistryServer({ registrationToken: 'control-token' });
+
+    const response = await request(server.getExpressApp())
+      .get('/admin/agents/export')
+      .set('Authorization', 'Bearer control-token');
+
+    expect(response.status).toBe(200);
+    const document = RegistryExportDocumentSchema.parse(response.body);
+    expect(document).toMatchObject({
+      $schema: REGISTRY_EXPORT_SCHEMA_ID,
+      schemaVersion: '1',
+      agents: [],
+      metadata: {
+        source: 'a2a-warp-registry',
+        agentCount: 0,
+        tenants: [],
+        publicAgents: 0,
+      },
+    });
+  });
+
+  it('exports tenant-scoped private agents with public agents from other tenants', async () => {
+    const server = new RegistryServer({
+      allowUnresolvedHostnames: true,
+      registrationToken: 'control-token',
+    });
+    const app = server.getExpressApp();
+
+    await request(app)
+      .post('/admin/agents/register')
+      .set('Authorization', 'Bearer control-token')
+      .set('x-tenant-id', 'tenant-a')
+      .send({
+        agentUrl: 'https://tenant-a.example.com/a2a',
+        agentCard: createAgentCard('Tenant A Agent', 'https://tenant-a.example.com/a2a'),
+      })
+      .expect(201);
+    await request(app)
+      .post('/admin/agents/register')
+      .set('Authorization', 'Bearer control-token')
+      .set('x-tenant-id', 'tenant-b')
+      .send({
+        agentUrl: 'https://tenant-b.example.com/a2a',
+        agentCard: createAgentCard('Tenant B Agent', 'https://tenant-b.example.com/a2a'),
+      })
+      .expect(201);
+    await request(app)
+      .post('/admin/agents/register')
+      .set('Authorization', 'Bearer control-token')
+      .set('x-tenant-id', 'tenant-b')
+      .send({
+        agentUrl: 'https://public.example.com/a2a',
+        agentCard: createAgentCard('Public Agent', 'https://public.example.com/a2a'),
+        isPublic: true,
+      })
+      .expect(201);
+
+    const response = await request(app)
+      .get('/admin/agents/export')
+      .set('Authorization', 'Bearer control-token')
+      .set('x-tenant-id', 'tenant-a');
+
+    expect(response.status).toBe(200);
+    const document = RegistryExportDocumentSchema.parse(response.body);
+    expect(document.agents.map((agent) => agent.url).sort()).toEqual([
+      'https://public.example.com/a2a',
+      'https://tenant-a.example.com/a2a',
+    ]);
+    expect(document.metadata['agentCount']).toBe(2);
+    expect(document.metadata['tenants']).toEqual(['tenant-a', 'tenant-b']);
+    expect(document.metadata['publicAgents']).toBe(1);
+  });
+
+  it('imports registry documents idempotently by unchanged agent ids or urls', async () => {
+    const source = new RegistryServer({ allowUnresolvedHostnames: true });
+    const target = new RegistryServer({ allowUnresolvedHostnames: true });
+
+    await request(source.getExpressApp())
+      .post('/admin/agents/register')
+      .send({
+        agentUrl: 'https://alpha.example.com/a2a',
+        agentCard: createAgentCard('Alpha Agent', 'https://alpha.example.com/a2a'),
+      })
+      .expect(201);
+    await request(source.getExpressApp())
+      .post('/admin/agents/register')
+      .send({
+        agentUrl: 'https://beta.example.com/a2a',
+        agentCard: createAgentCard('Beta Agent', 'https://beta.example.com/a2a'),
+        tenantId: 'tenant-beta',
+        isPublic: true,
+      })
+      .expect(201);
+
+    const exportResponse = await request(source.getExpressApp())
+      .get('/admin/agents/export')
+      .expect(200);
+    const document = RegistryExportDocumentSchema.parse(exportResponse.body);
+
+    const firstImport = await request(target.getExpressApp())
+      .post('/admin/agents/import')
+      .send(document)
+      .expect(200);
+    expect(firstImport.body).toEqual({ imported: 2, updated: 0, skipped: 0, total: 2 });
+
+    const secondImport = await request(target.getExpressApp())
+      .post('/admin/agents/import')
+      .send(document)
+      .expect(200);
+    expect(secondImport.body).toEqual({ imported: 0, updated: 0, skipped: 2, total: 2 });
+
+    const urlOnlyDocument = {
+      ...document,
+      agents: document.agents.map((agent, index) => ({
+        ...agent,
+        id: `changed-id-${index}`,
+      })),
+    };
+    const urlImport = await request(target.getExpressApp())
+      .post('/admin/agents/import')
+      .send(urlOnlyDocument)
+      .expect(200);
+    expect(urlImport.body).toEqual({ imported: 0, updated: 0, skipped: 2, total: 2 });
+
+    const listed = await request(target.getExpressApp()).get('/agents').expect(200);
+    expect(listed.body).toHaveLength(2);
+  });
+
+  it('requires control-plane authorization for export and import when registry auth is enabled', async () => {
+    const server = new RegistryServer({ registrationToken: 'control-token' });
+    const document = {
+      $schema: REGISTRY_EXPORT_SCHEMA_ID,
+      schemaVersion: '1',
+      exportedAt: '2026-05-25T12:00:00.000Z',
+      agents: [],
+      metadata: {
+        source: 'a2a-warp-registry',
+        agentCount: 0,
+        tenants: [],
+        publicAgents: 0,
+      },
+    };
+
+    await request(server.getExpressApp()).get('/admin/agents/export').expect(401);
+    await request(server.getExpressApp()).post('/admin/agents/import').send(document).expect(401);
   });
 
   it('returns metrics summary with registration, search, heartbeat and tenant counts', async () => {

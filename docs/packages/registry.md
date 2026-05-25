@@ -2,6 +2,15 @@
 
 `@oaslananka/a2a-warp-registry` contains registry server, discovery, matching, and storage helpers.
 
+## Export And Import
+
+The registry exposes authenticated control-plane endpoints for backup and restore:
+
+- `GET /admin/agents/export`
+- `POST /admin/agents/import`
+
+Export responses use the versioned `registry-export.schema.json` document described in `docs/protocol/schemas.md`. Imports validate the document, preserve tenant/public metadata, and are idempotent when records match existing agents by `id` or `url`.
+
 ## Redis Indexes
 
 `RedisStorage` still accepts the original minimal client contract with `get`, `set`, and `del`. That path stores index members as JSON arrays and is intended for tests and simple fake clients.

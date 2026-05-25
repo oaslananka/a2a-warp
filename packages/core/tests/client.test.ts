@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { A2AClient } from '../src/client/A2AClient.js';
 import { AgentRegistryClient } from '../src/client/AgentRegistryClient.js';
 import { createAuthenticatingFetchWithRetry } from '../src/client/interceptors.js';
+import { REGISTRY_EXPORT_SCHEMA_ID, type RegistryExportDocument } from '../src/schemas/public.js';
 
 describe('A2AClient', () => {
   afterEach(() => {
@@ -263,6 +264,61 @@ describe('AgentRegistryClient', () => {
     expect(parsedUrl.searchParams.get('name')).toBe('agent');
   });
 
+  it('exports and imports versioned registry documents through admin endpoints', async () => {
+    const registryDocument: RegistryExportDocument = {
+      $schema: REGISTRY_EXPORT_SCHEMA_ID,
+      schemaVersion: '1',
+      exportedAt: '2026-05-25T12:00:00.000Z',
+      agents: [
+        {
+          id: 'agent-1',
+          url: 'https://agent.example.com/a2a',
+          card: {
+            protocolVersion: '1.0' as const,
+            name: 'Agent',
+            description: 'desc',
+            url: 'https://agent.example.com/a2a',
+            version: '1.0',
+          },
+          status: 'unknown' as const,
+          tags: [],
+          skills: [],
+          registeredAt: '2026-05-25T12:00:00.000Z',
+          tenantId: 'tenant-a',
+          isPublic: true,
+        },
+      ],
+      metadata: {
+        source: 'a2a-warp-registry',
+        agentCount: 1,
+        tenants: ['tenant-a'],
+        publicAgents: 1,
+      },
+    };
+    const importResult = { imported: 1, updated: 0, skipped: 0, total: 1 };
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(new Response(JSON.stringify(registryDocument), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify(importResult), { status: 200 }));
+
+    const client = new AgentRegistryClient('http://localhost:3099');
+
+    await expect(client.exportAgents()).resolves.toEqual(registryDocument);
+    await expect(client.importAgents(registryDocument)).resolves.toEqual(importResult);
+
+    const [exportInput, exportInit] = fetchSpy.mock.calls[0] ?? [];
+    expect(exportInput).toEqual(new URL('/admin/agents/export', 'http://localhost:3099'));
+    expect(exportInit).toBeUndefined();
+
+    const [importInput, importInit] = fetchSpy.mock.calls[1] ?? [];
+    expect(importInput).toEqual(new URL('/admin/agents/import', 'http://localhost:3099'));
+    expect(importInit).toMatchObject({
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(registryDocument),
+    });
+  });
+
   it('throws when registry endpoints fail', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(null, { status: 500 }));
 
@@ -294,6 +350,31 @@ describe('AgentRegistryClient', () => {
     await expect(client.sendHeartbeat('agent-1')).rejects.toThrow('Failed to send heartbeat (500)');
     await expect(client.health()).rejects.toThrow('Failed to fetch registry health (500)');
     expect(fetchSpy).toHaveBeenCalledTimes(5);
+  });
+
+  it('throws for failed export and import requests', async () => {
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(new Response(null, { status: 401 }))
+      .mockResolvedValueOnce(new Response(null, { status: 400 }));
+
+    const client = new AgentRegistryClient('http://localhost:3099');
+    await expect(client.exportAgents()).rejects.toThrow('Failed to export agents (401)');
+    await expect(
+      client.importAgents({
+        $schema: REGISTRY_EXPORT_SCHEMA_ID,
+        schemaVersion: '1',
+        exportedAt: '2026-05-25T12:00:00.000Z',
+        agents: [],
+        metadata: {
+          source: 'a2a-warp-registry',
+          agentCount: 0,
+          tenants: [],
+          publicAgents: 0,
+        },
+      }),
+    ).rejects.toThrow('Failed to import agents (400)');
+    expect(fetchSpy).toHaveBeenCalledTimes(2);
   });
 
   it('streams registry updates from an SSE endpoint and closes cleanly', async () => {
