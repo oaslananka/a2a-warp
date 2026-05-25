@@ -3,6 +3,7 @@
 import { randomUUID } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { Command } from 'commander';
 import chalk from 'chalk';
 import ora from 'ora';
@@ -423,7 +424,13 @@ function normalizeScriptArgv(argv: string[]): string[] {
   return [argv[0] ?? '', argv[1] ?? '', ...argv.slice(3)];
 }
 
-void program.parseAsync(normalizeScriptArgv(process.argv)).catch((error: unknown) => {
-  writeError(`CLI failed: ${String(error)}`);
-  process.exitCode = 1;
-});
+export async function runCli(argv: string[] = process.argv): Promise<void> {
+  await program.parseAsync(normalizeScriptArgv(argv)).catch((error: unknown) => {
+    writeError(`CLI failed: ${String(error)}`);
+    process.exitCode = 1;
+  });
+}
+
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  void runCli();
+}

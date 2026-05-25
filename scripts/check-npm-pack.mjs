@@ -1,23 +1,31 @@
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync } from 'node:fs';
-import { isAbsolute, join } from 'node:path';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { tmpdir } from 'node:os';
+import { isAbsolute, join, relative, resolve } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { gunzipSync } from 'node:zlib';
 import { getWorkspacePackages, fail } from './check-utils.mjs';
 
+const require = createRequire(import.meta.url);
 const failures = [];
 const pnpmExecPath = process.env.npm_execpath;
+const scriptPath = fileURLToPath(import.meta.url);
+
+function runCommand(file, args, options = {}) {
+  return execFileSync(file, args, {
+    encoding: 'utf8',
+    stdio: 'pipe',
+    ...options,
+  });
+}
 
 function runPnpm(args, options = {}) {
   if (pnpmExecPath) {
-    return execFileSync(process.execPath, [pnpmExecPath, ...args], {
-      encoding: 'utf8',
-      stdio: 'pipe',
-      ...options,
-    });
+    return runCommand(process.execPath, [pnpmExecPath, ...args], options);
   }
 
-  return execFileSync('pnpm', args, {
-    encoding: 'utf8',
-    stdio: 'pipe',
+  return runCommand('pnpm', args, {
     shell: process.platform === 'win32',
     ...options,
   });
@@ -26,23 +34,144 @@ function runPnpm(args, options = {}) {
 function formatError(error) {
   if (!(error instanceof Error)) return String(error);
   const status = 'status' in error ? ` status ${error.status ?? 'unknown'}` : '';
-  const stderr =
-    'stderr' in error && Buffer.isBuffer(error.stderr) ? error.stderr.toString('utf8').trim() : '';
-  return stderr ? `${error.message}${status}: ${stderr}` : `${error.message}${status}`;
+  const stdout = formatCommandOutput('stdout' in error ? error.stdout : undefined);
+  const stderr = formatCommandOutput('stderr' in error ? error.stderr : undefined);
+  const details = [stdout, stderr].filter(Boolean).join('\n');
+  return details ? `${error.message}${status}:\n${details}` : `${error.message}${status}`;
 }
 
-for (const entry of getWorkspacePackages().filter(
-  (entry) => entry.packageJson.private !== true && entry.path !== 'package.json',
-)) {
-  try {
-    const output = runPnpm(['--dir', entry.dir, 'pack', '--dry-run']);
-    if (!output.includes('package.json'))
-      failures.push(`${entry.dir}: dry-run output did not list package.json`);
-    if (/node_modules|coverage|test-results|\.env|\.tsbuildinfo/.test(output))
-      failures.push(`${entry.dir}: dry-run output includes forbidden artifact`);
-  } catch (error) {
-    failures.push(`${entry.dir}: pnpm pack --dry-run failed: ${formatError(error)}`);
+function formatCommandOutput(output) {
+  if (Buffer.isBuffer(output)) return output.toString('utf8').trim();
+  if (typeof output === 'string') return output.trim();
+  return '';
+}
+
+function normalizePath(path) {
+  return path.split('\\').join('/');
+}
+
+function quoteSpecifier(value) {
+  return `'${value.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
+}
+
+function isRunnableExportPath(exportPath) {
+  return exportPath === '.' || (exportPath.startsWith('./') && !exportPath.includes('*'));
+}
+
+export function listExportSpecifiers(packageJson) {
+  const exportMap = packageJson.exports;
+  if (!exportMap) return [packageJson.name];
+  if (typeof exportMap === 'string') return [packageJson.name];
+  if (!exportMap || typeof exportMap !== 'object' || Array.isArray(exportMap)) {
+    return [packageJson.name];
   }
+
+  const exportPaths = Object.keys(exportMap).filter(isRunnableExportPath).sort();
+  if (exportPaths.length === 0) return [packageJson.name];
+
+  return exportPaths.map((exportPath) =>
+    exportPath === '.' ? packageJson.name : `${packageJson.name}/${exportPath.slice(2)}`,
+  );
+}
+
+export function createImportSmokeSource(packages) {
+  const imports = [];
+  const body = ['const modules = [];'];
+  let index = 0;
+
+  for (const entry of packages) {
+    for (const specifier of listExportSpecifiers(entry.packageJson)) {
+      const binding = `module${index}`;
+      imports.push(`import * as ${binding} from ${quoteSpecifier(specifier)};`);
+      body.push(`modules.push(${binding});`);
+      index += 1;
+    }
+  }
+
+  body.push(`if (modules.length !== ${index}) {`);
+  body.push(
+    `  throw new Error('Expected ${index} package export imports, got ' + modules.length);`,
+  );
+  body.push('}');
+  body.push(
+    `console.log('Imported ' + modules.length + ' package exports from packed tarballs.');`,
+  );
+
+  return `${imports.join('\n')}\n\n${body.join('\n')}\n`;
+}
+
+export function createTypecheckSmokeSource(packages) {
+  const imports = [];
+  const body = ['const modules: unknown[] = [];'];
+  let index = 0;
+
+  for (const entry of packages) {
+    for (const specifier of listExportSpecifiers(entry.packageJson)) {
+      const binding = `module${index}`;
+      imports.push(`import * as ${binding} from ${quoteSpecifier(specifier)};`);
+      body.push(`modules.push(${binding});`);
+      index += 1;
+    }
+  }
+
+  body.push(`if (modules.length !== ${index}) {`);
+  body.push(
+    `  throw new Error('Expected ${index} package export imports, got ' + modules.length);`,
+  );
+  body.push('}');
+
+  return `${imports.join('\n')}\n\n${body.join('\n')}\n`;
+}
+
+function toFileDependency(relativeTarball) {
+  const normalized = normalizePath(relativeTarball);
+  const path = normalized.startsWith('.') ? normalized : `./${normalized}`;
+  return `file:${path}`;
+}
+
+export function createConsumerPackageJson(packages, options) {
+  const dependencies = Object.fromEntries(
+    packages.map((entry) => [entry.packageJson.name, toFileDependency(entry.relativeTarball)]),
+  );
+
+  return {
+    private: true,
+    type: 'module',
+    packageManager: options.packageManager,
+    dependencies,
+    devDependencies: {
+      typescript: options.typescriptVersion,
+    },
+  };
+}
+
+export function createConsumerWorkspaceYaml(packages) {
+  const lines = ['packages: []', 'overrides:'];
+  for (const entry of packages) {
+    lines.push(
+      `  ${JSON.stringify(entry.packageJson.name)}: ${JSON.stringify(toFileDependency(entry.relativeTarball))}`,
+    );
+  }
+  return `${lines.join('\n')}\n`;
+}
+
+function getBinEntries(packageJson) {
+  if (!packageJson.bin) return [];
+  if (typeof packageJson.bin === 'string') return [[packageJson.name, packageJson.bin]];
+  if (typeof packageJson.bin === 'object' && !Array.isArray(packageJson.bin)) {
+    return Object.entries(packageJson.bin);
+  }
+  return [];
+}
+
+export function getBinarySmokeCommand(_packageJson, binName) {
+  if (binName === 'a2a-warp') return ['doctor', '--json'];
+  return ['--help'];
+}
+
+function getBinaryPath(consumerDir, binName) {
+  const extension = process.platform === 'win32' ? '.cmd' : '';
+  return join(consumerDir, 'node_modules', '.bin', `${binName}${extension}`);
 }
 
 function parsePackFilename(output) {
@@ -58,43 +187,241 @@ function resolvePackFilename(filename, packDestination) {
   return isAbsolute(filename) ? filename : join(packDestination, filename);
 }
 
-function smokePackedCli() {
-  const tempDir = mkdtempSync(join(process.cwd(), 'cli', '.pack-smoke-'));
-  const extractDir = join(tempDir, 'extract');
-  mkdirSync(extractDir);
-
-  try {
-    const packOutput = runPnpm(['--dir', 'cli', 'pack', '--json', '--pack-destination', tempDir]);
-    const tarball = resolvePackFilename(parsePackFilename(packOutput), tempDir);
-    execFileSync('tar', ['-xzf', tarball, '-C', extractDir], {
-      encoding: 'utf8',
-      stdio: 'pipe',
-    });
-
-    const packageDir = join(extractDir, 'package');
-    const stdout = execFileSync(
-      process.execPath,
-      [join(packageDir, 'bin', 'a2a-warp.js'), 'doctor', '--json'],
-      {
-        cwd: packageDir,
-        encoding: 'utf8',
-        stdio: 'pipe',
-      },
-    );
-    const payload = JSON.parse(stdout);
-    if (payload.cli !== 'a2a-warp') {
-      failures.push(`cli: packed binary reported unexpected cli value ${String(payload.cli)}`);
-    }
-    if (typeof payload.version !== 'string' || payload.version.length === 0) {
-      failures.push('cli: packed binary did not report a version');
-    }
-  } catch (error) {
-    failures.push(`cli: packed binary smoke failed: ${formatError(error)}`);
-  } finally {
-    rmSync(tempDir, { recursive: true, force: true });
+function validateDryRunOutput(entry, output) {
+  if (!output.includes('package.json')) {
+    failures.push(`${entry.dir}: dry-run output did not list package.json`);
+  }
+  if (/node_modules|coverage|test-results|\.env|\.tsbuildinfo/.test(output)) {
+    failures.push(`${entry.dir}: dry-run output includes forbidden artifact`);
   }
 }
 
-smokePackedCli();
+function packPackage(entry, packDestination) {
+  const dryRunOutput = runPnpm(['--dir', entry.dir, 'pack', '--dry-run']);
+  validateDryRunOutput(entry, dryRunOutput);
 
-if (failures.length > 0) fail('npm pack dry-run validation failed.', failures);
+  const packOutput = runPnpm([
+    '--dir',
+    entry.dir,
+    'pack',
+    '--json',
+    '--pack-destination',
+    packDestination,
+  ]);
+  return resolvePackFilename(parsePackFilename(packOutput), packDestination);
+}
+
+function isAttwTarballExtractionBug(error) {
+  return formatError(error).includes("Cannot read properties of undefined (reading 'filename')");
+}
+
+let attwCoreModule;
+let attwCoreEntry;
+
+async function loadAttwCore() {
+  if (attwCoreModule) return attwCoreModule;
+  const attwRequire = createRequire(require.resolve('@arethetypeswrong/cli/package.json'));
+  attwCoreEntry = attwRequire.resolve('@arethetypeswrong/core');
+  attwCoreModule = await import(pathToFileURL(attwCoreEntry).href);
+  return attwCoreModule;
+}
+
+async function createAttwPackageFromTarball(tarball) {
+  const { Package } = await loadAttwCore();
+  const coreRequire = createRequire(attwCoreEntry);
+  const { untar } = coreRequire('@andrewbranch/untar.js');
+  const archive = untar(new Uint8Array(gunzipSync(readFileSync(tarball))));
+  const firstFile = archive[0];
+  if (!firstFile?.filename) {
+    throw new Error('attw fallback could not read tarball entries');
+  }
+
+  const prefix = firstFile.filename.slice(0, firstFile.filename.indexOf('/') + 1);
+  const packageJsonText = archive.find(
+    (file) => file.filename === `${prefix}package.json`,
+  )?.fileData;
+  if (!packageJsonText) {
+    throw new Error('attw fallback could not read package.json from tarball');
+  }
+
+  const packageJson = JSON.parse(new TextDecoder().decode(packageJsonText));
+  const files = archive.reduce((acc, file) => {
+    acc[`/node_modules/${packageJson.name}/${file.filename.slice(prefix.length)}`] = file.fileData;
+    return acc;
+  }, {});
+
+  return new Package(files, packageJson.name, packageJson.version);
+}
+
+function filterAttwProblemsForEsmOnly(analysis) {
+  if (!analysis.types) return [];
+  return analysis.problems.filter(
+    (problem) =>
+      !('resolutionKind' in problem) ||
+      (problem.resolutionKind !== 'node10' && problem.resolutionKind !== 'node16-cjs'),
+  );
+}
+
+function describeAttwProblem(problem) {
+  const entrypoint = 'entrypoint' in problem ? ` ${problem.entrypoint}` : '';
+  const resolution = 'resolutionKind' in problem ? ` ${problem.resolutionKind}` : '';
+  return `${problem.kind}${entrypoint}${resolution}`.trim();
+}
+
+async function runAttwFallback(tarball) {
+  const { checkPackage } = await loadAttwCore();
+  const pkg = await createAttwPackageFromTarball(tarball);
+  const analysis = await checkPackage(pkg);
+  const problems = filterAttwProblemsForEsmOnly(analysis);
+  if (problems.length > 0) {
+    throw new Error(
+      `attw fallback reported ${problems.length} problem(s): ${problems
+        .map(describeAttwProblem)
+        .join(', ')}`,
+    );
+  }
+}
+
+async function runPackageLinters(entry, tarball) {
+  try {
+    runPnpm(['exec', 'publint', 'run', tarball]);
+  } catch (error) {
+    failures.push(`${entry.dir}: publint failed: ${formatError(error)}`);
+  }
+
+  try {
+    runPnpm(['exec', 'attw', tarball, '--profile', 'esm-only', '--no-emoji', '--no-color']);
+  } catch (error) {
+    if (!isAttwTarballExtractionBug(error)) {
+      failures.push(`${entry.dir}: attw failed: ${formatError(error)}`);
+      return;
+    }
+
+    try {
+      await runAttwFallback(tarball);
+    } catch (fallbackError) {
+      failures.push(`${entry.dir}: attw fallback failed: ${formatError(fallbackError)}`);
+    }
+  }
+}
+
+function writeConsumerProject(consumerDir, packedPackages) {
+  const rootPackageJson = JSON.parse(readFileSync('package.json', 'utf8'));
+  const manifest = createConsumerPackageJson(packedPackages, {
+    packageManager: rootPackageJson.packageManager,
+    typescriptVersion: rootPackageJson.devDependencies.typescript,
+  });
+
+  writeFileSync(join(consumerDir, 'package.json'), `${JSON.stringify(manifest, null, 2)}\n`);
+  writeFileSync(
+    join(consumerDir, 'pnpm-workspace.yaml'),
+    createConsumerWorkspaceYaml(packedPackages),
+  );
+  writeFileSync(
+    join(consumerDir, 'tsconfig.json'),
+    `${JSON.stringify(
+      {
+        compilerOptions: {
+          target: 'ES2022',
+          module: 'NodeNext',
+          moduleResolution: 'NodeNext',
+          strict: true,
+          skipLibCheck: true,
+          noEmit: true,
+        },
+        include: ['smoke-types.ts'],
+      },
+      null,
+      2,
+    )}\n`,
+  );
+  writeFileSync(join(consumerDir, 'smoke-imports.mjs'), createImportSmokeSource(packedPackages));
+  writeFileSync(join(consumerDir, 'smoke-types.ts'), createTypecheckSmokeSource(packedPackages));
+}
+
+function installConsumerProject(consumerDir) {
+  runPnpm(['--dir', consumerDir, 'install', '--ignore-scripts']);
+}
+
+function smokeConsumerImports(consumerDir) {
+  runCommand(process.execPath, [join(consumerDir, 'smoke-imports.mjs')], {
+    cwd: consumerDir,
+  });
+}
+
+function typecheckConsumerProject(consumerDir) {
+  runPnpm(['--dir', consumerDir, 'exec', 'tsc', '--noEmit', '-p', 'tsconfig.json']);
+}
+
+function smokeConsumerBinaries(consumerDir, packages) {
+  for (const entry of packages) {
+    for (const [binName] of getBinEntries(entry.packageJson)) {
+      const args = getBinarySmokeCommand(entry.packageJson, binName);
+      const stdout = runCommand(getBinaryPath(consumerDir, binName), args, {
+        cwd: consumerDir,
+        env: {
+          ...process.env,
+          NO_COLOR: '1',
+        },
+      });
+
+      if (binName === 'a2a-warp') {
+        const payload = JSON.parse(stdout);
+        if (payload.cli !== 'a2a-warp') {
+          failures.push(`cli: packed binary reported unexpected cli value ${String(payload.cli)}`);
+        }
+        if (typeof payload.version !== 'string' || payload.version.length === 0) {
+          failures.push('cli: packed binary did not report a version');
+        }
+      }
+    }
+  }
+}
+
+export async function runNpmPackValidation() {
+  const publishablePackages = getWorkspacePackages().filter(
+    (entry) => entry.packageJson.private !== true && entry.path !== 'package.json',
+  );
+  const tempDir = mkdtempSync(join(tmpdir(), 'a2a-warp-pack-smoke-'));
+  const tarballDir = join(tempDir, 'tarballs');
+  const consumerDir = join(tempDir, 'consumer');
+  mkdirSync(tarballDir, { recursive: true });
+  mkdirSync(consumerDir, { recursive: true });
+
+  try {
+    const packedPackages = [];
+
+    for (const entry of publishablePackages) {
+      try {
+        const tarball = packPackage(entry, tarballDir);
+        packedPackages.push({
+          ...entry,
+          tarball,
+          relativeTarball: normalizePath(relative(consumerDir, tarball)),
+        });
+        await runPackageLinters(entry, tarball);
+      } catch (error) {
+        failures.push(`${entry.dir}: tarball validation failed: ${formatError(error)}`);
+      }
+    }
+
+    try {
+      writeConsumerProject(consumerDir, packedPackages);
+      installConsumerProject(consumerDir);
+      smokeConsumerImports(consumerDir);
+      typecheckConsumerProject(consumerDir);
+      smokeConsumerBinaries(consumerDir, packedPackages);
+    } catch (error) {
+      failures.push(`consumer: packed tarball install smoke failed: ${formatError(error)}`);
+    }
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+
+  return failures;
+}
+
+if (process.argv[1] && resolve(process.argv[1]) === scriptPath) {
+  const results = await runNpmPackValidation();
+  if (results.length > 0) fail('npm pack dry-run validation failed.', results);
+}
