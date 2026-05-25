@@ -64,6 +64,7 @@ export default tseslint.config(
       'docs-site/**/*.ts',
       'docs-site/**/*.mts',
       'scripts/**/*.mjs',
+      'tests/performance/k6/*.js',
       '**/bin/*.js',
     ],
   },

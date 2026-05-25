@@ -54,6 +54,8 @@
     "test:coverage": "pnpm run build && vitest run --project unit --coverage",
     "test:mutation": "stryker run",
     "test:e2e": "pnpm --dir apps/registry-ui run test:e2e",
+    "perf:smoke": "pnpm run build && node scripts/run-k6-performance.mjs --profile smoke",
+    "perf:load": "pnpm run build && node scripts/run-k6-performance.mjs --profile load",
     "ui:test:a11y": "pnpm --dir apps/registry-ui run test:a11y",
     "build": "pnpm -r --workspace-concurrency=1 --if-present run build",
     "pack:dry-run": "node scripts/check-npm-pack.mjs",

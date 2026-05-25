@@ -103,6 +103,22 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - run: pnpm run test:integration
 
+  performance-smoke:
+    name: CI / performance-smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - uses: grafana/setup-k6-action@db07bd9765aac508ef18982e52ab937fe633a065 # v1.2.1
+        with:
+          k6-version: '2.0.0'
+      - run: pnpm run perf:smoke
+
   conformance:
     name: CI / conformance
     runs-on: ubuntu-latest
