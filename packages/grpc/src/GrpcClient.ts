@@ -40,6 +40,7 @@ interface GrpcClientLike extends grpc.Client {
     request: SendMessageRequest,
     callback: (error: grpc.ServiceError | null, response: TaskResponse) => void,
   ): void;
+  StreamMessage(request: SendMessageRequest): grpc.ClientReadableStream<TaskResponse>;
   GetTask(
     request: TaskRequest,
     callback: (error: grpc.ServiceError | null, response: TaskResponse) => void,
@@ -95,6 +96,53 @@ export class GrpcClient {
     });
   }
 
+  async *streamMessage(messageText: string): AsyncGenerator<Task> {
+    const call = this.client.StreamMessage({ message_text: messageText });
+    const queue: Task[] = [];
+    let finished = false;
+    let streamError: Error | undefined;
+    let wake: (() => void) | undefined;
+
+    const notify = () => {
+      wake?.();
+      wake = undefined;
+    };
+
+    call.on('data', (response) => {
+      queue.push(JSON.parse(response.task_json) as Task);
+      notify();
+    });
+    call.on('error', (error) => {
+      streamError = error;
+      finished = true;
+      notify();
+    });
+    call.on('end', () => {
+      finished = true;
+      notify();
+    });
+
+    while (!finished || queue.length > 0) {
+      const task = queue.shift();
+      if (task) {
+        yield task;
+        continue;
+      }
+
+      if (streamError) {
+        throw streamError;
+      }
+
+      await new Promise<void>((resolve) => {
+        wake = resolve;
+      });
+    }
+
+    if (streamError) {
+      throw streamError;
+    }
+  }
+
   async getTask(taskId: string): Promise<Task | null> {
     return new Promise<Task | null>((resolve, reject) => {
       this.client.GetTask({ task_id: taskId }, (error, response) => {
@@ -117,5 +165,9 @@ export class GrpcClient {
         resolve(JSON.parse(response.task_json) as Task | null);
       });
     });
+  }
+
+  close(): void {
+    this.client.close();
   }
 }

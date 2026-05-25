@@ -27,7 +27,7 @@
   "scripts": {
     "build": "node ../../scripts/build-tsc-package.mjs",
     "typecheck": "tsc -b",
-    "test": "vitest run"
+    "test": "pnpm --dir ../.. run build && vitest run --root ../.. --config vitest.config.ts --project unit packages/grpc/tests"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.14.4",

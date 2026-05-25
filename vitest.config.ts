@@ -67,6 +67,16 @@ export default defineConfig({
       {
         extends: true,
         test: {
+          name: 'transport-contract',
+          include: ['tests/transport-contract/**/*.test.ts'],
+          fileParallelism: false,
+          testTimeout: 30000,
+          hookTimeout: 15000,
+        },
+      },
+      {
+        extends: true,
+        test: {
           name: 'conformance',
           include: ['tests/conformance/**/*.test.ts'],
           fileParallelism: false,

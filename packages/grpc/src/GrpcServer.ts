@@ -7,8 +7,15 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
-import { logger } from '@oaslananka/a2a-warp';
-import type { A2AServer, AgentCard, Message, Task, TaskManager } from '@oaslananka/a2a-warp';
+import { logger, TaskLifecycleError } from '@oaslananka/a2a-warp';
+import type {
+  A2AServer,
+  AgentCard,
+  Message,
+  Task,
+  TaskManager,
+  TaskUpdatedEvent,
+} from '@oaslananka/a2a-warp';
 
 const currentDirectory = dirname(fileURLToPath(import.meta.url));
 const PROTO_PATH = join(currentDirectory, '../proto/a2a.proto');
@@ -30,6 +37,8 @@ interface AgentCardResponse {
 interface TaskResponse {
   task_json: string;
 }
+
+const TERMINAL_TASK_STATES = new Set(['COMPLETED', 'FAILED', 'CANCELED']);
 
 interface ProtoDescriptor {
   a2a: {
@@ -99,14 +108,8 @@ export class GrpcServer {
           });
         }
       },
-      StreamMessage: async (call: grpc.ServerWritableStream<SendMessageRequest, TaskResponse>) => {
-        try {
-          const task = this.createGrpcTask(call.request.message_text ?? '');
-          call.write({ task_json: JSON.stringify(task) });
-        } finally {
-          call.end();
-        }
-      },
+      StreamMessage: (call: grpc.ServerWritableStream<SendMessageRequest, TaskResponse>) =>
+        this.streamGrpcTask(call),
       GetTask: (
         call: grpc.ServerUnaryCall<TaskRequest, TaskResponse>,
         callback: grpc.sendUnaryData<TaskResponse>,
@@ -124,19 +127,35 @@ export class GrpcServer {
     });
   }
 
-  public bind(port: number): void {
-    this.server.bindAsync(
-      `0.0.0.0:${port}`,
-      grpc.ServerCredentials.createInsecure(),
-      (error, boundPort) => {
+  public async bind(port: number): Promise<number> {
+    return new Promise<number>((resolve, reject) => {
+      this.server.bindAsync(
+        `0.0.0.0:${port}`,
+        grpc.ServerCredentials.createInsecure(),
+        (error, boundPort) => {
+          if (error) {
+            logger.error('Failed to bind gRPC server', { error: String(error) });
+            reject(error);
+            return;
+          }
+          logger.info('gRPC Server listening', { port: boundPort });
+          resolve(boundPort);
+        },
+      );
+    });
+  }
+
+  public async close(): Promise<void> {
+    await new Promise<void>((resolve, reject) => {
+      this.server.tryShutdown((error) => {
         if (error) {
-          logger.error('Failed to bind gRPC server', { error: String(error) });
+          this.server.forceShutdown();
+          reject(error);
           return;
         }
-        this.server.start();
-        logger.info('gRPC Server listening', { port: boundPort });
-      },
-    );
+        resolve();
+      });
+    });
   }
 
   private createGrpcTask(messageText: string): Task {
@@ -145,26 +164,82 @@ export class GrpcServer {
     const message = toGrpcMessage(messageText);
     taskManager.addHistoryMessage(task.id, message);
     taskManager.updateTaskState(task.id, 'WORKING');
-    void this.adapter
-      .handleTask(task, message)
-      .then((artifacts) => {
-        for (const artifact of artifacts) {
-          taskManager.addArtifact(task.id, {
-            ...artifact,
-            metadata: {
-              ...(artifact as { metadata?: Record<string, unknown> }).metadata,
-              transport: 'grpc',
-            },
-          });
-        }
-        taskManager.updateTaskState(task.id, 'COMPLETED');
-      })
-      .catch((error) => {
-        logger.error('gRPC task processing failed', { taskId: task.id, error });
-        taskManager.updateTaskState(task.id, 'FAILED');
-      });
+    void this.completeGrpcTask(task, message);
 
     return taskManager.getTask(task.id) ?? task;
+  }
+
+  private async completeGrpcTask(task: Task, message: Message): Promise<void> {
+    const taskManager = this.getTaskManager();
+
+    try {
+      const artifacts = await this.adapter.handleTask(task, message);
+      for (const artifact of artifacts) {
+        taskManager.addArtifact(task.id, {
+          ...artifact,
+          metadata: {
+            ...(artifact as { metadata?: Record<string, unknown> }).metadata,
+            transport: 'grpc',
+            taskId: task.id,
+            ...(task.contextId ? { contextId: task.contextId } : {}),
+          },
+        });
+      }
+      taskManager.updateTaskState(task.id, 'COMPLETED');
+    } catch (error) {
+      logger.error('gRPC task processing failed', { taskId: task.id, error });
+      try {
+        taskManager.updateTaskState(task.id, 'FAILED');
+      } catch (lifecycleError) {
+        if (
+          lifecycleError instanceof TaskLifecycleError &&
+          lifecycleError.code === 'TASK_TERMINAL'
+        ) {
+          return;
+        }
+        throw lifecycleError;
+      }
+    }
+  }
+
+  private streamGrpcTask(call: grpc.ServerWritableStream<SendMessageRequest, TaskResponse>): void {
+    const task = this.createGrpcTask(call.request.message_text ?? '');
+    const taskManager = this.getTaskManager();
+    let closed = false;
+
+    const cleanup = () => {
+      taskManager.off('taskUpdated', onTaskUpdated);
+    };
+
+    const close = () => {
+      if (closed) {
+        return;
+      }
+      closed = true;
+      cleanup();
+      call.end();
+    };
+
+    const writeTask = (nextTask: Task) => {
+      if (closed) {
+        return;
+      }
+      call.write({ task_json: JSON.stringify(nextTask) });
+      if (TERMINAL_TASK_STATES.has(nextTask.status.state)) {
+        close();
+      }
+    };
+
+    const onTaskUpdated = ({ task: updatedTask }: TaskUpdatedEvent) => {
+      if (updatedTask.id === task.id) {
+        writeTask(updatedTask);
+      }
+    };
+
+    call.on('error', cleanup);
+    call.on('close', cleanup);
+    taskManager.on('taskUpdated', onTaskUpdated);
+    writeTask(taskManager.getTask(task.id) ?? task);
   }
 
   private getTaskManager(): TaskManager {
