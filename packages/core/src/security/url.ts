@@ -36,6 +36,11 @@ export function isPrivateIP(ip: string): boolean {
 
   // IPv6 checks
   const ipLower = ip.toLowerCase();
+  const mappedIpv4 = ipv4FromMappedIpv6(ipLower);
+  if (mappedIpv4) {
+    return isPrivateIP(mappedIpv4);
+  }
+
   // Loopback
   if (ipLower === '::1') return true;
   // Unspecified
@@ -44,11 +49,6 @@ export function isPrivateIP(ip: string): boolean {
   if (ipLower.startsWith('fe80:')) return true;
   // Unique local addresses
   if (ipLower.startsWith('fc') || ipLower.startsWith('fd')) return true;
-  // IPv4-mapped IPv6 (allow ::ffff:127.0.0.1 style)
-  if (ipLower.startsWith('::ffff:')) {
-    const v4Part = ipLower.slice(7);
-    return isPrivateIP(v4Part);
-  }
 
   return false;
 }
@@ -138,14 +138,107 @@ export async function validateSafeUrl(
 
 function isLoopbackIP(ip: string): boolean {
   const normalized = ip.toLowerCase();
+  const mappedIpv4 = ipv4FromMappedIpv6(normalized);
+  if (mappedIpv4) {
+    return isLoopbackIP(mappedIpv4);
+  }
+
   if (normalized === '::1') {
     return true;
-  }
-  if (normalized.startsWith('::ffff:')) {
-    return isLoopbackIP(normalized.slice(7));
   }
   if (isIPv4(ip)) {
     return ip.startsWith('127.');
   }
   return false;
+}
+
+function ipv4FromMappedIpv6(ip: string): string | undefined {
+  if (isIP(ip) !== 6) {
+    return undefined;
+  }
+
+  const groups = parseIpv6Groups(ip);
+  if (!groups) {
+    return undefined;
+  }
+
+  const isMappedPrefix =
+    groups[0] === 0 &&
+    groups[1] === 0 &&
+    groups[2] === 0 &&
+    groups[3] === 0 &&
+    groups[4] === 0 &&
+    groups[5] === 0xffff;
+
+  if (!isMappedPrefix) {
+    return undefined;
+  }
+
+  const high = groups[6];
+  const low = groups[7];
+  if (high === undefined || low === undefined) {
+    return undefined;
+  }
+
+  return [Math.floor(high / 256), high % 256, Math.floor(low / 256), low % 256].join('.');
+}
+
+function parseIpv6Groups(ip: string): number[] | undefined {
+  const normalized = normalizeIpv4Tail(ip);
+  if (!normalized) {
+    return undefined;
+  }
+
+  const compressedParts = normalized.split('::');
+  if (compressedParts.length > 2) {
+    return undefined;
+  }
+
+  const left = parseIpv6Side(compressedParts[0] ?? '');
+  const right = compressedParts.length === 2 ? parseIpv6Side(compressedParts[1] ?? '') : [];
+  if (!left || !right) {
+    return undefined;
+  }
+
+  const missing = 8 - left.length - right.length;
+  if (compressedParts.length === 1) {
+    return missing === 0 ? [...left, ...right] : undefined;
+  }
+  if (missing < 1) {
+    return undefined;
+  }
+
+  return [...left, ...Array.from({ length: missing }, () => 0), ...right];
+}
+
+function normalizeIpv4Tail(ip: string): string | undefined {
+  const lastColon = ip.lastIndexOf(':');
+  const possibleIpv4Tail = ip.slice(lastColon + 1);
+  if (!possibleIpv4Tail.includes('.')) {
+    return ip;
+  }
+  if (!isIPv4(possibleIpv4Tail)) {
+    return undefined;
+  }
+
+  const [first = 0, second = 0, third = 0, fourth = 0] = possibleIpv4Tail.split('.').map(Number);
+  const high = first * 256 + second;
+  const low = third * 256 + fourth;
+  return `${ip.slice(0, lastColon + 1)}${high.toString(16)}:${low.toString(16)}`;
+}
+
+function parseIpv6Side(side: string): number[] | undefined {
+  if (side === '') {
+    return [];
+  }
+
+  const groups = side.split(':');
+  const parsedGroups: number[] = [];
+  for (const group of groups) {
+    if (!/^[\da-f]{1,4}$/.test(group)) {
+      return undefined;
+    }
+    parsedGroups.push(Number.parseInt(group, 16));
+  }
+  return parsedGroups;
 }
