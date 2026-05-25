@@ -260,14 +260,30 @@ function syncRulesetCompatibilityContexts(path, expectedContexts) {
 
 function syncBranchProtectionCompatibilityContexts(path, expectedContexts) {
   const original = readText(path);
-  const expectedBlock = expectedContexts.map((context) => `- \`${context}\``).join('\n');
-  const compatibilityBlockPattern = /(?:- `CI \/ compatibility-smoke \([^)]+\)`\n?)+/;
-  let updated = original.replace(compatibilityBlockPattern, `${expectedBlock}\n`);
-  if (updated === original && !compatibilityBlockPattern.test(original)) {
-    updated = original.includes('- `Docs / build`')
-      ? original.replace('- `Docs / build`', `${expectedBlock}\n- \`Docs / build\``)
-      : `${original.trimEnd()}\n\n${expectedBlock}\n`;
+  const expectedLines = expectedContexts.map((context) => `- \`${context}\``);
+  const compatibilityLinePattern = /^- `CI \/ compatibility-smoke \([^)]+\)`$/;
+  const filteredLines = [];
+  let insertAt = -1;
+
+  for (const line of original.split('\n')) {
+    if (compatibilityLinePattern.test(line)) {
+      if (insertAt === -1) insertAt = filteredLines.length;
+      continue;
+    }
+    filteredLines.push(line);
   }
+
+  if (insertAt === -1) insertAt = filteredLines.indexOf('- `Docs / build`');
+  if (insertAt === -1) {
+    insertAt = filteredLines.at(-1) === '' ? filteredLines.length - 1 : filteredLines.length;
+    if (insertAt > 0 && filteredLines[insertAt - 1] !== '') {
+      filteredLines.splice(insertAt, 0, '');
+      insertAt += 1;
+    }
+  }
+
+  filteredLines.splice(insertAt, 0, ...expectedLines);
+  const updated = filteredLines.join('\n');
   writeOrExpect(path, original, updated);
 }
 

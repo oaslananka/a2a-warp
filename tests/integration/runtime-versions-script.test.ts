@@ -91,6 +91,30 @@ describe('runtime version manifest checks', () => {
     await expect(execRuntimeCheck(workspace)).resolves.toBeDefined();
   });
 
+  it('rewrites split branch protection docs compatibility contexts', async () => {
+    const workspace = await createRuntimeWorkspace({
+      branchProtectionContexts: [
+        'CI / identity',
+        'CI / compatibility-smoke (ubuntu-latest, node 22.22.1)',
+        'Docs / build',
+        'CI / compatibility-smoke (windows-latest, node 24.15.0)',
+        'CI / compatibility-smoke (macos-latest, node 24.15.0)',
+      ],
+    });
+
+    await expect(execRuntimeCheck(workspace, ['--write'])).resolves.toBeDefined();
+
+    const doc = await readFile(join(workspace, 'docs/release/branch-protection.md'), 'utf8');
+    expect(doc).toContain(`- \`CI / identity\`
+- \`CI / compatibility-smoke (ubuntu-latest, node 22.22.3)\`
+- \`CI / compatibility-smoke (windows-latest, node 24.16.0)\`
+- \`CI / compatibility-smoke (macos-latest, node 24.16.0)\`
+- \`Docs / build\``);
+    expect(doc).not.toContain('node 22.22.1');
+    expect(doc).not.toContain('node 24.15.0');
+    await expect(execRuntimeCheck(workspace)).resolves.toBeDefined();
+  });
+
   it('accepts compatibility include rows that start with an auxiliary key', async () => {
     const workspace = await createRuntimeWorkspace({
       compatibilityRowsYaml: `          - label: minimum
