@@ -30,7 +30,7 @@
   "scripts": {
     "build": "node ../scripts/build-tsc-package.mjs",
     "start": "node dist/index.js",
-    "test": "vitest run --root .. --project unit cli/tests/cli.test.ts",
+    "test": "vitest run --root .. --project unit cli/tests",
     "typecheck": "tsc -b"
   },
   "dependencies": {
