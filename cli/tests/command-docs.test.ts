@@ -29,6 +29,7 @@ describe('generated CLI command documentation', () => {
 
     expect(generator).toContain("process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'");
     expect(generator).toContain('function renderMarkdownTableCell');
+    expect(generator).toContain("replace(/\\\\/g, '\\\\\\\\')");
     expect(generator).toContain("replace(/\\r?\\n/g, ' ')");
     expect(generator).toContain("replace(/\\|/g, '\\\\|')");
     expect(generator).toContain('function normalizeLineEndings');

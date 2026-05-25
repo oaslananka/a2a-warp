@@ -34,7 +34,7 @@ function normalizeLineEndings(text) {
 }
 
 function renderMarkdownTableCell(value) {
-  return value.replace(/\r?\n/g, ' ').replace(/\|/g, '\\|');
+  return value.replace(/\\/g, '\\\\').replace(/\r?\n/g, ' ').replace(/\|/g, '\\|');
 }
 
 function commandPath(command) {
