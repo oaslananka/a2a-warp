@@ -7,7 +7,7 @@ A2A Warp is an independent TypeScript runtime and toolkit for the Agent2Agent (A
 - A2A server runtime and client SDK for Agent Cards, JSON-RPC messages, tasks, artifacts, and status transitions.
 - Registry components for local discovery and health polling.
 - Adapters for OpenAI, Anthropic, LangChain, Google ADK, LlamaIndex, and CrewAI HTTP bridge flows when the optional peer dependency is installed.
-- CLI commands for validation, discovery, sending messages, monitoring tasks, benchmarking, diagnostics, and scaffolding.
+- CLI commands for validation, discovery, sending messages, registry export/import, monitoring tasks, benchmarking, diagnostics, and scaffolding.
 - MCP bridge, WebSocket transport, gRPC transport, and testing helper packages for repository-verified workflows.
 
 ## Install
@@ -48,6 +48,8 @@ a2a-warp discover http://127.0.0.1:3000
 a2a-warp send http://127.0.0.1:3000 "hello"
 a2a-warp health http://127.0.0.1:3000 --timeout-ms 1000 --json
 a2a-warp conformance http://127.0.0.1:3000 --protocol-version 1.2 --json
+a2a-warp registry export --url http://127.0.0.1:3099 --output ./registry-export.json
+a2a-warp registry import --url http://127.0.0.1:3099 --input ./registry-export.json
 a2a-warp monitor http://127.0.0.1:3000 --cycles 3
 a2a-warp benchmark http://127.0.0.1:3000 --requests 25 --concurrency 5
 a2a-warp doctor --json

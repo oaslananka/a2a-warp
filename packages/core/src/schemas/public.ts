@@ -297,6 +297,28 @@ export const RegisteredAgentSchema = z.object({
   isPublic: z.boolean().optional(),
 });
 
+export const REGISTRY_EXPORT_SCHEMA_ID =
+  'https://oaslananka.github.io/a2a-warp/schemas/registry-export.schema.json';
+
+export const RegistryExportMetadataSchema = z
+  .object({
+    source: z.literal('a2a-warp-registry'),
+    agentCount: z.number().int().min(0),
+    tenants: z.array(z.string()),
+    publicAgents: z.number().int().min(0),
+  })
+  .catchall(z.unknown());
+
+export const RegistryExportDocumentSchema = z.object({
+  $schema: z.literal(REGISTRY_EXPORT_SCHEMA_ID),
+  schemaVersion: z.literal('1'),
+  exportedAt: IsoDateTimeSchema,
+  agents: z.array(RegisteredAgentSchema),
+  metadata: RegistryExportMetadataSchema,
+});
+
+export type RegistryExportDocument = z.infer<typeof RegistryExportDocumentSchema>;
+
 export const RegistryTaskEventSchema = z.object({
   taskId: z.string(),
   agentId: z.string(),
@@ -397,6 +419,19 @@ export const publicJsonSchemaDefinitions = [
       typeSymbol: 'RegisteredAgent',
       schemaSymbol: 'RegisteredAgentSchema',
       sourceFile: 'packages/registry/src/storage/IAgentStorage.ts',
+    },
+  },
+  {
+    fileName: 'registry-export.schema.json',
+    id: REGISTRY_EXPORT_SCHEMA_ID,
+    title: 'A2A Warp Registry Export',
+    description:
+      'Versioned registry export documents used to move A2A Warp registry agent records between control planes.',
+    schema: RegistryExportDocumentSchema,
+    source: {
+      typeSymbol: 'RegistryExportDocument',
+      schemaSymbol: 'RegistryExportDocumentSchema',
+      sourceFile: 'packages/core/src/schemas/public.ts',
     },
   },
   {

@@ -4,6 +4,7 @@
  */
 
 import { EventSource, type EventSourceInit } from 'eventsource';
+import type { RegistryExportDocument } from '../schemas/public.js';
 import type { AgentCard } from '../types/agent-card.js';
 
 export interface RegisteredAgent {
@@ -15,6 +16,22 @@ export interface RegisteredAgent {
   skills: string[];
   registeredAt: string;
   lastHeartbeatAt?: string;
+  consecutiveFailures?: number;
+  lastSuccessAt?: string;
+  tenantId?: string;
+  isPublic?: boolean;
+}
+
+export interface RegisterAgentOptions {
+  tenantId?: string;
+  isPublic?: boolean;
+}
+
+export interface RegistryImportResult {
+  imported: number;
+  updated: number;
+  skipped: number;
+  total: number;
 }
 
 /**
@@ -33,11 +50,15 @@ export class AgentRegistryClient {
     private readonly fetchImplementation: typeof fetch = fetch,
   ) {}
 
-  async register(agentUrl: string, agentCard: AgentCard): Promise<RegisteredAgent> {
+  async register(
+    agentUrl: string,
+    agentCard: AgentCard,
+    options: RegisterAgentOptions = {},
+  ): Promise<RegisteredAgent> {
     const response = await this.fetchImplementation(new URL('/agents/register', this.baseUrl), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ agentUrl, agentCard }),
+      body: JSON.stringify({ agentUrl, agentCard, ...options }),
     });
     if (!response.ok) {
       throw new Error(`Failed to register agent (${response.status})`);
@@ -51,6 +72,26 @@ export class AgentRegistryClient {
       throw new Error(`Failed to list agents (${response.status})`);
     }
     return (await response.json()) as RegisteredAgent[];
+  }
+
+  async exportAgents(): Promise<RegistryExportDocument> {
+    const response = await this.fetchImplementation(new URL('/admin/agents/export', this.baseUrl));
+    if (!response.ok) {
+      throw new Error(`Failed to export agents (${response.status})`);
+    }
+    return (await response.json()) as RegistryExportDocument;
+  }
+
+  async importAgents(document: RegistryExportDocument): Promise<RegistryImportResult> {
+    const response = await this.fetchImplementation(new URL('/admin/agents/import', this.baseUrl), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(document),
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to import agents (${response.status})`);
+    }
+    return (await response.json()) as RegistryImportResult;
   }
 
   async getAgent(id: string): Promise<RegisteredAgent> {
