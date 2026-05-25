@@ -9,7 +9,7 @@ import { BaseAdapter } from '../custom/BaseAdapter.js';
 import { fetchWithPolicy } from '@oaslananka/a2a-warp';
 import { logger, normalizeAgentCard } from '@oaslananka/a2a-warp';
 import type { AnyAgentCard, ExtensibleArtifact, Message, Task } from '@oaslananka/a2a-warp';
-import { createTextArtifact, extractText } from '../custom/contract.js';
+import { createTextArtifact, extractRequiredText, extractText } from '../custom/contract.js';
 
 /**
  * Thin HTTP bridge adapter for CrewAI Python services.
@@ -41,7 +41,7 @@ export class CrewAIAdapter extends BaseAdapter {
         body: JSON.stringify({
           taskId: task.id,
           contextId: task.contextId,
-          message: extractText(message.parts),
+          message: extractRequiredText(message.parts, 'CrewAI'),
           history: task.history.map((entry) => ({
             role: entry.role,
             content: extractText(entry.parts),

@@ -1,8 +1,63 @@
 import { describe, it, expect, vi } from 'vitest';
 import { OpenAIAdapter } from '../src/openai/OpenAIAdapter.js';
 import type { AnyAgentCard, Task, Message } from '@oaslananka/a2a-warp';
+import { runAdapterContract } from './contracts/adapterContract.js';
+
+type OpenAIClient = ConstructorParameters<typeof OpenAIAdapter>[1];
+
+function createOpenAIContractInstance(
+  card: AnyAgentCard,
+  responseText = 'openai contract response',
+) {
+  const client = {
+    chat: {
+      completions: {
+        create: vi.fn().mockResolvedValue({
+          choices: [{ message: { content: responseText } }],
+        }),
+      },
+    },
+  };
+
+  return {
+    adapter: new OpenAIAdapter(
+      card,
+      client as unknown as OpenAIClient,
+      'gpt-contract',
+      'contract system',
+    ),
+    context: { client },
+  };
+}
 
 describe('OpenAIAdapter', () => {
+  runAdapterContract({
+    adapterName: 'OpenAIAdapter',
+    provider: 'openai',
+    compatibility: 'stable',
+    supportsStreaming: false,
+    expectedText: 'openai contract response',
+    createInstance: (card) => createOpenAIContractInstance(card),
+    createProviderErrorCase: (card) => {
+      const instance = createOpenAIContractInstance(card);
+      instance.context.client.chat.completions.create.mockRejectedValueOnce(
+        new Error('openai unavailable'),
+      );
+      return { instance, expectedError: /openai unavailable/ };
+    },
+    assertProviderRequest: ({ context }) => {
+      expect(context.client.chat.completions.create).toHaveBeenCalledWith({
+        model: 'gpt-contract',
+        messages: [
+          { role: 'system', content: 'contract system' },
+          { role: 'user', content: 'previous user' },
+          { role: 'assistant', content: 'previous agent' },
+          { role: 'user', content: 'contract current' },
+        ],
+      });
+    },
+  });
+
   it('should map history and invoke chat completions', async () => {
     const card: AnyAgentCard = {
       protocolVersion: '1.0',

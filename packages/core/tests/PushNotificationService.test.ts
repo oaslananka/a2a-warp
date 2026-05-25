@@ -16,6 +16,7 @@ const validateAndFetchMock = vi.mocked(validateAndFetch);
 
 describe('PushNotificationService', () => {
   afterEach(() => {
+    vi.useRealTimers();
     validateAndFetchMock.mockReset();
   });
 
@@ -205,10 +206,11 @@ describe('PushNotificationService', () => {
   });
 
   it('recovers after the circuit timeout and allows successful delivery', async () => {
+    vi.useFakeTimers();
     const service = new PushNotificationService({
       circuitBreaker: {
         failureThreshold: 1,
-        recoveryTimeoutMs: 10,
+        recoveryTimeoutMs: 10_000,
         successThreshold: 1,
       },
     });
@@ -230,7 +232,7 @@ describe('PushNotificationService', () => {
     ).resolves.toBeUndefined();
     expect(validateAndFetchMock).toHaveBeenCalledTimes(1);
 
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    await vi.advanceTimersByTimeAsync(10_001);
 
     await expect(
       service.sendNotification({ url: 'https://example.com/webhook' }, task),
