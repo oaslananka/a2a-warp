@@ -1,7 +1,8 @@
 import { mkdirSync, existsSync, writeFileSync } from 'node:fs';
 import { resolve, join } from 'node:path';
+import { Command } from 'commander';
 
-export type ScaffoldAdapter =
+type ScaffoldAdapter =
   | 'custom'
   | 'openai'
   | 'anthropic'
@@ -429,4 +430,31 @@ export function scaffoldAgent(name: string, options: ScaffoldOptions): void {
     .join('\n');
 
   process.stdout.write(output);
+}
+
+export function createScaffoldCommand(): Command {
+  return new Command('scaffold')
+    .argument('<agent-name>')
+    .option('--adapter <adapter>', 'Adapter template to use', 'custom')
+    .option('--auth', 'Include API key authentication')
+    .option('--rate-limit', 'Include explicit rate limit configuration')
+    .option('--docker', 'Include Dockerfile')
+    .action(
+      (
+        name: string,
+        commandOptions: {
+          adapter: ScaffoldAdapter;
+          auth?: boolean;
+          rateLimit?: boolean;
+          docker?: boolean;
+        },
+      ) => {
+        scaffoldAgent(name, {
+          adapter: commandOptions.adapter,
+          auth: commandOptions.auth ?? false,
+          rateLimit: commandOptions.rateLimit ?? false,
+          docker: commandOptions.docker ?? false,
+        });
+      },
+    );
 }
