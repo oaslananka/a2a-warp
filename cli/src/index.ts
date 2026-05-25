@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Command } from 'commander';
 import { createBenchmarkCommand } from './commands/benchmark.js';
+import { createConformanceCommand } from './commands/conformance.js';
 import { createDiscoverCommand } from './commands/discover.js';
 import { createDoctorCommand } from './commands/doctor.js';
 import { createExportCardCommand } from './commands/export-card.js';
@@ -36,6 +37,7 @@ export function createProgram(): Command {
   program.addCommand(createValidateCommand(getOptions));
   program.addCommand(createMonitorCommand(getOptions));
   program.addCommand(createBenchmarkCommand(getOptions));
+  program.addCommand(createConformanceCommand(getOptions));
   program.addCommand(createDoctorCommand(getOptions));
   program.addCommand(createExportCardCommand(getOptions));
 

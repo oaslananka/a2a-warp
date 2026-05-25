@@ -26,6 +26,7 @@ describe('a2a CLI', () => {
     expect(stdout).toContain('A2A Warp developer CLI');
     expect(stdout).toContain('a2a-warp');
     expect(stdout).toContain('send');
+    expect(stdout).toContain('conformance');
     expect(stdout).toContain('doctor');
     expect(stdout).toContain('task');
     expect(stdout).toContain('registry');

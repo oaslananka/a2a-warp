@@ -47,6 +47,7 @@ a2a-warp validate ./agent-card.json
 a2a-warp discover http://127.0.0.1:3000
 a2a-warp send http://127.0.0.1:3000 "hello"
 a2a-warp health http://127.0.0.1:3000 --timeout-ms 1000 --json
+a2a-warp conformance http://127.0.0.1:3000 --protocol-version 1.2 --json
 a2a-warp monitor http://127.0.0.1:3000 --cycles 3
 a2a-warp benchmark http://127.0.0.1:3000 --requests 25 --concurrency 5
 a2a-warp doctor --json

@@ -189,6 +189,9 @@ importers:
       '@oaslananka/a2a-warp-registry':
         specifier: workspace:^
         version: link:../packages/registry
+      '@oaslananka/a2a-warp-testing':
+        specifier: workspace:^
+        version: link:../packages/testing
       chalk:
         specifier: ^5.6.2
         version: 5.6.2

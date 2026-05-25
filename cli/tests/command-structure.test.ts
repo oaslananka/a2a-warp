@@ -13,12 +13,14 @@ const commandModules = [
   'validate',
   'monitor',
   'benchmark',
+  'conformance',
   'doctor',
   'export-card',
 ];
 
 const dedicatedCommandTests = [
   'benchmark-command.test.ts',
+  'conformance-command.test.ts',
   'discover-command.test.ts',
   'doctor-command.test.ts',
   'export-card-command.test.ts',
