@@ -233,14 +233,70 @@ describe('runtime version manifest checks', () => {
     ]);
     await expect(execRuntimeCheck(workspace)).resolves.toBeDefined();
   });
+
+  it('does not rewrite docs when ruleset context parsing fails in write mode', async () => {
+    const workspace = await createRuntimeWorkspace({
+      branchProtectionContexts: [
+        'CI / compatibility-smoke (ubuntu-latest, node 22.22.1)',
+        'CI / compatibility-smoke (windows-latest, node 24.15.0)',
+        'CI / compatibility-smoke (macos-latest, node 24.15.0)',
+      ],
+      rulesetRequiredStatusChecks: 'invalid',
+    });
+    const docPath = join(workspace, 'docs/release/branch-protection.md');
+    const docBefore = await readFile(docPath, 'utf8');
+
+    await expect(execRuntimeCheck(workspace, ['--write'])).rejects.toMatchObject({
+      stderr: expect.stringContaining('required_status_checks must be an array'),
+    });
+
+    await expect(readFile(docPath, 'utf8')).resolves.toBe(docBefore);
+  });
+
+  it('ignores include-like run block text when reading the compatibility matrix', async () => {
+    const workspace = await createRuntimeWorkspace({
+      ciWorkflowOverride: `name: CI
+
+env:
+  NODE_VERSION: '${manifest.node}'
+
+jobs:
+  compatibility-smoke:
+    name: CI / compatibility-smoke
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          cat <<'YAML'
+          strategy:
+            matrix:
+              include:
+                - os: ubuntu-latest
+                  runner: ubuntu-latest
+                  node: '22.22.3'
+                - os: windows-latest
+                  runner: windows-2025-vs2026
+                  node: '24.16.0'
+                - os: macos-latest
+                  runner: macos-latest
+                  node: '24.16.0'
+          YAML
+`,
+    });
+
+    await expect(execRuntimeCheck(workspace)).rejects.toMatchObject({
+      stderr: expect.stringContaining('compatibility matrix include rows not found'),
+    });
+  });
 });
 
 async function createRuntimeWorkspace(
   options: {
     branchProtectionContexts?: string[];
+    ciWorkflowOverride?: string;
     ciWorkflowSuffix?: string;
     compatibilityRows?: Array<{ os: string; runner: string; node: string }>;
     compatibilityRowsYaml?: string;
+    rulesetRequiredStatusChecks?: unknown;
     rulesetContexts?: Array<string | RulesetEntry>;
   } = {},
 ): Promise<string> {
@@ -285,13 +341,18 @@ async function createRuntimeWorkspace(
   await writeFixture(
     root,
     '.github/workflows/ci.yml',
-    ciWorkflow(compatibilityRows, options.compatibilityRowsYaml, options.ciWorkflowSuffix),
+    options.ciWorkflowOverride ??
+      ciWorkflow(compatibilityRows, options.compatibilityRowsYaml, options.ciWorkflowSuffix),
   );
   for (const workflow of ['docs.yml', 'release-please.yml', 'security.yml']) {
     await writeFixture(root, `.github/workflows/${workflow}`, workflowWithNodeEnv());
   }
   await writeFixture(root, '.github/workflows/publish.yml', publishWorkflow());
-  await writeFixture(root, '.github/rulesets/main.json', ruleset(rulesetContexts));
+  await writeFixture(
+    root,
+    '.github/rulesets/main.json',
+    ruleset(rulesetContexts, options.rulesetRequiredStatusChecks),
+  );
   await writeFixture(
     root,
     'docs/release/branch-protection.md',
@@ -360,7 +421,7 @@ env:
 `;
 }
 
-function ruleset(contexts: Array<string | RulesetEntry>): string {
+function ruleset(contexts: Array<string | RulesetEntry>, requiredStatusChecks?: unknown): string {
   return `${JSON.stringify(
     {
       name: 'main-protection',
@@ -368,9 +429,9 @@ function ruleset(contexts: Array<string | RulesetEntry>): string {
         {
           type: 'required_status_checks',
           parameters: {
-            required_status_checks: contexts.map((entry) =>
-              typeof entry === 'string' ? { context: entry } : entry,
-            ),
+            required_status_checks:
+              requiredStatusChecks ??
+              contexts.map((entry) => (typeof entry === 'string' ? { context: entry } : entry)),
           },
         },
       ],

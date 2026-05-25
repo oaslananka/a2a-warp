@@ -128,6 +128,11 @@ function lineIndent(line) {
 function readCompatibilityMatrix(path) {
   const rows = [];
   let inCompatibilityJob = false;
+  let compatibilityJobIndent = 0;
+  let inStrategy = false;
+  let strategyIndent;
+  let inMatrix = false;
+  let matrixIndent;
   let inInclude = false;
   let includeIndent;
   let current;
@@ -139,8 +144,10 @@ function readCompatibilityMatrix(path) {
   };
 
   for (const line of readText(path).split(/\r?\n/)) {
-    if (/^  compatibility-smoke:\s*(?:#.*)?$/.test(line)) {
+    const compatibilityJobMatch = /^(\s*)compatibility-smoke:\s*(?:#.*)?$/.exec(line);
+    if (compatibilityJobMatch) {
       inCompatibilityJob = true;
+      compatibilityJobIndent = compatibilityJobMatch[1].length;
       continue;
     }
     if (inCompatibilityJob && /^  [A-Za-z0-9_-]+:\s*(?:#.*)?$/.test(line)) {
@@ -149,8 +156,39 @@ function readCompatibilityMatrix(path) {
     }
     if (!inCompatibilityJob) continue;
 
+    const indent = lineIndent(line);
+    if (line.trim() !== '') {
+      if (inInclude && includeIndent !== undefined && indent <= includeIndent) {
+        completeCurrent();
+        inInclude = false;
+        includeIndent = undefined;
+      }
+      if (inMatrix && matrixIndent !== undefined && indent <= matrixIndent) {
+        inMatrix = false;
+        matrixIndent = undefined;
+      }
+      if (inStrategy && strategyIndent !== undefined && indent <= strategyIndent) {
+        inStrategy = false;
+        strategyIndent = undefined;
+      }
+    }
+
+    const strategyMatch = /^(\s+)strategy:\s*(?:#.*)?$/.exec(line);
+    if (strategyMatch && strategyMatch[1].length === compatibilityJobIndent + 2) {
+      inStrategy = true;
+      strategyIndent = strategyMatch[1].length;
+      continue;
+    }
+
+    const matrixMatch = /^(\s+)matrix:\s*(?:#.*)?$/.exec(line);
+    if (matrixMatch && inStrategy && matrixMatch[1].length === strategyIndent + 2) {
+      inMatrix = true;
+      matrixIndent = matrixMatch[1].length;
+      continue;
+    }
+
     const includeMatch = /^(\s+)include:\s*(?:#.*)?$/.exec(line);
-    if (includeMatch) {
+    if (includeMatch && inMatrix && includeMatch[1].length === matrixIndent + 2) {
       inInclude = true;
       includeIndent = includeMatch[1].length;
       continue;
@@ -169,7 +207,10 @@ function readCompatibilityMatrix(path) {
       continue;
     }
 
-    const itemMatch = /^\s+-\s+([A-Za-z0-9_-]+):\s*(.*?)\s*$/.exec(line);
+    const itemMatch =
+      includeIndent !== undefined && indent > includeIndent
+        ? /^\s+-\s+([A-Za-z0-9_-]+):\s*(.*?)\s*$/.exec(line)
+        : undefined;
     if (itemMatch) {
       completeCurrent();
       current = {};
@@ -179,7 +220,10 @@ function readCompatibilityMatrix(path) {
       continue;
     }
 
-    const keyMatch = /^\s+([A-Za-z0-9_-]+):\s*(.*?)\s*$/.exec(line);
+    const keyMatch =
+      includeIndent !== undefined && indent > includeIndent
+        ? /^\s+([A-Za-z0-9_-]+):\s*(.*?)\s*$/.exec(line)
+        : undefined;
     if (keyMatch && current && compatibilityMatrixKeys.has(keyMatch[1])) {
       current[keyMatch[1]] = stripYamlScalar(keyMatch[2]);
     }
@@ -367,12 +411,19 @@ if (failures.length === 0) {
   const compatibilityRows = readCompatibilityMatrix('.github/workflows/ci.yml');
   if (failures.length === failuresBeforeMatrixRead) {
     const expectedCompatibilityContexts = compatibilityRows.map(compatibilityContext);
+    const failuresBeforeRulesetSync = failures.length;
     syncRulesetCompatibilityContexts('.github/rulesets/main.json', expectedCompatibilityContexts);
-    syncBranchProtectionCompatibilityContexts(
-      'docs/release/branch-protection.md',
-      expectedCompatibilityContexts,
-    );
-    validateCompatibilityConfiguration(manifest, compatibilityRows, expectedCompatibilityContexts);
+    if (!write || failures.length === failuresBeforeRulesetSync) {
+      syncBranchProtectionCompatibilityContexts(
+        'docs/release/branch-protection.md',
+        expectedCompatibilityContexts,
+      );
+      validateCompatibilityConfiguration(
+        manifest,
+        compatibilityRows,
+        expectedCompatibilityContexts,
+      );
+    }
   }
 }
 
