@@ -71,6 +71,19 @@ export function isOriginAllowed(policy: OriginPolicy): boolean {
 
 export function jsonParseErrorHandler(): ErrorRequestHandler {
   return (err, _req, res, next) => {
+    if (isPayloadTooLargeError(err)) {
+      res.status(413).json({
+        jsonrpc: '2.0',
+        error: {
+          code: ErrorCodes.ParseError,
+          message: 'Payload too large',
+          data: makeErrorInfo('PARSE_ERROR'),
+        },
+        id: null,
+      } satisfies JsonRpcResponse);
+      return;
+    }
+
     if (err instanceof SyntaxError && 'body' in err) {
       res.status(200).json({
         jsonrpc: '2.0',
@@ -86,4 +99,12 @@ export function jsonParseErrorHandler(): ErrorRequestHandler {
 
     next(err);
   };
+}
+
+function isPayloadTooLargeError(err: unknown): boolean {
+  if (!err || typeof err !== 'object') {
+    return false;
+  }
+  const payload = err as { status?: unknown; type?: unknown };
+  return payload.status === 413 || payload.type === 'entity.too.large';
 }
