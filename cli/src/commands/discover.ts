@@ -1,9 +1,14 @@
 import { Command } from 'commander';
-import { A2AClient, type AgentSkill } from '@oaslananka/a2a-warp';
+import { type AgentSkill } from '@oaslananka/a2a-warp';
 import { emitResult, withSpinner, type RootOptionsProvider } from '../io.js';
+import { addNetworkOptions, createA2AClient, type NetworkCommandOptions } from '../network.js';
 
-export async function discoverAgent(url: string, options: { json?: boolean } = {}) {
-  const client = new A2AClient(url);
+export async function discoverAgent(
+  url: string,
+  options: { json?: boolean } = {},
+  networkOptions: NetworkCommandOptions = {},
+) {
+  const client = createA2AClient(url, networkOptions);
   const card = await client.resolveCard();
 
   if (!options.json) {
@@ -24,13 +29,15 @@ export async function discoverAgent(url: string, options: { json?: boolean } = {
 }
 
 export function createDiscoverCommand(getOptions: RootOptionsProvider): Command {
-  return new Command('discover').argument('<url>').action(async (url: string) => {
-    const options = getOptions();
-    const card = await withSpinner(`Discovering ${url}`, options, () =>
-      discoverAgent(url, options),
-    );
-    if (options.json) {
-      emitResult(card, options);
-    }
-  });
+  return addNetworkOptions(new Command('discover').argument('<url>')).action(
+    async (url: string, commandOptions: NetworkCommandOptions) => {
+      const options = getOptions();
+      const card = await withSpinner(`Discovering ${url}`, options, () =>
+        discoverAgent(url, options, commandOptions),
+      );
+      if (options.json) {
+        emitResult(card, options);
+      }
+    },
+  );
 }

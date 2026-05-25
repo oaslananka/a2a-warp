@@ -1,9 +1,9 @@
 import { Command } from 'commander';
-import { A2AClient } from '@oaslananka/a2a-warp';
 import { emitResult, withSpinner, type RootOptionsProvider } from '../io.js';
 import { createCliMessage } from '../message.js';
+import { addNetworkOptions, createA2AClient, type NetworkCommandOptions } from '../network.js';
 
-interface BenchmarkCommandOptions {
+interface BenchmarkCommandOptions extends NetworkCommandOptions {
   requests: string;
   concurrency: string;
   message: string;
@@ -13,7 +13,7 @@ async function benchmarkAgent(
   url: string,
   commandOptions: BenchmarkCommandOptions,
 ): Promise<Record<string, number>> {
-  const client = new A2AClient(url);
+  const client = createA2AClient(url, commandOptions);
   const requests = Number(commandOptions.requests);
   const concurrency = Number(commandOptions.concurrency);
   const message = commandOptions.message;
@@ -57,16 +57,18 @@ async function benchmarkAgent(
 }
 
 export function createBenchmarkCommand(getOptions: RootOptionsProvider): Command {
-  return new Command('benchmark')
-    .argument('<url>')
-    .option('--requests <count>', 'Number of requests to send', '25')
-    .option('--concurrency <count>', 'Number of concurrent workers', '5')
-    .option('--message <message>', 'Benchmark message text', 'benchmark ping')
-    .action(async (url: string, commandOptions: BenchmarkCommandOptions) => {
-      const options = getOptions();
-      const result = await withSpinner('Running benchmark', options, () =>
-        benchmarkAgent(url, commandOptions),
-      );
-      emitResult(result, options);
-    });
+  return addNetworkOptions(
+    new Command('benchmark')
+      .argument('<url>')
+      .option('--requests <count>', 'Number of requests to send', '25')
+      .option('--concurrency <count>', 'Number of concurrent workers', '5')
+      .option('--message <message>', 'Benchmark message text', 'benchmark ping')
+      .action(async (url: string, commandOptions: BenchmarkCommandOptions) => {
+        const options = getOptions();
+        const result = await withSpinner('Running benchmark', options, () =>
+          benchmarkAgent(url, commandOptions),
+        );
+        emitResult(result, options);
+      }),
+  );
 }
