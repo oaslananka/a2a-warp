@@ -47,6 +47,7 @@
   ],
   "scripts": {
     "build": "node ../../scripts/build-tsc-package.mjs",
+    "test": "pnpm --dir ../.. run build && vitest run --root ../.. --config vitest.config.ts --project unit packages/create-a2a-agent/tests",
     "typecheck": "tsc -b"
   },
   "dependencies": {

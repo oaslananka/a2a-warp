@@ -89,7 +89,7 @@ function renderRuntimeOptions(options: Pick<ScaffoldOptions, 'auth' | 'rateLimit
   if (options.auth) {
     lines.push(`      auth: {
         securitySchemes: [{ type: 'apiKey', id: 'api-key', in: 'header', name: 'x-api-key' }],
-        apiKeys: { 'api-key': process.env.A2A_API_KEY },
+        apiKeys: { 'api-key': process.env.A2A_API_KEY ?? '' },
       },`);
   }
   if (options.rateLimit) {
@@ -203,9 +203,13 @@ import type { AgentCard } from '@oaslananka/a2a-warp';
 const card: AgentCard = ${renderCard(name)};
 
 export function createAgent(): AnthropicAdapter {
+  const client = new Anthropic({
+    apiKey: process.env.ANTHROPIC_API_KEY,
+  }) as unknown as ConstructorParameters<typeof AnthropicAdapter>[1];
+
   return new AnthropicAdapter(
     card,
-    new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY }),
+    client,
     'claude-sonnet-4-20250514',
   );
 }
