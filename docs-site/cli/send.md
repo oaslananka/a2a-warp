@@ -12,11 +12,9 @@ Usage: a2a-warp send [options] <url> <message>
 Sends a text message to an A2A endpoint and emits the resulting task response.
 
 Options:
-  --header <key:value...>  HTTP header to send; accepts one or more key:value
-                           entries
+  --header <key:value...>  HTTP header to send; accepts one or more key:value entries
   --bearer-token <token>   Bearer token sent as Authorization: Bearer <token>
-  --api-key <name:value>   API key header as name:value; repeat for multiple
-                           keys
+  --api-key <name:value>   API key header as name:value; repeat for multiple keys
   --timeout-ms <ms>        Per-request timeout in milliseconds
   --retries <count>        Retry count for transient network failures
   --request-id <id>        Request id sent as x-request-id

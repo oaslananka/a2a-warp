@@ -9,8 +9,8 @@ Runs task lifecycle operations including send, stream, status lookup, and cancel
 ```text
 Usage: a2a-warp task [options] [command]
 
-Runs task lifecycle operations including send, stream, status lookup, and
-cancellation against an A2A endpoint.
+Runs task lifecycle operations including send, stream, status lookup, and cancellation against an
+A2A endpoint.
 
 Options:
   -h, --help                        display help for command

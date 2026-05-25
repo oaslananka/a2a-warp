@@ -9,8 +9,7 @@ Prints local CLI diagnostics including CLI version, Node.js version, and current
 ```text
 Usage: a2a-warp doctor [options]
 
-Prints local CLI diagnostics including CLI version, Node.js version, and current
-platform.
+Prints local CLI diagnostics including CLI version, Node.js version, and current platform.
 
 Options:
   -h, --help  display help for command

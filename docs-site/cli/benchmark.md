@@ -9,18 +9,16 @@ Runs a local request benchmark against an A2A endpoint and reports request count
 ```text
 Usage: a2a-warp benchmark [options] <url>
 
-Runs a local request benchmark against an A2A endpoint and reports request
-counts, failures, latency, and total duration.
+Runs a local request benchmark against an A2A endpoint and reports request counts, failures,
+latency, and total duration.
 
 Options:
   --requests <count>       Number of requests to send (default: "25")
   --concurrency <count>    Number of concurrent workers (default: "5")
   --message <message>      Benchmark message text (default: "benchmark ping")
-  --header <key:value...>  HTTP header to send; accepts one or more key:value
-                           entries
+  --header <key:value...>  HTTP header to send; accepts one or more key:value entries
   --bearer-token <token>   Bearer token sent as Authorization: Bearer <token>
-  --api-key <name:value>   API key header as name:value; repeat for multiple
-                           keys
+  --api-key <name:value>   API key header as name:value; repeat for multiple keys
   --timeout-ms <ms>        Per-request timeout in milliseconds
   --retries <count>        Retry count for transient network failures
   --request-id <id>        Request id sent as x-request-id

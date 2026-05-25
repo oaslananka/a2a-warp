@@ -21,13 +21,11 @@ Commands:
   scaffold [options] <agent-name>  Create an A2A agent project scaffold.
   task                             Run task lifecycle operations.
   send [options] <url> <message>   Send a text message to an A2A endpoint.
-  registry                         Start, inspect, export, and import registry
-                                   state.
+  registry                         Start, inspect, export, and import registry state.
   health [options] <url>           Check an A2A endpoint health route.
   validate [options] <target>      Validate an Agent Card file or endpoint.
   monitor [options] <url>          Poll task status snapshots.
-  benchmark [options] <url>        Run request benchmarks against an A2A
-                                   endpoint.
+  benchmark [options] <url>        Run request benchmarks against an A2A endpoint.
   conformance [options] <url>      Run the A2A conformance fixture suite.
   doctor                           Print local CLI diagnostics.
   export-card [options] <url>      Export an endpoint Agent Card to JSON.

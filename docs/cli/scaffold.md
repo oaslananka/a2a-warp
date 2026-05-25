@@ -9,8 +9,8 @@ Creates a new A2A agent project from a local template, with optional auth, rate 
 ```text
 Usage: a2a-warp scaffold [options] <agent-name>
 
-Creates a new A2A agent project from a local template, with optional auth, rate
-limiting, provider adapter, and Dockerfile output.
+Creates a new A2A agent project from a local template, with optional auth, rate limiting, provider
+adapter, and Dockerfile output.
 
 Options:
   --adapter <adapter>  Adapter template to use (default: "custom")

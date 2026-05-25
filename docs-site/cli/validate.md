@@ -9,15 +9,12 @@ Validates an Agent Card from a local JSON file or by resolving an HTTP endpoint 
 ```text
 Usage: a2a-warp validate [options] <target>
 
-Validates an Agent Card from a local JSON file or by resolving an HTTP endpoint
-Agent Card.
+Validates an Agent Card from a local JSON file or by resolving an HTTP endpoint Agent Card.
 
 Options:
-  --header <key:value...>  HTTP header to send; accepts one or more key:value
-                           entries
+  --header <key:value...>  HTTP header to send; accepts one or more key:value entries
   --bearer-token <token>   Bearer token sent as Authorization: Bearer <token>
-  --api-key <name:value>   API key header as name:value; repeat for multiple
-                           keys
+  --api-key <name:value>   API key header as name:value; repeat for multiple keys
   --timeout-ms <ms>        Per-request timeout in milliseconds
   --retries <count>        Retry count for transient network failures
   --request-id <id>        Request id sent as x-request-id

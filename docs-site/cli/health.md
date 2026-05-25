@@ -12,11 +12,9 @@ Usage: a2a-warp health [options] <url>
 Checks an A2A endpoint health route and emits the health response.
 
 Options:
-  --header <key:value...>  HTTP header to send; accepts one or more key:value
-                           entries
+  --header <key:value...>  HTTP header to send; accepts one or more key:value entries
   --bearer-token <token>   Bearer token sent as Authorization: Bearer <token>
-  --api-key <name:value>   API key header as name:value; repeat for multiple
-                           keys
+  --api-key <name:value>   API key header as name:value; repeat for multiple keys
   --timeout-ms <ms>        Per-request timeout in milliseconds
   --retries <count>        Retry count for transient network failures
   --request-id <id>        Request id sent as x-request-id

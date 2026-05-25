@@ -36,6 +36,15 @@ describe('generated CLI command documentation', () => {
     expect(generator).toContain("replace(/\\r\\n/g, '\\n')");
   });
 
+  it('keeps generated help output independent of the current terminal width', () => {
+    const generator = readRepoFile('scripts/generate-command-docs.mjs');
+
+    expect(generator).toContain('const cliDocsHelpWidth = 100');
+    expect(generator).toContain('function configureDeterministicHelp');
+    expect(generator).toContain('configureHelp({ helpWidth: cliDocsHelpWidth })');
+    expect(generator).toContain('configureDeterministicHelp(createProgram())');
+  });
+
   it('keeps canonical and docs-site command pages in parity with live CLI commands', () => {
     for (const commandName of topLevelCommandNames()) {
       const canonicalPath = `docs/cli/${commandName}.md`;

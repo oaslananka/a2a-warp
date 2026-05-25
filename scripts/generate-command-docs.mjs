@@ -7,6 +7,7 @@ import { format } from 'prettier';
 const generatedMarker = '<!-- Synced from scripts/generate-command-docs.mjs. -->';
 const checkMode = process.argv.includes('--check');
 const repoRoot = process.cwd();
+const cliDocsHelpWidth = 100;
 
 function pnpmCommand() {
   return process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
@@ -35,6 +36,14 @@ function normalizeLineEndings(text) {
 
 function renderMarkdownTableCell(value) {
   return value.replace(/\\/g, '\\\\').replace(/\r?\n/g, ' ').replace(/\|/g, '\\|');
+}
+
+function configureDeterministicHelp(command) {
+  command.configureHelp({ helpWidth: cliDocsHelpWidth });
+  for (const subcommand of command.commands) {
+    configureDeterministicHelp(subcommand);
+  }
+  return command;
 }
 
 function commandPath(command) {
@@ -244,4 +253,6 @@ function writeOrCheck(files) {
 
 buildCliPackage();
 const { cliCommandDocs, commandDocKey, createProgram } = await loadCliDocumentationSurface();
-writeOrCheck(await renderDocs(createProgram(), commandDocKey, cliCommandDocs));
+writeOrCheck(
+  await renderDocs(configureDeterministicHelp(createProgram()), commandDocKey, cliCommandDocs),
+);

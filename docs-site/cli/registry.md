@@ -9,8 +9,8 @@ Starts a local registry, lists registered agents, and moves registry state betwe
 ```text
 Usage: a2a-warp registry [options] [command]
 
-Starts a local registry, lists registered agents, and moves registry state
-between control planes with versioned JSON export files.
+Starts a local registry, lists registered agents, and moves registry state between control planes
+with versioned JSON export files.
 
 Options:
   -h, --help        display help for command

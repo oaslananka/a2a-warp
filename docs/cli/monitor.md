@@ -9,19 +9,16 @@ Polls task status snapshots from an A2A endpoint and emits task state summaries 
 ```text
 Usage: a2a-warp monitor [options] <url>
 
-Polls task status snapshots from an A2A endpoint and emits task state summaries
-for each cycle.
+Polls task status snapshots from an A2A endpoint and emits task state summaries for each cycle.
 
 Options:
   --interval <ms>           Polling interval in milliseconds (default: "2000")
   --cycles <count>          Number of polling cycles before exit
   --limit <count>           Number of tasks to fetch (default: "50")
   --context-id <contextId>  Filter tasks by context id
-  --header <key:value...>   HTTP header to send; accepts one or more key:value
-                            entries
+  --header <key:value...>   HTTP header to send; accepts one or more key:value entries
   --bearer-token <token>    Bearer token sent as Authorization: Bearer <token>
-  --api-key <name:value>    API key header as name:value; repeat for multiple
-                            keys
+  --api-key <name:value>    API key header as name:value; repeat for multiple keys
   --timeout-ms <ms>         Per-request timeout in milliseconds
   --retries <count>         Retry count for transient network failures
   --request-id <id>         Request id sent as x-request-id

@@ -9,15 +9,12 @@ Discovers an A2A endpoint Agent Card and prints human-readable details or machin
 ```text
 Usage: a2a-warp discover [options] <url>
 
-Discovers an A2A endpoint Agent Card and prints human-readable details or
-machine-readable JSON.
+Discovers an A2A endpoint Agent Card and prints human-readable details or machine-readable JSON.
 
 Options:
-  --header <key:value...>  HTTP header to send; accepts one or more key:value
-                           entries
+  --header <key:value...>  HTTP header to send; accepts one or more key:value entries
   --bearer-token <token>   Bearer token sent as Authorization: Bearer <token>
-  --api-key <name:value>   API key header as name:value; repeat for multiple
-                           keys
+  --api-key <name:value>   API key header as name:value; repeat for multiple keys
   --timeout-ms <ms>        Per-request timeout in milliseconds
   --retries <count>        Retry count for transient network failures
   --request-id <id>        Request id sent as x-request-id
