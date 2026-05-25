@@ -56,11 +56,28 @@ describe('runtime version manifest checks', () => {
       ),
     });
   });
+
+  it('accepts compatibility matrix rows with reordered keys and trailing comments', async () => {
+    const workspace = await createRuntimeWorkspace({
+      compatibilityRowsYaml: `          - node: '22.22.3' # minimum supported LTS
+            runner: ubuntu-latest
+            os: ubuntu-latest
+          - runner: windows-2025-vs2026
+            node: '24.16.0' # primary supported LTS
+            os: windows-latest
+          - os: macos-latest
+            node: '24.16.0' # primary supported LTS
+            runner: macos-latest`,
+    });
+
+    await expect(execRuntimeCheck(workspace)).resolves.toBeDefined();
+  });
 });
 
 async function createRuntimeWorkspace(
   options: {
     compatibilityRows?: Array<{ os: string; runner: string; node: string }>;
+    compatibilityRowsYaml?: string;
     rulesetContexts?: string[];
   } = {},
 ): Promise<string> {
@@ -100,7 +117,11 @@ async function createRuntimeWorkspace(
     'cli/src/commands/scaffold.ts',
     `export const fixture = { packageManager: 'pnpm@${manifest.pnpm}' };\n`,
   );
-  await writeFixture(root, '.github/workflows/ci.yml', ciWorkflow(compatibilityRows));
+  await writeFixture(
+    root,
+    '.github/workflows/ci.yml',
+    ciWorkflow(compatibilityRows, options.compatibilityRowsYaml),
+  );
   for (const workflow of ['docs.yml', 'release-please.yml', 'security.yml']) {
     await writeFixture(root, `.github/workflows/${workflow}`, workflowWithNodeEnv());
   }
@@ -125,14 +146,19 @@ async function writeFixture(root: string, path: string, content: string): Promis
   await writeFile(target, content);
 }
 
-function ciWorkflow(rows: Array<{ os: string; runner: string; node: string }>): string {
-  const matrixRows = rows
-    .map(
-      (row) => `          - os: ${row.os}
+function ciWorkflow(
+  rows: Array<{ os: string; runner: string; node: string }>,
+  matrixRowsOverride?: string,
+): string {
+  const matrixRows =
+    matrixRowsOverride ??
+    rows
+      .map(
+        (row) => `          - os: ${row.os}
             runner: ${row.runner}
             node: '${row.node}'`,
-    )
-    .join('\n');
+      )
+      .join('\n');
 
   return `name: CI
 

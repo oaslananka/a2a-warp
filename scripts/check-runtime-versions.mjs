@@ -103,22 +103,11 @@ function syncScaffoldPackageManager(manifest) {
   writeOrExpect(path, original, updated);
 }
 
-function syncCompatibilityContexts(manifest) {
-  const compatibilityMinimum = manifest.nodeCompatibility.find(
-    (version) => version !== manifest.node,
-  );
-  if (!compatibilityMinimum) return;
-  for (const path of ['.github/rulesets/main.json', 'docs/release/branch-protection.md']) {
-    const original = readText(path);
-    const updated = original
-      .replace(/node 22\.\d+\.\d+/g, `node ${compatibilityMinimum}`)
-      .replace(/node 24\.\d+\.\d+/g, `node ${manifest.node}`);
-    writeOrExpect(path, original, updated);
-  }
-}
-
 function stripYamlScalar(value) {
-  return value.trim().replace(/^['"]|['"]$/g, '');
+  return value
+    .trim()
+    .replace(/\s+#.*$/, '')
+    .replace(/^['"]|['"]$/g, '');
 }
 
 function completeCompatibilityRow(row, path) {
@@ -152,23 +141,17 @@ function readCompatibilityMatrix(path) {
     }
     if (!inInclude) continue;
 
-    const osMatch = /^\s+-\s+os:\s*(.+?)\s*$/.exec(line);
-    if (osMatch) {
+    const itemMatch = /^\s+-\s+(os|runner|node):\s*(.+?)\s*$/.exec(line);
+    if (itemMatch) {
       const completed = completeCompatibilityRow(current, path);
       if (completed) rows.push(completed);
-      current = { os: stripYamlScalar(osMatch[1]) };
+      current = { [itemMatch[1]]: stripYamlScalar(itemMatch[2]) };
       continue;
     }
 
-    const runnerMatch = /^\s+runner:\s*(.+?)\s*$/.exec(line);
-    if (runnerMatch && current) {
-      current.runner = stripYamlScalar(runnerMatch[1]);
-      continue;
-    }
-
-    const nodeMatch = /^\s+node:\s*(.+?)\s*$/.exec(line);
-    if (nodeMatch && current) {
-      current.node = stripYamlScalar(nodeMatch[1]);
+    const keyMatch = /^\s+(os|runner|node):\s*(.+?)\s*$/.exec(line);
+    if (keyMatch && current) {
+      current[keyMatch[1]] = stripYamlScalar(keyMatch[2]);
     }
   }
 
@@ -315,7 +298,6 @@ if (failures.length === 0) {
     syncWorkflowEnv(path, manifest);
   }
   syncScaffoldPackageManager(manifest);
-  syncCompatibilityContexts(manifest);
   const compatibilityRows = readCompatibilityMatrix('.github/workflows/ci.yml');
   const expectedCompatibilityContexts = compatibilityRows.map(compatibilityContext);
   syncRulesetCompatibilityContexts('.github/rulesets/main.json', expectedCompatibilityContexts);
