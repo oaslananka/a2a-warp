@@ -1,8 +1,9 @@
 import { Command } from 'commander';
-import { A2AClient } from '@oaslananka/a2a-warp';
+import type { A2AClient } from '@oaslananka/a2a-warp';
 import { emitResult, type CliOptions, type RootOptionsProvider } from '../io.js';
+import { addNetworkOptions, createA2AClient, type NetworkCommandOptions } from '../network.js';
 
-interface MonitorCommandOptions {
+interface MonitorCommandOptions extends NetworkCommandOptions {
   interval: string;
   cycles?: string;
   limit: string;
@@ -28,7 +29,7 @@ async function monitorTasks(
   commandOptions: MonitorCommandOptions,
   options: CliOptions,
 ): Promise<void> {
-  const client = new A2AClient(url) as A2AClient & {
+  const client = createA2AClient(url, commandOptions) as A2AClient & {
     listTasks(params: {
       contextId?: string;
       limit?: number;
@@ -69,13 +70,15 @@ async function monitorTasks(
 }
 
 export function createMonitorCommand(getOptions: RootOptionsProvider): Command {
-  return new Command('monitor')
-    .argument('<url>')
-    .option('--interval <ms>', 'Polling interval in milliseconds', '2000')
-    .option('--cycles <count>', 'Number of polling cycles before exit')
-    .option('--limit <count>', 'Number of tasks to fetch', '50')
-    .option('--context-id <contextId>', 'Filter tasks by context id')
-    .action(async (url: string, commandOptions: MonitorCommandOptions) => {
-      await monitorTasks(url, commandOptions, getOptions());
-    });
+  return addNetworkOptions(
+    new Command('monitor')
+      .argument('<url>')
+      .option('--interval <ms>', 'Polling interval in milliseconds', '2000')
+      .option('--cycles <count>', 'Number of polling cycles before exit')
+      .option('--limit <count>', 'Number of tasks to fetch', '50')
+      .option('--context-id <contextId>', 'Filter tasks by context id')
+      .action(async (url: string, commandOptions: MonitorCommandOptions) => {
+        await monitorTasks(url, commandOptions, getOptions());
+      }),
+  );
 }
