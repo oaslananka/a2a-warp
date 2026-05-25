@@ -11,6 +11,16 @@ export interface RegistryRedisClient {
   get(key: string): Promise<string | null>;
   set(key: string, value: string): Promise<unknown>;
   del(key: string): Promise<number>;
+  sadd?(key: string, ...members: string[]): Promise<number>;
+  srem?(key: string, ...members: string[]): Promise<number>;
+  smembers?(key: string): Promise<string[]>;
+  sAdd?(key: string, members: string | string[]): Promise<number>;
+  sRem?(key: string, members: string | string[]): Promise<number>;
+  sMembers?(key: string): Promise<string[]>;
+  SADD?(key: string, ...members: string[]): Promise<number>;
+  SREM?(key: string, ...members: string[]): Promise<number>;
+  SMEMBERS?(key: string): Promise<string[]>;
+  multi?(): RegistryRedisTransaction;
   scan?(
     cursor: string | number,
     matchOption: 'MATCH',
@@ -21,20 +31,58 @@ export interface RegistryRedisClient {
   keys?(pattern: string): Promise<string[]>;
 }
 
+export interface RegistryRedisTransaction {
+  set?(key: string, value: string): RegistryRedisTransaction;
+  del?(key: string): RegistryRedisTransaction;
+  sadd?(key: string, ...members: string[]): RegistryRedisTransaction;
+  srem?(key: string, ...members: string[]): RegistryRedisTransaction;
+  sAdd?(key: string, members: string | string[]): RegistryRedisTransaction;
+  sRem?(key: string, members: string | string[]): RegistryRedisTransaction;
+  SADD?(key: string, ...members: string[]): RegistryRedisTransaction;
+  SREM?(key: string, ...members: string[]): RegistryRedisTransaction;
+  exec(): Promise<unknown>;
+}
+
+interface RedisSetCommands {
+  add(key: string, ...members: string[]): Promise<unknown>;
+  remove(key: string, ...members: string[]): Promise<unknown>;
+  members(key: string): Promise<string[]>;
+}
+
+interface RedisMutationBatch {
+  transaction: RegistryRedisTransaction | null;
+  queued: boolean;
+}
+
 export class RedisStorage implements IAgentStorage {
+  private readonly setCommands: RedisSetCommands | null;
+
   constructor(
     private readonly client: RegistryRedisClient,
     private readonly prefix = 'a2a:registry',
-  ) {}
+  ) {
+    this.setCommands = resolveSetCommands(client);
+  }
 
   async upsert(agent: RegisteredAgent): Promise<RegisteredAgent> {
     const previous = await this.get(agent.id);
-    if (previous) {
-      await this.removeIndexes(previous);
+
+    if (this.setCommands) {
+      const batch = this.createMutationBatch();
+      if (previous) {
+        await this.removeSetIndexes(previous, batch);
+      }
+      await this.queueSet(batch, this.key(agent.id), JSON.stringify(agent));
+      await this.addSetIndexes(agent, batch);
+      await this.commitBatch(batch);
+      return agent;
     }
 
+    if (previous) {
+      await this.removeJsonIndexes(previous);
+    }
     await this.client.set(this.key(agent.id), JSON.stringify(agent));
-    await this.addIndexes(agent);
+    await this.addJsonIndexes(agent);
     return agent;
   }
 
@@ -84,7 +132,15 @@ export class RedisStorage implements IAgentStorage {
       return false;
     }
 
-    await this.removeIndexes(current);
+    if (this.setCommands) {
+      const batch = this.createMutationBatch();
+      await this.removeSetIndexes(current, batch);
+      await this.queueDel(batch, this.key(id));
+      await this.commitBatch(batch);
+      return true;
+    }
+
+    await this.removeJsonIndexes(current);
     return (await this.client.del(this.key(id))) > 0;
   }
 
@@ -199,7 +255,62 @@ export class RedisStorage implements IAgentStorage {
     return true;
   }
 
-  private async addIndexes(agent: RegisteredAgent): Promise<void> {
+  private async addSetIndexes(agent: RegisteredAgent, batch: RedisMutationBatch): Promise<void> {
+    const terms = buildAgentIndexTerms(agent);
+    await this.queueSadd(batch, this.metaKey('agent-ids'), agent.id);
+    await this.queueSadd(batch, this.indexKey('status', terms.status), agent.id);
+    if (terms.tenantId) {
+      await this.queueSadd(batch, this.metaKey('tenant-terms'), terms.tenantId);
+      await this.queueSadd(batch, this.indexKey('tenant', terms.tenantId), agent.id);
+    }
+    if (terms.isPublic) {
+      await this.queueSadd(batch, this.indexKey('public', 'true'), agent.id);
+    }
+    for (const term of terms.skills) {
+      await this.queueSadd(batch, this.metaKey('skill-terms'), term);
+      await this.queueSadd(batch, this.indexKey('skill', term), agent.id);
+    }
+    for (const term of terms.tags) {
+      await this.queueSadd(batch, this.metaKey('tag-terms'), term);
+      await this.queueSadd(batch, this.indexKey('tag', term), agent.id);
+    }
+    for (const term of terms.names) {
+      await this.queueSadd(batch, this.metaKey('name-terms'), term);
+      await this.queueSadd(batch, this.indexKey('name', term), agent.id);
+    }
+    await this.queueSadd(batch, this.metaKey('transport-terms'), terms.transport);
+    await this.queueSadd(batch, this.indexKey('transport', terms.transport), agent.id);
+    if (terms.mcpCompatible) {
+      await this.queueSadd(batch, this.indexKey('mcp', 'true'), agent.id);
+    }
+  }
+
+  private async removeSetIndexes(agent: RegisteredAgent, batch: RedisMutationBatch): Promise<void> {
+    const terms = buildAgentIndexTerms(agent);
+    await this.queueSrem(batch, this.metaKey('agent-ids'), agent.id);
+    await this.queueSrem(batch, this.indexKey('status', terms.status), agent.id);
+    if (terms.tenantId) {
+      await this.queueSrem(batch, this.indexKey('tenant', terms.tenantId), agent.id);
+    }
+    if (terms.isPublic) {
+      await this.queueSrem(batch, this.indexKey('public', 'true'), agent.id);
+    }
+    for (const term of terms.skills) {
+      await this.queueSrem(batch, this.indexKey('skill', term), agent.id);
+    }
+    for (const term of terms.tags) {
+      await this.queueSrem(batch, this.indexKey('tag', term), agent.id);
+    }
+    for (const term of terms.names) {
+      await this.queueSrem(batch, this.indexKey('name', term), agent.id);
+    }
+    await this.queueSrem(batch, this.indexKey('transport', terms.transport), agent.id);
+    if (terms.mcpCompatible) {
+      await this.queueSrem(batch, this.indexKey('mcp', 'true'), agent.id);
+    }
+  }
+
+  private async addJsonIndexes(agent: RegisteredAgent): Promise<void> {
     const terms = buildAgentIndexTerms(agent);
     await this.addMetaValue('agent-ids', agent.id);
     await this.addIndexValue('status', terms.status, agent.id);
@@ -229,7 +340,7 @@ export class RedisStorage implements IAgentStorage {
     }
   }
 
-  private async removeIndexes(agent: RegisteredAgent): Promise<void> {
+  private async removeJsonIndexes(agent: RegisteredAgent): Promise<void> {
     const terms = buildAgentIndexTerms(agent);
     await this.removeMetaValue('agent-ids', agent.id);
     await this.removeIndexValue('status', terms.status, agent.id);
@@ -308,6 +419,10 @@ export class RedisStorage implements IAgentStorage {
   }
 
   private async readJsonArray(key: string): Promise<string[]> {
+    if (this.setCommands) {
+      return this.setCommands.members(key);
+    }
+
     const value = await this.client.get(key);
     if (!value) {
       return [];
@@ -327,6 +442,168 @@ export class RedisStorage implements IAgentStorage {
   private indexKey(namespace: string, value: string): string {
     return `${this.prefix}:idx:${namespace}:${value}`;
   }
+
+  private createMutationBatch(): RedisMutationBatch {
+    return {
+      transaction: this.client.multi?.() ?? null,
+      queued: false,
+    };
+  }
+
+  private async queueSet(batch: RedisMutationBatch, key: string, value: string): Promise<void> {
+    if (batch.transaction?.set) {
+      batch.transaction.set(key, value);
+      batch.queued = true;
+      return;
+    }
+    await this.client.set(key, value);
+  }
+
+  private async queueDel(batch: RedisMutationBatch, key: string): Promise<void> {
+    if (batch.transaction?.del) {
+      batch.transaction.del(key);
+      batch.queued = true;
+      return;
+    }
+    await this.client.del(key);
+  }
+
+  private async queueSadd(
+    batch: RedisMutationBatch,
+    key: string,
+    ...members: string[]
+  ): Promise<void> {
+    const add = this.setCommands?.add;
+    if (add) {
+      await this.queueSetIndexMutation(batch, SADD_METHODS, add, key, ...members);
+    }
+  }
+
+  private async queueSrem(
+    batch: RedisMutationBatch,
+    key: string,
+    ...members: string[]
+  ): Promise<void> {
+    const remove = this.setCommands?.remove;
+    if (remove) {
+      await this.queueSetIndexMutation(batch, SREM_METHODS, remove, key, ...members);
+    }
+  }
+
+  private async queueSetIndexMutation(
+    batch: RedisMutationBatch,
+    methods: readonly string[],
+    fallback: (key: string, ...members: string[]) => Promise<unknown>,
+    key: string,
+    ...members: string[]
+  ): Promise<void> {
+    if (members.length === 0) {
+      return;
+    }
+
+    if (batch.transaction) {
+      const queued = queueSetMutation(batch.transaction, methods, key, members);
+      if (queued) {
+        batch.queued = true;
+        return;
+      }
+    }
+
+    await fallback(key, ...members);
+  }
+
+  private async commitBatch(batch: RedisMutationBatch): Promise<void> {
+    if (batch.transaction && batch.queued) {
+      await batch.transaction.exec();
+    }
+  }
+}
+
+const SADD_METHODS = ['sadd', 'sAdd', 'SADD'] as const;
+const SREM_METHODS = ['srem', 'sRem', 'SREM'] as const;
+const SMEMBERS_METHODS = ['smembers', 'sMembers', 'SMEMBERS'] as const;
+
+interface ResolvedRedisMethod {
+  name: string;
+  method: (...args: unknown[]) => unknown;
+}
+
+function resolveSetCommands(client: RegistryRedisClient): RedisSetCommands | null {
+  const add = bindSetMutation(client, SADD_METHODS);
+  const remove = bindSetMutation(client, SREM_METHODS);
+  const members = bindSetMembers(client, SMEMBERS_METHODS);
+
+  if (!add || !remove || !members) {
+    return null;
+  }
+
+  return { add, remove, members };
+}
+
+function bindSetMutation(
+  target: RegistryRedisClient,
+  names: readonly string[],
+): ((key: string, ...members: string[]) => Promise<unknown>) | null {
+  const resolved = resolveRedisMethod(target, names);
+  if (!resolved) {
+    return null;
+  }
+
+  return async (key, ...members) =>
+    shouldPassMembersAsArray(resolved.name)
+      ? resolved.method.call(target, key, members)
+      : resolved.method.call(target, key, ...members);
+}
+
+function bindSetMembers(
+  target: RegistryRedisClient,
+  names: readonly string[],
+): ((key: string) => Promise<string[]>) | null {
+  const resolved = resolveRedisMethod(target, names);
+  if (!resolved) {
+    return null;
+  }
+
+  return async (key) => {
+    const result = await resolved.method.call(target, key);
+    return Array.isArray(result) ? result : Array.from(result as Iterable<string>);
+  };
+}
+
+function queueSetMutation(
+  target: RegistryRedisTransaction,
+  names: readonly string[],
+  key: string,
+  members: string[],
+): boolean {
+  const resolved = resolveRedisMethod(target, names);
+  if (!resolved) {
+    return false;
+  }
+
+  if (shouldPassMembersAsArray(resolved.name)) {
+    resolved.method.call(target, key, members);
+    return true;
+  }
+  resolved.method.call(target, key, ...members);
+  return true;
+}
+
+function resolveRedisMethod(target: object, names: readonly string[]): ResolvedRedisMethod | null {
+  const record = target as unknown as Record<string, unknown>;
+  for (const name of names) {
+    const method = record[name];
+    if (typeof method !== 'function') {
+      continue;
+    }
+
+    return { name, method: method as (...args: unknown[]) => unknown };
+  }
+  return null;
+}
+
+function shouldPassMembersAsArray(name: string): boolean {
+  return name === 'sAdd' || name === 'sRem';
 }
 
 function parseCursor(cursor: string | undefined): number {
