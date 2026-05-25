@@ -8,8 +8,12 @@ const generatedMarker = '<!-- Synced from scripts/generate-command-docs.mjs. -->
 const checkMode = process.argv.includes('--check');
 const repoRoot = process.cwd();
 
+function pnpmCommand() {
+  return process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
+}
+
 function buildCliPackage() {
-  execFileSync('pnpm', ['--filter', '@oaslananka/a2a-warp-cli', 'run', 'build'], {
+  execFileSync(pnpmCommand(), ['--filter', '@oaslananka/a2a-warp-cli', 'run', 'build'], {
     cwd: repoRoot,
     stdio: 'inherit',
   });
@@ -23,6 +27,14 @@ async function loadCliDocumentationSurface() {
 
 function normalizeHelp(text) {
   return text.trimEnd();
+}
+
+function normalizeLineEndings(text) {
+  return text.replace(/\r\n/g, '\n');
+}
+
+function renderMarkdownTableCell(value) {
+  return value.replace(/\r?\n/g, ' ').replace(/\|/g, '\\|');
 }
 
 function commandPath(command) {
@@ -66,7 +78,9 @@ function renderCommandTable(commands, docByKey, commandDocKey) {
     ...commands.map((command) => {
       const path = commandPath(command);
       const doc = docByKey.get(commandDocKey(path));
-      const summary = doc?.summary ?? (command.summary() || command.description());
+      const summary = renderMarkdownTableCell(
+        doc?.summary ?? (command.summary() || command.description() || ''),
+      );
       return `| \`${commandTitle(path)}\` | ${summary} |`;
     }),
   ].join('\n');
@@ -207,8 +221,8 @@ function writeOrCheck(files) {
         failures.push(`${relativePath}: missing`);
         continue;
       }
-      const current = readFileSync(targetPath, 'utf8');
-      if (current !== contents) {
+      const current = normalizeLineEndings(readFileSync(targetPath, 'utf8'));
+      if (current !== normalizeLineEndings(contents)) {
         failures.push(`${relativePath}: generated docs are stale`);
       }
       continue;

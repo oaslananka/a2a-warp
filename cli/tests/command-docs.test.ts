@@ -24,6 +24,17 @@ describe('generated CLI command documentation', () => {
     expect(generator).not.toContain("const commands = ['validate'");
   });
 
+  it('keeps the command docs generator portable across shells and line endings', () => {
+    const generator = readRepoFile('scripts/generate-command-docs.mjs');
+
+    expect(generator).toContain("process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'");
+    expect(generator).toContain('function renderMarkdownTableCell');
+    expect(generator).toContain("replace(/\\r?\\n/g, ' ')");
+    expect(generator).toContain("replace(/\\|/g, '\\\\|')");
+    expect(generator).toContain('function normalizeLineEndings');
+    expect(generator).toContain("replace(/\\r\\n/g, '\\n')");
+  });
+
   it('keeps canonical and docs-site command pages in parity with live CLI commands', () => {
     for (const commandName of topLevelCommandNames()) {
       const canonicalPath = `docs/cli/${commandName}.md`;
