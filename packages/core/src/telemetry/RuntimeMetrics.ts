@@ -1,3 +1,10 @@
+import {
+  metrics,
+  type Attributes,
+  type Counter,
+  type Histogram,
+  type UpDownCounter,
+} from '@opentelemetry/api';
 import type { Task, TaskCounts, TaskState } from '../types/task.js';
 
 export interface RuntimeMetricsOptions {
@@ -14,6 +21,17 @@ function escapeLabel(value: string): string {
 export class RuntimeMetrics {
   private readonly counters = new Map<string, number>();
   private readonly durationBuckets = new Map<number, number>();
+  private readonly metricAttributes: Attributes;
+  private readonly taskCreatedCounter: Counter;
+  private readonly taskStartedCounter: Counter;
+  private readonly taskCompletedCounter: Counter;
+  private readonly taskFailedCounter: Counter;
+  private readonly taskCanceledCounter: Counter;
+  private readonly authRejectedCounter: Counter;
+  private readonly sseConnectionsCounter: Counter;
+  private readonly sseReconnectCounter: Counter;
+  private readonly sseActiveConnectionsCounter: UpDownCounter;
+  private readonly taskDurationHistogram: Histogram;
   private durationCount = 0;
   private durationSum = 0;
   private sseActiveConnections = 0;
@@ -22,10 +40,51 @@ export class RuntimeMetrics {
     for (const bucket of DURATION_BUCKETS_MS) {
       this.durationBuckets.set(bucket, 0);
     }
+
+    this.metricAttributes = {
+      service_name: options.serviceName,
+      service_version: options.serviceVersion,
+    };
+    const meter = metrics.getMeter('@oaslananka/a2a-warp', '1.0.0');
+    this.taskCreatedCounter = meter.createCounter('a2a_runtime_task_created_total', {
+      description: 'Total tasks created by the runtime.',
+    });
+    this.taskStartedCounter = meter.createCounter('a2a_runtime_task_started_total', {
+      description: 'Total tasks that entered working state.',
+    });
+    this.taskCompletedCounter = meter.createCounter('a2a_runtime_task_completed_total', {
+      description: 'Total tasks completed successfully.',
+    });
+    this.taskFailedCounter = meter.createCounter('a2a_runtime_task_failed_total', {
+      description: 'Total tasks that failed.',
+    });
+    this.taskCanceledCounter = meter.createCounter('a2a_runtime_task_canceled_total', {
+      description: 'Total tasks canceled.',
+    });
+    this.authRejectedCounter = meter.createCounter('a2a_runtime_auth_rejected_total', {
+      description: 'Total rejected authenticated requests.',
+    });
+    this.sseConnectionsCounter = meter.createCounter('a2a_runtime_sse_connections_total', {
+      description: 'Total SSE connections opened.',
+    });
+    this.sseReconnectCounter = meter.createCounter('a2a_runtime_sse_reconnect_total', {
+      description: 'Total SSE reconnects detected.',
+    });
+    this.sseActiveConnectionsCounter = meter.createUpDownCounter(
+      'a2a_runtime_sse_connections_active',
+      {
+        description: 'Active SSE connections.',
+      },
+    );
+    this.taskDurationHistogram = meter.createHistogram('a2a_runtime_task_duration_ms', {
+      description: 'Task duration in milliseconds.',
+      unit: 'ms',
+    });
   }
 
   recordTaskCreated(): void {
     this.increment('a2a_runtime_task_created_total');
+    this.taskCreatedCounter.add(1, this.metricAttributes);
   }
 
   recordTaskStateChange(task: Task, previousState?: TaskState): void {
@@ -37,18 +96,22 @@ export class RuntimeMetrics {
       case 'WORKING':
         if (previousState !== 'WORKING') {
           this.increment('a2a_runtime_task_started_total');
+          this.taskStartedCounter.add(1, this.metricAttributes);
         }
         break;
       case 'COMPLETED':
         this.increment('a2a_runtime_task_completed_total');
+        this.taskCompletedCounter.add(1, this.metricAttributes);
         this.observeDuration(task);
         break;
       case 'FAILED':
         this.increment('a2a_runtime_task_failed_total');
+        this.taskFailedCounter.add(1, this.metricAttributes);
         this.observeDuration(task);
         break;
       case 'CANCELED':
         this.increment('a2a_runtime_task_canceled_total');
+        this.taskCanceledCounter.add(1, this.metricAttributes);
         this.observeDuration(task);
         break;
       default:
@@ -58,18 +121,26 @@ export class RuntimeMetrics {
 
   recordAuthReject(): void {
     this.increment('a2a_runtime_auth_rejected_total');
+    this.authRejectedCounter.add(1, this.metricAttributes);
   }
 
   recordSseConnectionOpened(isReconnect = false): void {
     this.increment('a2a_runtime_sse_connections_total');
+    this.sseConnectionsCounter.add(1, this.metricAttributes);
     if (isReconnect) {
       this.increment('a2a_runtime_sse_reconnect_total');
+      this.sseReconnectCounter.add(1, this.metricAttributes);
     }
     this.sseActiveConnections += 1;
+    this.sseActiveConnectionsCounter.add(1, this.metricAttributes);
   }
 
   recordSseConnectionClosed(): void {
+    const previousActiveConnections = this.sseActiveConnections;
     this.sseActiveConnections = Math.max(this.sseActiveConnections - 1, 0);
+    if (previousActiveConnections > this.sseActiveConnections) {
+      this.sseActiveConnectionsCounter.add(-1, this.metricAttributes);
+    }
   }
 
   renderPrometheus(taskCounts: TaskCounts): string {
@@ -135,6 +206,7 @@ export class RuntimeMetrics {
 
     this.durationCount += 1;
     this.durationSum += durationMs;
+    this.taskDurationHistogram.record(durationMs, this.metricAttributes);
     for (const bucket of DURATION_BUCKETS_MS) {
       if (durationMs <= bucket) {
         this.durationBuckets.set(bucket, (this.durationBuckets.get(bucket) ?? 0) + 1);

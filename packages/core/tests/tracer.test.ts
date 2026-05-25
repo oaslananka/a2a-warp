@@ -56,7 +56,11 @@ vi.mock('@opentelemetry/api', () => {
     callback();
     return nextContext;
   });
-  const getTracer = vi.fn((name: string, version: string) => ({ name, version }));
+  const getTracer = vi.fn((name: string, version: string) => ({
+    name,
+    version,
+    startSpan: vi.fn(() => 'span'),
+  }));
 
   return {
     SpanStatusCode: {
@@ -120,7 +124,8 @@ describe('tracer helpers', () => {
 
   it('exports the tracer instance and span status codes', () => {
     expect(typeof trace.getTracer).toBe('function');
-    expect(a2aWarpTracer).toEqual({ name: '@oaslananka/a2a-warp', version: '1.0.0' });
+    expect(a2aWarpTracer.startSpan('test-span')).toBe('span');
+    expect(trace.getTracer).toHaveBeenCalledWith('@oaslananka/a2a-warp', '1.0.0');
     expect(SpanStatusCode.OK).toBe('OK');
     expect(SpanStatusCode.ERROR).toBe('ERROR');
   });
