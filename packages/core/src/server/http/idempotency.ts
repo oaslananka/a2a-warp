@@ -76,6 +76,7 @@ export async function resolveIdempotency(
     authMethod: requestContext.authMethod,
   });
   const fingerprint = buildIdempotencyFingerprint({
+    scope,
     method: rpcReq.method,
     params: rpcReq.params ?? null,
   });
