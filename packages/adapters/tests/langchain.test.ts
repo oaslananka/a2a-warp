@@ -1,8 +1,48 @@
 import { describe, it, expect, vi } from 'vitest';
 import { LangChainAdapter } from '../src/langchain/LangChainAdapter.js';
 import type { AnyAgentCard, Task, Message } from '@oaslananka/a2a-warp';
+import { runAdapterContract } from './contracts/adapterContract.js';
+
+function createLangChainContractInstance(
+  card: AnyAgentCard,
+  responseText = 'langchain contract response',
+) {
+  const runnable = {
+    invoke: vi.fn().mockResolvedValue({
+      messages: [{ role: 'assistant', content: responseText }],
+    }),
+  };
+
+  return {
+    adapter: new LangChainAdapter(card, runnable),
+    context: { runnable },
+  };
+}
 
 describe('LangChainAdapter', () => {
+  runAdapterContract({
+    adapterName: 'LangChainAdapter',
+    provider: 'langchain',
+    compatibility: 'stable',
+    supportsStreaming: false,
+    expectedText: 'langchain contract response',
+    createInstance: (card) => createLangChainContractInstance(card),
+    createProviderErrorCase: (card) => {
+      const instance = createLangChainContractInstance(card);
+      instance.context.runnable.invoke.mockRejectedValueOnce(new Error('langchain unavailable'));
+      return { instance, expectedError: /langchain unavailable/ };
+    },
+    assertProviderRequest: ({ context }) => {
+      expect(context.runnable.invoke).toHaveBeenCalledWith({
+        messages: [
+          { role: 'user', content: 'previous user' },
+          { role: 'assistant', content: 'previous agent' },
+          { role: 'user', content: 'contract current' },
+        ],
+      });
+    },
+  });
+
   it('should map history and invoke the runnable', async () => {
     const card: AnyAgentCard = {
       protocolVersion: '1.0',

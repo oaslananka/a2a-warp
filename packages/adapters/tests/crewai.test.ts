@@ -1,10 +1,66 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CrewAIAdapter } from '../src/crewai/CrewAIAdapter.js';
 import type { AnyAgentCard, Message, Task } from '@oaslananka/a2a-warp';
+import { runAdapterContract } from './contracts/adapterContract.js';
+
+function createCrewAIContractInstance(
+  card: AnyAgentCard,
+  responseText = 'crewai contract response',
+) {
+  const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+    new Response(JSON.stringify({ output: responseText, metadata: { requestId: 'contract' } }), {
+      status: 200,
+    }),
+  );
+
+  return {
+    adapter: new CrewAIAdapter(card, 'https://example.com/bridge'),
+    context: { fetchMock },
+  };
+}
 
 describe('CrewAIAdapter', () => {
   afterEach(() => {
     vi.restoreAllMocks();
+  });
+
+  runAdapterContract({
+    adapterName: 'CrewAIAdapter',
+    provider: 'crewai',
+    compatibility: 'beta',
+    supportsStreaming: false,
+    expectedText: 'crewai contract response',
+    createInstance: (card) => createCrewAIContractInstance(card),
+    createProviderErrorCase: (card) => {
+      const instance = createCrewAIContractInstance(card);
+      instance.context.fetchMock.mockResolvedValueOnce(new Response('', { status: 400 }));
+      return { instance, expectedError: /CrewAI bridge failed with status 400/ };
+    },
+    assertProviderRequest: ({ context }) => {
+      const [, init] = context.fetchMock.mock.calls[0] ?? [];
+      const body = JSON.parse(String(init?.body)) as {
+        taskId: string;
+        contextId: string;
+        message: string;
+        history: Array<{ role: string; content: string }>;
+      };
+
+      expect(init).toEqual(
+        expect.objectContaining({
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      );
+      expect(body).toEqual({
+        taskId: 'contract-task',
+        contextId: 'contract-context',
+        message: 'contract current',
+        history: [
+          { role: 'user', content: 'previous user' },
+          { role: 'agent', content: 'previous agent' },
+        ],
+      });
+    },
   });
 
   it('maps bridge JSON responses into artifacts', async () => {

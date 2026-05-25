@@ -1,8 +1,50 @@
 import { describe, expect, it, vi } from 'vitest';
 import { LlamaIndexAdapter } from '../src/llamaindex/LlamaIndexAdapter.js';
 import type { AnyAgentCard, Message, Task } from '@oaslananka/a2a-warp';
+import { runAdapterContract } from './contracts/adapterContract.js';
+
+function createLlamaIndexContractInstance(
+  card: AnyAgentCard,
+  responseText = 'llamaindex contract response',
+) {
+  const engine = {
+    chat: vi.fn().mockResolvedValue({
+      response: responseText,
+      sourceNodes: [{ score: 0.7, node: { metadata: { source: 'contract-doc' } } }],
+    }),
+  };
+
+  return {
+    adapter: new LlamaIndexAdapter(card, engine),
+    context: { engine },
+  };
+}
 
 describe('LlamaIndexAdapter', () => {
+  runAdapterContract({
+    adapterName: 'LlamaIndexAdapter',
+    provider: 'llamaindex',
+    compatibility: 'beta',
+    supportsStreaming: false,
+    expectedText: 'llamaindex contract response',
+    createInstance: (card) => createLlamaIndexContractInstance(card),
+    createProviderErrorCase: (card) => {
+      const instance = createLlamaIndexContractInstance(card);
+      instance.context.engine.chat.mockRejectedValueOnce(new Error('llamaindex unavailable'));
+      return { instance, expectedError: /llamaindex unavailable/ };
+    },
+    assertProviderRequest: ({ context }) => {
+      expect(context.engine.chat).toHaveBeenCalledWith({
+        message: 'contract current',
+        chatHistory: [
+          { role: 'user', content: 'previous user' },
+          { role: 'assistant', content: 'previous agent' },
+        ],
+        stream: false,
+      });
+    },
+  });
+
   it('supports query engines', async () => {
     const card: AnyAgentCard = {
       protocolVersion: '1.0',
