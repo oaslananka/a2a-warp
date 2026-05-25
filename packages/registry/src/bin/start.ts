@@ -1,5 +1,24 @@
 import { RegistryServer } from '../index.js';
 
+const args = process.argv.slice(2);
+
+if (args.includes('--help') || args.includes('-h')) {
+  process.stdout.write(`Usage: a2a-warp-registry
+
+Starts the A2A Warp registry server.
+
+Environment:
+  PORT                         Port to listen on (default: 3099)
+  REGISTRY_TOKEN               Optional control-plane bearer token
+  REGISTRY_ALLOWED_ORIGINS     Comma-separated CORS allowlist
+  REGISTRY_REQUIRE_ORIGIN      Require Origin on control-plane requests
+  ALLOW_LOCALHOST              Allow localhost agent URLs
+  ALLOW_PRIVATE_NETWORKS       Allow private-network agent URLs
+  ALLOW_UNRESOLVED_HOSTNAMES   Allow unresolved agent hostnames
+`);
+  process.exit(0);
+}
+
 function readBoolean(name: string, fallback: boolean): boolean {
   const raw = process.env[name];
   if (!raw) {
