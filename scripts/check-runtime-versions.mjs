@@ -4,6 +4,7 @@ import { readJson, readText, fail } from './check-utils.mjs';
 const write = process.argv.includes('--write');
 const manifestPath = 'tools/runtime-versions.json';
 const semverPattern = /^\d+\.\d+\.\d+$/;
+const compatibilityContextPrefix = 'CI / compatibility-smoke (';
 const failures = [];
 
 function readRuntimeManifest() {
@@ -116,6 +117,183 @@ function syncCompatibilityContexts(manifest) {
   }
 }
 
+function stripYamlScalar(value) {
+  return value.trim().replace(/^['"]|['"]$/g, '');
+}
+
+function completeCompatibilityRow(row, path) {
+  if (!row) return undefined;
+  const missing = ['os', 'runner', 'node'].filter((key) => !row[key]);
+  if (missing.length > 0) {
+    failures.push(`${path}: compatibility matrix row missing ${missing.join(', ')}`);
+    return undefined;
+  }
+  return row;
+}
+
+function readCompatibilityMatrix(path) {
+  const rows = [];
+  let inCompatibilityJob = false;
+  let inInclude = false;
+  let current;
+
+  for (const line of readText(path).split(/\r?\n/)) {
+    if (/^  compatibility-smoke:\s*$/.test(line)) {
+      inCompatibilityJob = true;
+      continue;
+    }
+    if (inCompatibilityJob && /^  [A-Za-z0-9_-]+:\s*$/.test(line)) {
+      break;
+    }
+    if (!inCompatibilityJob) continue;
+    if (/^\s+include:\s*$/.test(line)) {
+      inInclude = true;
+      continue;
+    }
+    if (!inInclude) continue;
+
+    const osMatch = /^\s+-\s+os:\s*(.+?)\s*$/.exec(line);
+    if (osMatch) {
+      const completed = completeCompatibilityRow(current, path);
+      if (completed) rows.push(completed);
+      current = { os: stripYamlScalar(osMatch[1]) };
+      continue;
+    }
+
+    const runnerMatch = /^\s+runner:\s*(.+?)\s*$/.exec(line);
+    if (runnerMatch && current) {
+      current.runner = stripYamlScalar(runnerMatch[1]);
+      continue;
+    }
+
+    const nodeMatch = /^\s+node:\s*(.+?)\s*$/.exec(line);
+    if (nodeMatch && current) {
+      current.node = stripYamlScalar(nodeMatch[1]);
+    }
+  }
+
+  const completed = completeCompatibilityRow(current, path);
+  if (completed) rows.push(completed);
+  if (rows.length === 0) failures.push(`${path}: compatibility matrix include rows not found`);
+  return rows;
+}
+
+function compatibilityContext(row) {
+  return `CI / compatibility-smoke (${row.os}, node ${row.node})`;
+}
+
+function readRulesetCompatibilityContexts(path) {
+  const ruleset = readJson(path);
+  const statusRule = ruleset.rules?.find((rule) => rule.type === 'required_status_checks');
+  const contexts = statusRule?.parameters?.required_status_checks ?? [];
+  if (!Array.isArray(contexts)) {
+    failures.push(`${path}: required_status_checks must be an array`);
+    return [];
+  }
+  return contexts
+    .map((entry) => entry?.context)
+    .filter(
+      (context) => typeof context === 'string' && context.startsWith(compatibilityContextPrefix),
+    );
+}
+
+function syncRulesetCompatibilityContexts(path, expectedContexts) {
+  const original = readText(path);
+  const ruleset = JSON.parse(original);
+  const statusRule = ruleset.rules?.find((rule) => rule.type === 'required_status_checks');
+  const contexts = statusRule?.parameters?.required_status_checks;
+  if (!Array.isArray(contexts)) {
+    failures.push(`${path}: required_status_checks must be an array`);
+    return;
+  }
+
+  const firstCompatibilityIndex = contexts.findIndex((entry) =>
+    entry?.context?.startsWith(compatibilityContextPrefix),
+  );
+  const nonCompatibilityContexts = contexts.filter(
+    (entry) => !entry?.context?.startsWith(compatibilityContextPrefix),
+  );
+  const compatibilityContexts = expectedContexts.map((context) => ({ context }));
+  const insertAt =
+    firstCompatibilityIndex === -1 ? nonCompatibilityContexts.length : firstCompatibilityIndex;
+  const updatedContexts = [
+    ...nonCompatibilityContexts.slice(0, insertAt),
+    ...compatibilityContexts,
+    ...nonCompatibilityContexts.slice(insertAt),
+  ];
+  const current = contexts.map((entry) => entry?.context).filter(Boolean);
+  const updated = updatedContexts.map((entry) => entry.context);
+  if (JSON.stringify(current) === JSON.stringify(updated)) return;
+
+  statusRule.parameters.required_status_checks = updatedContexts;
+  writeOrExpect(path, original, normalizeJson(ruleset));
+}
+
+function syncBranchProtectionCompatibilityContexts(path, expectedContexts) {
+  const original = readText(path);
+  const expectedBlock = expectedContexts.map((context) => `- \`${context}\``).join('\n');
+  const updated = original.replace(
+    /(?:- `CI \/ compatibility-smoke \([^)]+\)`\n?)+/,
+    `${expectedBlock}\n`,
+  );
+  writeOrExpect(path, original, updated);
+}
+
+function compareContextSets(path, actual, expected, label) {
+  const missing = expected.filter((context) => !actual.includes(context));
+  const extra = actual.filter((context) => !expected.includes(context));
+  if (missing.length === 0 && extra.length === 0) return;
+  failures.push(
+    `${path}: ${label} compatibility contexts must match CI matrix job names` +
+      `${missing.length > 0 ? `; missing ${missing.join(', ')}` : ''}` +
+      `${extra.length > 0 ? `; extra ${extra.join(', ')}` : ''}`,
+  );
+}
+
+function readBranchProtectionCompatibilityContexts(path) {
+  return [...readText(path).matchAll(/- `(CI \/ compatibility-smoke \([^)]+\))`/g)].map(
+    (match) => match[1],
+  );
+}
+
+function validateCompatibilityConfiguration(manifest, rows, expectedContexts) {
+  const manifestVersions = new Set(manifest.nodeCompatibility);
+  for (const row of rows) {
+    if (!manifestVersions.has(row.node)) {
+      failures.push(
+        `.github/workflows/ci.yml: compatibility matrix node ${row.node} is not present in ${manifestPath}`,
+      );
+    }
+  }
+
+  for (const version of manifest.nodeCompatibility) {
+    if (!rows.some((row) => row.node === version)) {
+      failures.push(`.github/workflows/ci.yml: compatibility matrix missing node ${version}`);
+    }
+  }
+
+  for (const row of rows) {
+    if (row.os !== 'ubuntu-latest' && row.node !== manifest.node) {
+      failures.push(
+        `.github/workflows/ci.yml: ${row.os} compatibility smoke must use primary node ${manifest.node}`,
+      );
+    }
+  }
+
+  compareContextSets(
+    '.github/rulesets/main.json',
+    readRulesetCompatibilityContexts('.github/rulesets/main.json'),
+    expectedContexts,
+    'required',
+  );
+  compareContextSets(
+    'docs/release/branch-protection.md',
+    readBranchProtectionCompatibilityContexts('docs/release/branch-protection.md'),
+    expectedContexts,
+    'documented',
+  );
+}
+
 const manifest = readRuntimeManifest();
 validateRuntimeManifest(manifest);
 
@@ -138,6 +316,14 @@ if (failures.length === 0) {
   }
   syncScaffoldPackageManager(manifest);
   syncCompatibilityContexts(manifest);
+  const compatibilityRows = readCompatibilityMatrix('.github/workflows/ci.yml');
+  const expectedCompatibilityContexts = compatibilityRows.map(compatibilityContext);
+  syncRulesetCompatibilityContexts('.github/rulesets/main.json', expectedCompatibilityContexts);
+  syncBranchProtectionCompatibilityContexts(
+    'docs/release/branch-protection.md',
+    expectedCompatibilityContexts,
+  );
+  validateCompatibilityConfiguration(manifest, compatibilityRows, expectedCompatibilityContexts);
 }
 
 if (failures.length > 0) fail('Runtime version check failed.', failures);
