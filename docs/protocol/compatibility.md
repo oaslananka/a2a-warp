@@ -4,6 +4,8 @@ Spec reference: Agent2Agent core protocol specification and Agent2Agent specific
 
 Implementation target: A2A protocolVersion `1.0` plus compatibility normalization for older Agent Card shapes where tests cover the behavior.
 
+For the broader Node.js, package, transport, optional peer, and deprecation policy matrix, see [Compatibility](../compatibility.md).
+
 | Feature                             | Status                                       | Evidence                                                                                                                                                                  |
 | ----------------------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Agent Cards / discovery metadata    | Implemented                                  | `packages/core/tests/agent-card.test.ts`; `tests/conformance/fixtures/a2a-1.0/agent-card.json`; `tests/conformance/fixtures/a2a-1.2/agent-card.json`                      |

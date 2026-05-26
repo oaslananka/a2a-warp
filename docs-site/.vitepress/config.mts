@@ -42,6 +42,7 @@ export default defineConfig({
             { text: 'Quick Start', link: '/guide/quick-start' },
             { text: 'Examples', link: '/guide/examples' },
             { text: 'Architecture', link: '/guide/architecture' },
+            { text: 'Compatibility', link: '/guide/compatibility' },
           ],
         },
       ],
