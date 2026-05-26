@@ -15,6 +15,7 @@ const tempRoots: string[] = [];
 const manifest = {
   node: '24.16.0',
   nodeCompatibility: ['22.22.3', '24.16.0'],
+  nodeDockerAlpineDigest: 'sha256:2bdb65ed1dab192432bc31c95f94155ca5ad7fc1392fb7eb7526ab682fa5bf14',
   pnpm: '11.2.2',
   npmForPublish: '11.15.0',
 };
@@ -73,6 +74,26 @@ describe('runtime version manifest checks', () => {
     });
 
     await expect(execRuntimeCheck(workspace)).resolves.toBeDefined();
+  });
+
+  it('fails when generated scaffold runtime values drift from the runtime manifest', async () => {
+    const workspace = await createRuntimeWorkspace();
+    await writeFixture(
+      workspace,
+      'cli/src/generated/scaffold-template.ts',
+      `export const scaffoldTemplateConfig = {
+  runtime: {
+    node: '24.15.0',
+    nodeDockerAlpineDigest: '${manifest.nodeDockerAlpineDigest}',
+    pnpm: '${manifest.pnpm}',
+  },
+} as const;
+`,
+    );
+
+    await expect(execRuntimeCheck(workspace)).rejects.toMatchObject({
+      stderr: expect.stringContaining('runtime values must match tools/runtime-versions.json'),
+    });
   });
 
   it('writes missing branch protection docs compatibility contexts', async () => {
@@ -335,8 +356,15 @@ async function createRuntimeWorkspace(
   );
   await writeFixture(
     root,
-    'cli/src/commands/scaffold.ts',
-    `export const fixture = { packageManager: 'pnpm@${manifest.pnpm}' };\n`,
+    'cli/src/generated/scaffold-template.ts',
+    `export const scaffoldTemplateConfig = {
+  runtime: {
+    node: '${manifest.node}',
+    nodeDockerAlpineDigest: '${manifest.nodeDockerAlpineDigest}',
+    pnpm: '${manifest.pnpm}',
+  },
+} as const;
+`,
   );
   await writeFixture(
     root,

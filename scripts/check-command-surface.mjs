@@ -9,7 +9,14 @@ const commandSource = readdirSync('cli/src/commands')
   .join('\n');
 const source = `${indexSource}\n${commandSource}`;
 const generatedVersion = readText('cli/src/generated/version.ts');
+const generatedScaffoldTemplate = readText('cli/src/generated/scaffold-template.ts');
 const cliPackage = readJson('cli/package.json');
+const runtimeVersions = readJson('tools/runtime-versions.json');
+const corePackage = readJson('packages/core/package.json');
+const adaptersPackage = readJson('packages/adapters/package.json');
+const registryPackage = readJson('packages/registry/package.json');
+const rootPackage = readJson('package.json');
+const demoPackage = readJson('apps/demo/package.json');
 const required = [
   'discover',
   'scaffold',
@@ -44,5 +51,26 @@ if (
 }
 if (!generatedVersion.includes(`generatedCliVersion = '${cliPackage.version}'`)) {
   failures.push('generated CLI version must match cli/package.json');
+}
+const requiredScaffoldTemplateSnippets = [
+  `'@oaslananka/a2a-warp': '^${corePackage.version}'`,
+  `'@oaslananka/a2a-warp-adapters': '^${adaptersPackage.version}'`,
+  `'@oaslananka/a2a-warp-registry': '^${registryPackage.version}'`,
+  `openai: '${adaptersPackage.devDependencies?.openai}'`,
+  `zod: '${corePackage.dependencies?.zod}'`,
+  `'@anthropic-ai/sdk': '${demoPackage.dependencies?.['@anthropic-ai/sdk']}'`,
+  `langchain: '${adaptersPackage.peerDependencies?.langchain}'`,
+  `'@types/node': '${rootPackage.devDependencies?.['@types/node']}'`,
+  `tsx: '${demoPackage.devDependencies?.tsx}'`,
+  `typescript: '${rootPackage.devDependencies?.typescript}'`,
+  `node: '${runtimeVersions.node}'`,
+  runtimeVersions.nodeDockerAlpineDigest,
+  `pnpm: '${runtimeVersions.pnpm}'`,
+];
+for (const snippet of requiredScaffoldTemplateSnippets) {
+  if (!generatedScaffoldTemplate.includes(snippet)) {
+    failures.push('generated scaffold template config must match workspace manifests');
+    break;
+  }
 }
 if (failures.length > 0) fail('CLI command surface validation failed.', failures);

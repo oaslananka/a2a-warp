@@ -1,6 +1,7 @@
 import { mkdirSync, existsSync, writeFileSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { Command } from 'commander';
+import { scaffoldTemplateConfig } from '../generated/scaffold-template.js';
 import { applyCommandDoc, type CliCommandDoc } from './doc-metadata.js';
 
 export const scaffoldCommandDoc = {
@@ -39,8 +40,9 @@ export interface ScaffoldOptions {
 
 function renderPackageJson(name: string, adapter: ScaffoldAdapter): string {
   const dependencies: Record<string, string> = {
-    '@oaslananka/a2a-warp-adapters': '^1.0.0',
-    '@oaslananka/a2a-warp': '^1.0.0',
+    '@oaslananka/a2a-warp-adapters':
+      scaffoldTemplateConfig.dependencies['@oaslananka/a2a-warp-adapters'],
+    '@oaslananka/a2a-warp': scaffoldTemplateConfig.dependencies['@oaslananka/a2a-warp'],
   };
 
   if (
@@ -48,16 +50,17 @@ function renderPackageJson(name: string, adapter: ScaffoldAdapter): string {
     adapter === 'pack-research-team' ||
     adapter === 'pack-support-triage'
   ) {
-    dependencies['openai'] = '^6.37.0';
-    dependencies['zod'] = '^4.4.3';
+    dependencies['openai'] = scaffoldTemplateConfig.dependencies.openai;
+    dependencies['zod'] = scaffoldTemplateConfig.dependencies.zod;
   } else if (adapter === 'anthropic') {
-    dependencies['@anthropic-ai/sdk'] = '^0.95.1';
-    dependencies['zod'] = '^4.4.3';
+    dependencies['@anthropic-ai/sdk'] = scaffoldTemplateConfig.dependencies['@anthropic-ai/sdk'];
+    dependencies['zod'] = scaffoldTemplateConfig.dependencies.zod;
   } else if (adapter === 'langchain') {
-    dependencies['langchain'] = '^1.2.39';
+    dependencies['langchain'] = scaffoldTemplateConfig.dependencies.langchain;
   }
   if (adapter.startsWith('pack-')) {
-    dependencies['@oaslananka/a2a-warp-registry'] = '^1.0.0';
+    dependencies['@oaslananka/a2a-warp-registry'] =
+      scaffoldTemplateConfig.dependencies['@oaslananka/a2a-warp-registry'];
   }
 
   return JSON.stringify(
@@ -66,7 +69,7 @@ function renderPackageJson(name: string, adapter: ScaffoldAdapter): string {
       version: '0.1.0',
       private: true,
       type: 'module',
-      packageManager: 'pnpm@11.2.2',
+      packageManager: `pnpm@${scaffoldTemplateConfig.runtime.pnpm}`,
       scripts: {
         dev: 'tsx src/index.ts',
         build: 'tsc -p tsconfig.json',
@@ -74,9 +77,9 @@ function renderPackageJson(name: string, adapter: ScaffoldAdapter): string {
       },
       dependencies,
       devDependencies: {
-        '@types/node': '^22.19.19',
-        tsx: '^4.21.0',
-        typescript: '^6.0.3',
+        '@types/node': scaffoldTemplateConfig.devDependencies['@types/node'],
+        tsx: scaffoldTemplateConfig.devDependencies.tsx,
+        typescript: scaffoldTemplateConfig.devDependencies.typescript,
       },
     },
     null,
@@ -362,9 +365,14 @@ function renderEnvExample(options: ScaffoldOptions): string {
 }
 
 function renderDockerfile(): string {
-  return `FROM node:24-alpine@sha256:8e2c930fda481a6ec141fe5a88e8c249c69f8102fe98af505f38c081649ea749
+  const nodeMajor =
+    scaffoldTemplateConfig.runtime.node.split('.')[0] ?? scaffoldTemplateConfig.runtime.node;
+  const nodeImage = `node:${nodeMajor}-alpine`;
+
+  return `# ${nodeImage} digest from tools/runtime-versions.json: ${scaffoldTemplateConfig.runtime.nodeDockerAlpineDigest}
+FROM ${nodeImage}@${scaffoldTemplateConfig.runtime.nodeDockerAlpineDigest}
 WORKDIR /app
-RUN corepack enable
+RUN corepack enable && corepack prepare pnpm@${scaffoldTemplateConfig.runtime.pnpm} --activate
 
 COPY . .
 RUN if [ -f pnpm-lock.yaml ]; then pnpm install --frozen-lockfile; else pnpm install --lockfile-only && pnpm install --frozen-lockfile; fi

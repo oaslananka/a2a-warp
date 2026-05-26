@@ -1,9 +1,30 @@
 import { mkdtemp, mkdir, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { discoverAgent } from '../src/commands/discover.js';
 import { scaffoldAgent } from '../src/commands/scaffold.js';
+
+const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+
+async function readJsonFile<T>(path: string): Promise<T> {
+  return JSON.parse(await readFile(path, 'utf8')) as T;
+}
+
+type PackageJson = {
+  version: string;
+  packageManager?: string;
+  dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
+  peerDependencies?: Record<string, string>;
+};
+
+type RuntimeVersions = {
+  node: string;
+  pnpm: string;
+  nodeDockerAlpineDigest: string;
+};
 
 describe('discoverAgent', () => {
   afterEach(() => {
@@ -88,6 +109,114 @@ describe('scaffoldAgent', () => {
     expect(agentSource).toContain("name: 'x-api-key'");
     expect(agentSource).toContain('maxRequests: 100');
     expect(dockerfile).toContain('FROM node:24-alpine@sha256:');
+  });
+
+  it('renders package versions from workspace manifests and runtime pins', async () => {
+    const tempDir = await mkdtemp(join(tmpdir(), 'a2a-scaffold-versions-'));
+    const previousCwd = process.cwd();
+    process.chdir(tempDir);
+
+    try {
+      scaffoldAgent('pack-agent', {
+        adapter: 'pack-research-team',
+        auth: false,
+        rateLimit: false,
+        docker: false,
+      });
+      scaffoldAgent('anthropic-agent', {
+        adapter: 'anthropic',
+        auth: false,
+        rateLimit: false,
+        docker: false,
+      });
+      scaffoldAgent('langchain-agent', {
+        adapter: 'langchain',
+        auth: false,
+        rateLimit: false,
+        docker: false,
+      });
+    } finally {
+      process.chdir(previousCwd);
+    }
+
+    const runtime = await readJsonFile<RuntimeVersions>(
+      join(repoRoot, 'tools', 'runtime-versions.json'),
+    );
+    const rootPackage = await readJsonFile<PackageJson>(join(repoRoot, 'package.json'));
+    const corePackage = await readJsonFile<PackageJson>(
+      join(repoRoot, 'packages', 'core', 'package.json'),
+    );
+    const adaptersPackage = await readJsonFile<PackageJson>(
+      join(repoRoot, 'packages', 'adapters', 'package.json'),
+    );
+    const registryPackage = await readJsonFile<PackageJson>(
+      join(repoRoot, 'packages', 'registry', 'package.json'),
+    );
+    const demoPackage = await readJsonFile<PackageJson>(
+      join(repoRoot, 'apps', 'demo', 'package.json'),
+    );
+
+    const packPackage = await readJsonFile<PackageJson>(
+      join(tempDir, 'pack-agent', 'package.json'),
+    );
+    const anthropicPackage = await readJsonFile<PackageJson>(
+      join(tempDir, 'anthropic-agent', 'package.json'),
+    );
+    const langchainPackage = await readJsonFile<PackageJson>(
+      join(tempDir, 'langchain-agent', 'package.json'),
+    );
+
+    expect(packPackage.packageManager).toBe(`pnpm@${runtime.pnpm}`);
+    expect(packPackage.dependencies).toMatchObject({
+      '@oaslananka/a2a-warp': `^${corePackage.version}`,
+      '@oaslananka/a2a-warp-adapters': `^${adaptersPackage.version}`,
+      '@oaslananka/a2a-warp-registry': `^${registryPackage.version}`,
+      openai: adaptersPackage.devDependencies?.['openai'],
+      zod: corePackage.dependencies?.['zod'],
+    });
+    expect(packPackage.devDependencies).toMatchObject({
+      '@types/node': rootPackage.devDependencies?.['@types/node'],
+      tsx: demoPackage.devDependencies?.['tsx'],
+      typescript: rootPackage.devDependencies?.['typescript'],
+    });
+    expect(anthropicPackage.dependencies?.['@anthropic-ai/sdk']).toBe(
+      demoPackage.dependencies?.['@anthropic-ai/sdk'],
+    );
+    expect(langchainPackage.dependencies?.['langchain']).toBe(
+      adaptersPackage.peerDependencies?.['langchain'],
+    );
+  });
+
+  it('renders Dockerfile runtime details from the runtime manifest', async () => {
+    const tempDir = await mkdtemp(join(tmpdir(), 'a2a-scaffold-docker-'));
+    const previousCwd = process.cwd();
+    process.chdir(tempDir);
+
+    try {
+      scaffoldAgent('docker-agent', {
+        adapter: 'custom',
+        auth: false,
+        rateLimit: false,
+        docker: true,
+      });
+    } finally {
+      process.chdir(previousCwd);
+    }
+
+    const runtime = await readJsonFile<RuntimeVersions>(
+      join(repoRoot, 'tools', 'runtime-versions.json'),
+    );
+    const nodeMajor = runtime.node.split('.')[0];
+    const dockerfile = await readFile(join(tempDir, 'docker-agent', 'Dockerfile'), 'utf8');
+
+    expect(runtime.nodeDockerAlpineDigest).toMatch(/^sha256:[a-f0-9]{64}$/);
+    expect(dockerfile).toContain(
+      `# node:${nodeMajor}-alpine digest from tools/runtime-versions.json: ${runtime.nodeDockerAlpineDigest}`,
+    );
+    expect(dockerfile).toContain(`FROM node:${nodeMajor}-alpine@${runtime.nodeDockerAlpineDigest}`);
+    expect(dockerfile).toContain(`corepack prepare pnpm@${runtime.pnpm} --activate`);
+    expect(dockerfile).toContain('pnpm install --frozen-lockfile');
+    expect(dockerfile).toMatch(/USER node\s+CMD \["pnpm", "run", "start"\]/);
   });
 
   it('renders provider-specific templates for OpenAI, Anthropic and LangChain', async () => {

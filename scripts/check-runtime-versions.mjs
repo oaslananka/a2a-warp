@@ -20,7 +20,13 @@ function readRuntimeManifest() {
 }
 
 function validateRuntimeManifest(manifest) {
-  const expectedKeys = ['node', 'nodeCompatibility', 'pnpm', 'npmForPublish'];
+  const expectedKeys = [
+    'node',
+    'nodeCompatibility',
+    'nodeDockerAlpineDigest',
+    'pnpm',
+    'npmForPublish',
+  ];
   for (const key of expectedKeys) {
     if (!(key in manifest)) failures.push(`${manifestPath}: missing ${key}`);
   }
@@ -44,6 +50,12 @@ function validateRuntimeManifest(manifest) {
   }
   if (typeof manifest.pnpm !== 'string' || !semverPattern.test(manifest.pnpm)) {
     failures.push(`${manifestPath}: pnpm must be an exact semver string`);
+  }
+  if (
+    typeof manifest.nodeDockerAlpineDigest !== 'string' ||
+    !/^sha256:[a-f0-9]{64}$/.test(manifest.nodeDockerAlpineDigest)
+  ) {
+    failures.push(`${manifestPath}: nodeDockerAlpineDigest must be a sha256 digest`);
   }
   if (typeof manifest.npmForPublish !== 'string' || !semverPattern.test(manifest.npmForPublish)) {
     failures.push(`${manifestPath}: npmForPublish must be an exact semver string`);
@@ -94,14 +106,20 @@ function syncWorkflowEnv(path, manifest) {
   writeOrExpect(path, original, updated);
 }
 
-function syncScaffoldPackageManager(manifest) {
-  const path = 'cli/src/commands/scaffold.ts';
-  const original = readText(path);
-  const updated = original.replace(
-    /packageManager:\s*'pnpm@[^']+'/,
-    `packageManager: 'pnpm@${manifest.pnpm}'`,
-  );
-  writeOrExpect(path, original, updated);
+function validateGeneratedScaffoldRuntime(manifest) {
+  const path = 'cli/src/generated/scaffold-template.ts';
+  const generated = readText(path);
+  const requiredSnippets = [
+    `node: '${manifest.node}'`,
+    manifest.nodeDockerAlpineDigest,
+    `pnpm: '${manifest.pnpm}'`,
+  ];
+  for (const snippet of requiredSnippets) {
+    if (!generated.includes(snippet)) {
+      failures.push(`${path}: runtime values must match ${manifestPath}`);
+      break;
+    }
+  }
 }
 
 function stripYamlScalar(value) {
@@ -406,7 +424,7 @@ if (failures.length === 0) {
   ]) {
     syncWorkflowEnv(path, manifest);
   }
-  syncScaffoldPackageManager(manifest);
+  validateGeneratedScaffoldRuntime(manifest);
   const failuresBeforeMatrixRead = failures.length;
   const compatibilityRows = readCompatibilityMatrix('.github/workflows/ci.yml');
   if (failures.length === failuresBeforeMatrixRead) {

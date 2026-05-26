@@ -1,7 +1,7 @@
 import { execFile } from 'node:child_process';
-import { mkdtemp, readFile, stat } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { dirname, join, resolve } from 'node:path';
+import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { describe, expect, it, vi } from 'vitest';
@@ -29,6 +29,17 @@ interface TemplateExpectation {
   envMarker?: string;
   docker?: boolean;
 }
+
+interface LocalPackageOverride {
+  name: string;
+  specifier: string;
+}
+
+const localPackageDirs = [
+  ['@oaslananka/a2a-warp', 'packages/core'],
+  ['@oaslananka/a2a-warp-adapters', 'packages/adapters'],
+  ['@oaslananka/a2a-warp-registry', 'packages/registry'],
+] as const;
 
 const templates: TemplateExpectation[] = [
   {
@@ -76,9 +87,13 @@ const templates: TemplateExpectation[] = [
   },
 ];
 
-async function execIn(cwd: string, command: string, args: string[]): Promise<void> {
+async function execIn(
+  cwd: string,
+  command: string,
+  args: string[],
+): Promise<{ stdout: string; stderr: string }> {
   try {
-    await execFileAsync(command, args, {
+    return await execFileAsync(command, args, {
       cwd,
       env: {
         ...process.env,
@@ -98,6 +113,48 @@ async function execIn(cwd: string, command: string, args: string[]): Promise<voi
       .join('\n\n');
     throw new Error(message, { cause: error });
   }
+}
+
+function parsePackFilename(output: string): string {
+  const payload = JSON.parse(output) as { filename?: string } | Array<{ filename?: string }>;
+  const result = Array.isArray(payload) ? payload[0] : payload;
+  if (typeof result?.filename !== 'string') {
+    throw new Error('pnpm pack --json did not report a tarball filename');
+  }
+  return result.filename;
+}
+
+async function packLocalPackageOverrides(tempDir: string): Promise<LocalPackageOverride[]> {
+  const tarballDir = join(tempDir, 'tarballs');
+  await mkdir(tarballDir, { recursive: true });
+
+  const overrides: LocalPackageOverride[] = [];
+  for (const [name, packageDir] of localPackageDirs) {
+    const { stdout } = await execIn(repoRoot, 'pnpm', [
+      '--dir',
+      resolve(repoRoot, packageDir),
+      'pack',
+      '--json',
+      '--pack-destination',
+      tarballDir,
+    ]);
+    overrides.push({
+      name,
+      specifier: `file:../tarballs/${basename(parsePackFilename(stdout))}`,
+    });
+  }
+  return overrides;
+}
+
+async function writeLocalPackageOverrides(
+  projectDir: string,
+  overrides: LocalPackageOverride[],
+): Promise<void> {
+  const lines = ['packages: []', 'overrides:'];
+  for (const override of overrides) {
+    lines.push(`  ${JSON.stringify(override.name)}: ${JSON.stringify(override.specifier)}`);
+  }
+  await writeFile(join(projectDir, 'pnpm-workspace.yaml'), `${lines.join('\n')}\n`);
 }
 
 async function readProjectFile(projectDir: string, path: string): Promise<string> {
@@ -147,6 +204,7 @@ describe('create-a2a-warp runner', () => {
 describe('create-a2a-warp binary scaffolds typechecked templates', () => {
   it('generates every adapter template in temporary directories', async () => {
     const tempDir = await mkdtemp(join(tmpdir(), 'create-a2a-warp-'));
+    const localPackageOverrides = await packLocalPackageOverrides(tempDir);
 
     for (const template of templates) {
       await execIn(tempDir, process.execPath, [
@@ -158,6 +216,8 @@ describe('create-a2a-warp binary scaffolds typechecked templates', () => {
       ]);
 
       const projectDir = join(tempDir, template.name);
+      await writeLocalPackageOverrides(projectDir, localPackageOverrides);
+
       const packageJson = await readProjectFile(projectDir, 'package.json');
       const tsconfigJson = await readProjectFile(projectDir, 'tsconfig.json');
       const readme = await readProjectFile(projectDir, 'README.md');
