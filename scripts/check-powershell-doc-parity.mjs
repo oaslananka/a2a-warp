@@ -46,9 +46,12 @@ function getFences(text) {
   return fences;
 }
 
-function hasNearbyPowerShell(shellFence, powerShellFences) {
+function hasNearbyPowerShell(shellFence, powerShellFences, shellFences) {
   return powerShellFences.some(
-    (fence) => fence.start >= shellFence.end && fence.start - shellFence.end <= 12,
+    (fence) =>
+      fence.start >= shellFence.end &&
+      fence.start - shellFence.end <= 12 &&
+      !shellFences.some((other) => other.start > shellFence.start && other.start < fence.start),
   );
 }
 
@@ -65,7 +68,7 @@ for (const file of selectedDocs) {
   }
 
   for (const shellFence of shellFences) {
-    if (!hasNearbyPowerShell(shellFence, powerShellFences)) {
+    if (!hasNearbyPowerShell(shellFence, powerShellFences, shellFences)) {
       failures.push(
         `${file}:${shellFence.start}: shell command block needs a nearby PowerShell block`,
       );
