@@ -2,6 +2,10 @@
 
 `@oaslananka/a2a-warp-registry` contains registry server, discovery, matching, and storage helpers.
 
+## OpenAPI
+
+The machine-readable registry REST contract is published as [registry.openapi.json](../openapi/registry.openapi.json). It covers health, metrics, agent registration and discovery, control-plane export/import, registry event streams, task event routes, auth responses, and shared error responses.
+
 ## Export And Import
 
 The registry exposes authenticated control-plane endpoints for backup and restore:
