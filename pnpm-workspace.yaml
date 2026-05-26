@@ -2,12 +2,15 @@ packages:
   - apps/*
   - cli
   - docs-site
+  - examples/*
   - packages/*
 
 engineStrict: true
 strictPeerDependencies: true
 autoInstallPeers: false
 injectWorkspacePackages: true
+syncInjectedDepsAfterScripts:
+  - build
 
 overrides:
   '@typescript-eslint/eslint-plugin': 8.59.3

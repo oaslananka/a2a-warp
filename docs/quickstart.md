@@ -17,3 +17,5 @@ pnpm run dev
 ```
 
 The generated project uses `@oaslananka/a2a-warp` and `@oaslananka/a2a-warp-adapters` when adapter templates are selected.
+
+For deployment-mode examples that run without paid external services, see [Examples](examples.md).

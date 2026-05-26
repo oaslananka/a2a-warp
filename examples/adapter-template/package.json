@@ -1,0 +1,25 @@
+{
+  "name": "@oaslananka/a2a-warp-example-adapter-template",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Custom adapter template example for A2A Warp.",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -b --pretty false",
+    "start": "pnpm --dir ../.. run build && node dist/src/index.js",
+    "smoke": "pnpm --dir ../.. run build && node --test dist/tests/smoke.test.js"
+  },
+  "dependencies": {
+    "@oaslananka/a2a-warp": "workspace:*",
+    "@oaslananka/a2a-warp-adapters": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.19",
+    "typescript": "^6.0.3"
+  },
+  "engines": {
+    "node": ">=22.22.1 <25",
+    "pnpm": ">=11 <12"
+  }
+}

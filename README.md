@@ -9,6 +9,7 @@ A2A Warp is an independent TypeScript runtime and toolkit for the Agent2Agent (A
 - Adapters for OpenAI, Anthropic, LangChain, Google ADK, LlamaIndex, and CrewAI HTTP bridge flows when the optional peer dependency is installed.
 - CLI commands for validation, discovery, sending messages, registry export/import, monitoring tasks, benchmarking, diagnostics, and scaffolding.
 - MCP bridge, WebSocket transport, gRPC transport, and testing helper packages for repository-verified workflows.
+- Runnable examples for authenticated servers, streaming, push notifications, registry tenancy, WebSocket, gRPC, MCP bridge, and adapter templates.
 
 ## Install
 
@@ -110,6 +111,7 @@ The implementation targets Agent Cards, JSON-RPC request/response envelopes, mes
 
 - [Install](docs/install.md)
 - [Quickstart](docs/quickstart.md)
+- [Examples](docs/examples.md)
 - [Protocol compatibility](docs/protocol/compatibility.md)
 - [Threat model](docs/security/threat-model.md)
 - [Release process](docs/release/process.md)

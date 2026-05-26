@@ -228,6 +228,125 @@ importers:
         specifier: ^1.6.4
         version: 1.6.4(@algolia/client-search@5.52.1)(@types/node@22.19.19)(jiti@2.7.0)(lightningcss@1.32.0)(postcss@8.5.15)(search-insights@2.17.3)(tsx@4.22.3)(typescript@6.0.3)(yaml@2.9.0)
 
+  examples/adapter-template:
+    dependencies:
+      '@oaslananka/a2a-warp':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@oaslananka/a2a-warp-adapters':
+        specifier: workspace:*
+        version: file:packages/adapters(@anthropic-ai/sdk@0.96.0(zod@4.4.3))(openai@6.38.0(ws@8.20.1)(zod@4.4.3))
+    devDependencies:
+      '@types/node':
+        specifier: ^22.19.19
+        version: 22.19.19
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+
+  examples/authenticated-server:
+    dependencies:
+      '@oaslananka/a2a-warp':
+        specifier: workspace:*
+        version: link:../../packages/core
+    devDependencies:
+      '@types/node':
+        specifier: ^22.19.19
+        version: 22.19.19
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+
+  examples/grpc:
+    dependencies:
+      '@oaslananka/a2a-warp':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@oaslananka/a2a-warp-grpc':
+        specifier: workspace:*
+        version: link:../../packages/grpc
+    devDependencies:
+      '@types/node':
+        specifier: ^22.19.19
+        version: 22.19.19
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+
+  examples/mcp-bridge:
+    dependencies:
+      '@oaslananka/a2a-warp-mcp-bridge':
+        specifier: workspace:*
+        version: link:../../packages/mcp-bridge
+    devDependencies:
+      '@types/node':
+        specifier: ^22.19.19
+        version: 22.19.19
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+
+  examples/push-notifications:
+    dependencies:
+      '@oaslananka/a2a-warp':
+        specifier: workspace:*
+        version: link:../../packages/core
+    devDependencies:
+      '@types/node':
+        specifier: ^22.19.19
+        version: 22.19.19
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+
+  examples/registry-tenancy:
+    dependencies:
+      '@oaslananka/a2a-warp':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@oaslananka/a2a-warp-registry':
+        specifier: workspace:*
+        version: link:../../packages/registry
+    devDependencies:
+      '@types/node':
+        specifier: ^22.19.19
+        version: 22.19.19
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+
+  examples/streaming:
+    dependencies:
+      '@oaslananka/a2a-warp':
+        specifier: workspace:*
+        version: link:../../packages/core
+    devDependencies:
+      '@types/node':
+        specifier: ^22.19.19
+        version: 22.19.19
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+
+  examples/websocket:
+    dependencies:
+      '@oaslananka/a2a-warp':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@oaslananka/a2a-warp-ws':
+        specifier: workspace:*
+        version: link:../../packages/ws
+      ws:
+        specifier: ^8.20.1
+        version: 8.20.1
+    devDependencies:
+      '@types/node':
+        specifier: ^22.19.19
+        version: 22.19.19
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+
   packages/adapters:
     dependencies:
       '@oaslananka/a2a-warp':
@@ -1199,10 +1318,6 @@ packages:
 
   '@gerrit0/mini-shiki@3.23.0':
     resolution: {integrity: sha512-bEMORlG0cqdjVyCEuU0cDQbORWX+kYCeo0kV1lbxF5bt4r7SID2l9bqsxJEM0zndaxpOUT7riCyIVEuqq/Ynxg==}
-
-  '@grpc/grpc-js@1.14.3':
-    resolution: {integrity: sha512-Iq8QQQ/7X3Sac15oB6p0FmUg/klxQvXLeileoqrTRGJYLV+/9tubbr9ipz0GKHjmXVsgFPo/+W+2cA8eNcR+XA==}
-    engines: {node: '>=12.10.0'}
 
   '@grpc/grpc-js@1.14.4':
     resolution: {integrity: sha512-k9Dj3DV/itK9D06Y8f190Qgop7/Ui+D0njFV3LHMPwPT75DpXLQohE9Wmz0QElrJnzsjB7KPWiKJbOl7IPDArQ==}
@@ -5982,11 +6097,6 @@ snapshots:
       '@shikijs/types': 3.23.0
       '@shikijs/vscode-textmate': 10.0.2
 
-  '@grpc/grpc-js@1.14.3':
-    dependencies:
-      '@grpc/proto-loader': 0.8.1
-      '@js-sdsl/ordered-map': 4.4.2
-
   '@grpc/grpc-js@1.14.4':
     dependencies:
       '@grpc/proto-loader': 0.8.1
@@ -6294,7 +6404,7 @@ snapshots:
 
   '@opentelemetry/exporter-logs-otlp-grpc@0.218.0(@opentelemetry/api@1.9.1)':
     dependencies:
-      '@grpc/grpc-js': 1.14.3
+      '@grpc/grpc-js': 1.14.4
       '@opentelemetry/api': 1.9.1
       '@opentelemetry/core': 2.7.1(@opentelemetry/api@1.9.1)
       '@opentelemetry/otlp-exporter-base': 0.218.0(@opentelemetry/api@1.9.1)
@@ -6324,7 +6434,7 @@ snapshots:
 
   '@opentelemetry/exporter-metrics-otlp-grpc@0.218.0(@opentelemetry/api@1.9.1)':
     dependencies:
-      '@grpc/grpc-js': 1.14.3
+      '@grpc/grpc-js': 1.14.4
       '@opentelemetry/api': 1.9.1
       '@opentelemetry/core': 2.7.1(@opentelemetry/api@1.9.1)
       '@opentelemetry/exporter-metrics-otlp-http': 0.218.0(@opentelemetry/api@1.9.1)
@@ -6363,7 +6473,7 @@ snapshots:
 
   '@opentelemetry/exporter-trace-otlp-grpc@0.218.0(@opentelemetry/api@1.9.1)':
     dependencies:
-      '@grpc/grpc-js': 1.14.3
+      '@grpc/grpc-js': 1.14.4
       '@opentelemetry/api': 1.9.1
       '@opentelemetry/core': 2.7.1(@opentelemetry/api@1.9.1)
       '@opentelemetry/otlp-exporter-base': 0.218.0(@opentelemetry/api@1.9.1)
@@ -6415,7 +6525,7 @@ snapshots:
 
   '@opentelemetry/otlp-grpc-exporter-base@0.218.0(@opentelemetry/api@1.9.1)':
     dependencies:
-      '@grpc/grpc-js': 1.14.3
+      '@grpc/grpc-js': 1.14.4
       '@opentelemetry/api': 1.9.1
       '@opentelemetry/core': 2.7.1(@opentelemetry/api@1.9.1)
       '@opentelemetry/otlp-exporter-base': 0.218.0(@opentelemetry/api@1.9.1)
