@@ -79,6 +79,8 @@ a2a-warp doctor --json
 
 The implementation targets Agent Cards, JSON-RPC request/response envelopes, messages, tasks, artifacts, task status transitions, streaming/SSE, push notification registration, and capability discovery as described in the Agent2Agent core specification reviewed on 2026-05-19. See [docs/protocol/compatibility.md](docs/protocol/compatibility.md).
 
+See [Compatibility](docs/compatibility.md) for the supported Node.js, package, protocol, transport, optional peer, and deprecation policy matrix.
+
 ## Security Defaults
 
 - Public HTTP server mode must use authentication unless it is bound to loopback.
@@ -112,6 +114,7 @@ The implementation targets Agent Cards, JSON-RPC request/response envelopes, mes
 - [Install](docs/install.md)
 - [Quickstart](docs/quickstart.md)
 - [Examples](docs/examples.md)
+- [Compatibility](docs/compatibility.md)
 - [Protocol compatibility](docs/protocol/compatibility.md)
 - [Threat model](docs/security/threat-model.md)
 - [Release process](docs/release/process.md)
