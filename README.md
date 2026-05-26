@@ -59,6 +59,24 @@ a2a-warp benchmark http://127.0.0.1:3000 --requests 25 --concurrency 5
 a2a-warp doctor --json
 ```
 
+PowerShell:
+
+```powershell
+a2a-warp validate .\agent-card.json
+a2a-warp discover http://127.0.0.1:3000
+a2a-warp scaffold demo-agent --adapter custom
+a2a-warp send http://127.0.0.1:3000 "hello"
+a2a-warp task status http://127.0.0.1:3000 task-123
+a2a-warp health http://127.0.0.1:3000 --timeout-ms 1000 --json
+a2a-warp conformance http://127.0.0.1:3000 --protocol-version 1.2 --json
+a2a-warp registry export --url http://127.0.0.1:3099 --output .\registry-export.json
+a2a-warp registry import --url http://127.0.0.1:3099 --input .\registry-export.json
+a2a-warp export-card http://127.0.0.1:3000 --output .\agent-card.json
+a2a-warp monitor http://127.0.0.1:3000 --cycles 3
+a2a-warp benchmark http://127.0.0.1:3000 --requests 25 --concurrency 5
+a2a-warp doctor --json
+```
+
 ## Package List
 
 | Package                             | Purpose                                                                  |
