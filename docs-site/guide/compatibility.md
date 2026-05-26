@@ -1,17 +1,20 @@
 # Compatibility
 
-This page mirrors the repository compatibility policy for A2A Warp runtime
-versions, package surfaces, protocol fixtures, transports, optional peers, and
-deprecation windows.
+This page is the canonical compatibility matrix for A2A Warp runtime versions,
+package surfaces, protocol fixtures, transports, optional peers, and deprecation
+windows.
 
 Last checked on 2026-05-26 against the
 [Node.js release schedule](https://github.com/nodejs/Release/blob/main/schedule.json),
 the [Node.js release index](https://nodejs.org/download/release/index.json), and
-the repository runtime manifest.
+the repository
+[`tools/runtime-versions.json`](https://github.com/oaslananka/a2a-warp/blob/main/tools/runtime-versions.json)
+manifest.
 
 ## Runtime Compatibility
 
 The workspace engine range is Node.js `>=22.22.1 <25` and pnpm `>=11 <12`.
+In plain engine terms, use Node.js `>=22.22.1 <25` and pnpm >=11 <12.
 Development tooling pins pnpm `11.2.2` through `packageManager` and
 `tools/runtime-versions.json`.
 
@@ -89,9 +92,6 @@ installs do not pull every integration stack.
 
 Adapter tests use fake provider objects by default. Live provider behavior must
 remain opt-in and cannot be required by the default local verification gate.
-Raw peer ranges validated from package manifests: `@anthropic-ai/sdk`
-`^0.39.0 || ^0.95.0 || ^0.96.0`; `langchain` `^0.3.37 || ^1.0.0`;
-`llamaindex` `^0.9.11 || ^0.12.0`; `openai` `^4.20.0 || ^6.0.0`.
 
 ## Deprecation Policy
 

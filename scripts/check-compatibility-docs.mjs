@@ -18,6 +18,85 @@ function requireIncludes(path, text, snippets) {
   }
 }
 
+function requireDocsInSync(sourcePath, sourceText, mirrorPath, mirrorText) {
+  if (sourceText === null || mirrorText === null) return;
+  if (sourceText === mirrorText) return;
+
+  const sourceLines = sourceText.split(/\r?\n/);
+  const mirrorLines = mirrorText.split(/\r?\n/);
+  const lineCount = Math.max(sourceLines.length, mirrorLines.length);
+  for (let index = 0; index < lineCount; index += 1) {
+    if (sourceLines[index] !== mirrorLines[index]) {
+      failures.push(
+        `${mirrorPath} must exactly match ${sourcePath}; first difference at line ${
+          index + 1
+        }: expected ${JSON.stringify(sourceLines[index] ?? '<EOF>')}, received ${JSON.stringify(
+          mirrorLines[index] ?? '<EOF>',
+        )}`,
+      );
+      return;
+    }
+  }
+}
+
+function stripInlineCode(value) {
+  const trimmed = value.trim();
+  return trimmed.startsWith('`') && trimmed.endsWith('`') ? trimmed.slice(1, -1) : trimmed;
+}
+
+function splitMarkdownTableRow(line) {
+  const trimmed = line.trim();
+  if (!trimmed.startsWith('|') || !trimmed.endsWith('|')) return null;
+
+  const cells = [];
+  let cell = '';
+  for (let index = 1; index < trimmed.length - 1; index += 1) {
+    const character = trimmed[index];
+    if (character === '|' && trimmed[index - 1] !== '\\') {
+      cells.push(stripInlineCode(cell.replace(/\\\|/g, '|')));
+      cell = '';
+    } else {
+      cell += character;
+    }
+  }
+  cells.push(stripInlineCode(cell.replace(/\\\|/g, '|')));
+
+  return cells;
+}
+
+function readSection(path, text, heading) {
+  if (text === null) return '';
+  const sectionStart = text.indexOf(`${heading}\n`);
+  if (sectionStart === -1) {
+    failures.push(`${path} missing required section: ${heading}`);
+    return '';
+  }
+
+  const contentStart = sectionStart + heading.length + 1;
+  const nextSectionStart = text.indexOf('\n## ', contentStart);
+  return nextSectionStart === -1
+    ? text.slice(contentStart)
+    : text.slice(contentStart, nextSectionStart);
+}
+
+function parseMarkdownTable(path, text, heading) {
+  const rows = [];
+  const section = readSection(path, text, heading);
+  for (const line of section.split(/\r?\n/)) {
+    const cells = splitMarkdownTableRow(line);
+    if (cells === null) continue;
+    const isSeparator = cells.every((cell) => /^:?-{3,}:?$/.test(cell.replace(/\s/g, '')));
+    const isHeader = cells.some((cell) => cell === 'Package' || cell === 'Peer dependency');
+    if (!isSeparator && !isHeader) rows.push(cells);
+  }
+  return rows;
+}
+
+function requireTableRow(path, tableName, rows, expectedCells) {
+  if (rows.some((row) => expectedCells.every((expected, index) => row[index] === expected))) return;
+  failures.push(`${path} ${tableName} missing required row: ${expectedCells.join(' | ')}`);
+}
+
 const canonicalPath = 'docs/compatibility.md';
 const sitePath = 'docs-site/guide/compatibility.md';
 const canonicalDoc = readRequiredDoc(canonicalPath);
@@ -41,6 +120,17 @@ const requiredHeadings = [
 
 requireIncludes(canonicalPath, canonicalDoc, requiredHeadings);
 requireIncludes(sitePath, siteDoc, requiredHeadings);
+requireDocsInSync(canonicalPath, canonicalDoc, sitePath, siteDoc);
+const packageMatrixRows = parseMarkdownTable(
+  canonicalPath,
+  canonicalDoc,
+  '## Package Version Matrix',
+);
+const peerRangeRows = parseMarkdownTable(
+  canonicalPath,
+  canonicalDoc,
+  '## Adapter Optional Peer Ranges',
+);
 
 requireIncludes(canonicalPath, canonicalDoc, [
   rootPackage.engines.node,
@@ -78,7 +168,7 @@ const publicPackages = getWorkspacePackages()
   .sort((a, b) => a.packageJson.name.localeCompare(b.packageJson.name));
 
 for (const { dir, packageJson } of publicPackages) {
-  requireIncludes(canonicalPath, canonicalDoc, [
+  requireTableRow(canonicalPath, 'Package Version Matrix', packageMatrixRows, [
     packageJson.name,
     packageJson.version,
     packageJson.engines?.node ?? rootPackage.engines.node,
@@ -93,7 +183,11 @@ for (const { dir, packageJson } of publicPackages) {
   requireIncludes(readmePath, readme, [expectedLink]);
 
   for (const [peerName, range] of Object.entries(packageJson.peerDependencies ?? {})) {
-    requireIncludes(canonicalPath, canonicalDoc, [peerName, range]);
+    requireTableRow(canonicalPath, 'Adapter Optional Peer Ranges', peerRangeRows, [
+      packageJson.name,
+      peerName,
+      range,
+    ]);
   }
 }
 
