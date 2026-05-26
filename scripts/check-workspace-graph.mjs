@@ -1,5 +1,6 @@
 import { listFiles, readText, fail } from './check-utils.mjs';
 
+const printSummary = process.argv.includes('--summary');
 const packageByImport = new Map([
   ['@oaslananka/a2a-warp', 'core'],
   ['@oaslananka/a2a-warp-client', 'client'],
@@ -64,3 +65,17 @@ for (const file of listFiles().filter((file) => /\.(ts|tsx|mts|mjs|js)$/.test(fi
   }
 }
 if (failures.length > 0) fail('Workspace graph validation failed.', failures);
+
+if (printSummary && failures.length === 0) {
+  const disallowedEdgeCount = Object.values(disallowed).reduce(
+    (total, targets) => total + targets.size,
+    0,
+  );
+  console.log('Workspace graph validation passed.');
+  console.log(
+    `Checked ${packageByImport.size} public package import aliases across ${disallowedEdgeCount} forbidden dependency edges.`,
+  );
+  console.log(
+    'Dependency direction: types/schemas -> core runtime -> transports -> client/registry -> adapters/bridges -> CLI/apps.',
+  );
+}

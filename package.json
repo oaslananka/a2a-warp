@@ -65,7 +65,7 @@
     "docs:api": "typedoc",
     "docs:commands:generate": "node scripts/generate-command-docs.mjs",
     "docs:generate": "node scripts/generate-api-docs.mjs && pnpm run docs:commands:generate",
-    "docs:check": "node scripts/check-docs-commands.mjs && node scripts/check-docs-package-parity.mjs",
+    "docs:check": "node scripts/check-docs-commands.mjs && node scripts/check-docs-package-parity.mjs && node scripts/check-architecture-docs.mjs",
     "examples:smoke": "node scripts/run-examples-smoke.mjs",
     "schemas:generate": "pnpm --filter @oaslananka/a2a-warp run build && node scripts/generate-json-schemas.mjs",
     "schemas:check": "pnpm --filter @oaslananka/a2a-warp run build && node scripts/generate-json-schemas.mjs --check",
