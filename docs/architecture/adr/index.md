@@ -3,3 +3,8 @@
 - [ADR-0001: Prettier formatter authority](0001-prettier-formatter.md)
 - [ADR-0002: Garbage collection allowlist](0002-gc-allowlist.md)
 - [ADR-0003: Coverage baseline](0003-coverage-baseline.md)
+- [ADR-0004: Storage semantics](0004-storage-semantics.md)
+- [ADR-0005: Transport contracts](0005-transport-contracts.md)
+- [ADR-0006: Outbound network policy](0006-outbound-network-policy.md)
+- [ADR-0007: Release provenance](0007-release-provenance.md)
+- [ADR-0008: Protocol conformance versioning](0008-protocol-conformance-versioning.md)
