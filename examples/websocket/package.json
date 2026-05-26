@@ -13,7 +13,7 @@
   "dependencies": {
     "@oaslananka/a2a-warp": "workspace:*",
     "@oaslananka/a2a-warp-ws": "workspace:*",
-    "ws": "^8.20.1"
+    "ws": "^8.21.0"
   },
   "devDependencies": {
     "@types/node": "^22.19.19",
