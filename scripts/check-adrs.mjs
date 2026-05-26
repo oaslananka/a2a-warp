@@ -48,7 +48,7 @@ function readRequiredDoc(path) {
     return readText(path);
   } catch (error) {
     failures.push(`${path} is missing or unreadable: ${String(error)}`);
-    return '';
+    return null;
   }
 }
 
@@ -59,9 +59,11 @@ for (const adr of requiredAdrs) {
   const fileName = adr.path.split('/').at(-1);
   const indexEntry = `[ADR-${adr.number}: ${adr.title}](${fileName})`;
 
-  if (!adrIndex.includes(indexEntry)) {
+  if (adrIndex !== null && !adrIndex.includes(indexEntry)) {
     failures.push(`${adrIndexPath} missing entry: ${indexEntry}`);
   }
+
+  if (text === null) continue;
 
   if (!text.includes(`# ADR-${adr.number}:`)) {
     failures.push(`${adr.path} missing ADR title for ADR-${adr.number}`);
