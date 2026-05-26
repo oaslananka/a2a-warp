@@ -72,6 +72,7 @@ const REQUIRED_AUTH_OPERATIONS = new Set([
 ]);
 
 const REQUIRED_SSE_OPERATIONS = new Set(['GET /events', 'GET /agents/stream', 'GET /tasks/stream']);
+const REQUIRED_AGENT_CARD_PROTOCOL_VERSIONS = ['0.3', '1.0', '1.2'];
 
 function isRecord(value) {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
@@ -137,6 +138,12 @@ function validateOperation(method, path, operation, document, failures) {
   if (!isRecord(responses['200']) && !isRecord(responses['201']) && !isRecord(responses['204'])) {
     failures.push(`${key} must define a successful response`);
   }
+  if (!isRecord(responses['403'])) {
+    failures.push(`${key} must define a 403 response`);
+  }
+  if (!isRecord(responses['429'])) {
+    failures.push(`${key} must define a 429 response`);
+  }
 
   if (REQUIRED_AUTH_OPERATIONS.has(key)) {
     if (!Array.isArray(operation.security) || operation.security.length === 0) {
@@ -171,6 +178,21 @@ function validateOperation(method, path, operation, document, failures) {
   }
 }
 
+function validateAgentCardSchema(components, failures) {
+  const agentCard = components.schemas.AgentCard;
+  const properties = isRecord(agentCard) ? agentCard.properties : undefined;
+  const protocolVersion = isRecord(properties) ? properties.protocolVersion : undefined;
+  const versions = isRecord(protocolVersion) ? protocolVersion.enum : undefined;
+  if (
+    !Array.isArray(versions) ||
+    !REQUIRED_AGENT_CARD_PROTOCOL_VERSIONS.every((version) => versions.includes(version))
+  ) {
+    failures.push(
+      `components.schemas.AgentCard.properties.protocolVersion.enum must include ${REQUIRED_AGENT_CARD_PROTOCOL_VERSIONS.join(', ')}`,
+    );
+  }
+}
+
 function validateReferences(value, components, failures, path = '$') {
   if (Array.isArray(value)) {
     value.forEach((entry, index) =>
@@ -200,8 +222,8 @@ export function validateOpenApiDocument(document) {
   if (!isRecord(document)) {
     return ['OpenAPI document must be an object'];
   }
-  if (document.openapi !== '3.2.0') {
-    failures.push('OpenAPI document must use openapi: 3.2.0');
+  if (document.openapi !== '3.1.0') {
+    failures.push('OpenAPI document must use openapi: 3.1.0');
   }
   if (!isRecord(document.info) || typeof document.info.title !== 'string') {
     failures.push('info.title is required');
@@ -217,6 +239,7 @@ export function validateOpenApiDocument(document) {
       failures.push(`components.schemas.${schemaName} is required`);
     }
   }
+  validateAgentCardSchema(components, failures);
 
   for (const [method, path] of REQUIRED_OPERATIONS) {
     const operation = getOperation(document, method, path, failures);
@@ -249,6 +272,10 @@ export async function formatOpenApiDocument(document, targetPath = outputTargets
   });
 }
 
+function normalizeLineEndings(value) {
+  return value.replace(/\r\n/g, '\n');
+}
+
 async function checkOutputFiles(document, shouldWrite) {
   const failures = [];
 
@@ -266,8 +293,8 @@ async function checkOutputFiles(document, shouldWrite) {
       continue;
     }
 
-    const actual = readText(target);
-    if (actual !== expected) {
+    const actual = normalizeLineEndings(readText(target));
+    if (actual !== normalizeLineEndings(expected)) {
       failures.push(`${target} is out of date; run pnpm run openapi:generate`);
     }
   }

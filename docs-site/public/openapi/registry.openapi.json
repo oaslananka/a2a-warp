@@ -124,7 +124,7 @@
           "modelHints": { "items": { "type": "string" }, "type": "array" },
           "name": { "type": "string" },
           "protocolBinding": { "type": "string" },
-          "protocolVersion": { "enum": ["1.0", "1.2"], "type": "string" },
+          "protocolVersion": { "enum": ["0.3", "1.0", "1.2"], "type": "string" },
           "provider": {
             "additionalProperties": false,
             "properties": {
@@ -400,7 +400,7 @@
     "version": "1.0.0"
   },
   "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
-  "openapi": "3.2.0",
+  "openapi": "3.1.0",
   "paths": {
     "/admin/agents/{id}": {
       "delete": {
@@ -454,6 +454,7 @@
             "description": "Registry export document."
           },
           "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
           "429": { "$ref": "#/components/responses/RateLimited" }
         },
         "security": [{ "bearerAuth": [] }],
@@ -483,6 +484,7 @@
           },
           "400": { "$ref": "#/components/responses/ValidationError" },
           "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
           "429": { "$ref": "#/components/responses/RateLimited" }
         },
         "security": [{ "bearerAuth": [] }],
@@ -510,6 +512,7 @@
           },
           "400": { "$ref": "#/components/responses/BadRequest" },
           "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
           "429": { "$ref": "#/components/responses/RateLimited" }
         },
         "security": [{ "bearerAuth": [] }],
@@ -535,6 +538,7 @@
             "description": "Registered agents visible to the caller."
           },
           "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
           "429": { "$ref": "#/components/responses/RateLimited" }
         },
         "security": [{ "bearerAuth": [] }, {}],
@@ -620,6 +624,7 @@
           },
           "400": { "$ref": "#/components/responses/BadRequest" },
           "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
           "429": { "$ref": "#/components/responses/RateLimited" }
         },
         "security": [{ "bearerAuth": [] }],
@@ -654,6 +659,7 @@
           },
           "400": { "$ref": "#/components/responses/BadRequest" },
           "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
           "429": { "$ref": "#/components/responses/RateLimited" }
         },
         "security": [{ "bearerAuth": [] }, {}],
@@ -678,6 +684,7 @@
             "description": "SSE stream containing normalized RegisteredAgent updates."
           },
           "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
           "429": { "$ref": "#/components/responses/RateLimited" }
         },
         "security": [{ "bearerAuth": [] }],
@@ -702,6 +709,7 @@
             "description": "SSE stream containing registry_update events."
           },
           "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
           "429": { "$ref": "#/components/responses/RateLimited" }
         },
         "security": [{ "bearerAuth": [] }],
@@ -718,7 +726,9 @@
               "application/json": { "schema": { "$ref": "#/components/schemas/RegistryHealth" } }
             },
             "description": "Registry health summary."
-          }
+          },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
         },
         "summary": "Return registry health and agent counts.",
         "tags": ["Health"]
@@ -740,7 +750,9 @@
               }
             },
             "description": "Prometheus metrics text."
-          }
+          },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
         },
         "summary": "Return registry metrics in Prometheus text exposition format.",
         "tags": ["Metrics"]
@@ -757,7 +769,9 @@
               }
             },
             "description": "Registry metrics summary."
-          }
+          },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
         },
         "summary": "Return registry metrics as JSON for UI dashboards and contract tests.",
         "tags": ["Metrics"]
@@ -780,6 +794,7 @@
             "description": "Recent task events."
           },
           "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
           "429": { "$ref": "#/components/responses/RateLimited" }
         },
         "security": [{ "bearerAuth": [] }],
@@ -804,6 +819,7 @@
             "description": "SSE stream containing RegistryTaskEvent payloads."
           },
           "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
           "429": { "$ref": "#/components/responses/RateLimited" }
         },
         "security": [{ "bearerAuth": [] }],

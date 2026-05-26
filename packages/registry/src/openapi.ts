@@ -58,6 +58,12 @@ const registeredAgentArray = {
 
 const authErrorResponses = {
   '401': responseRef('Unauthorized'),
+  '403': responseRef('Forbidden'),
+  '429': responseRef('RateLimited'),
+};
+
+const operationalErrorResponses = {
+  '403': responseRef('Forbidden'),
   '429': responseRef('RateLimited'),
 };
 
@@ -77,7 +83,7 @@ const registryReadErrorResponses = {
 };
 
 export const registryOpenApiDocument = {
-  openapi: '3.2.0',
+  openapi: '3.1.0',
   jsonSchemaDialect: 'https://json-schema.org/draft/2020-12/schema',
   info: {
     title: 'A2A Warp Registry API',
@@ -133,6 +139,7 @@ export const registryOpenApiDocument = {
         summary: 'Return registry health and agent counts.',
         responses: {
           '200': jsonResponse('Registry health summary.', schemaRef('RegistryHealth')),
+          ...operationalErrorResponses,
         },
       },
     },
@@ -151,6 +158,7 @@ export const registryOpenApiDocument = {
               ],
             }),
           },
+          ...operationalErrorResponses,
         },
       },
     },
@@ -161,6 +169,7 @@ export const registryOpenApiDocument = {
         summary: 'Return registry metrics as JSON for UI dashboards and contract tests.',
         responses: {
           '200': jsonResponse('Registry metrics summary.', schemaRef('RegistryMetricsSummary')),
+          ...operationalErrorResponses,
         },
       },
     },
@@ -228,8 +237,7 @@ export const registryOpenApiDocument = {
         responses: {
           '201': jsonResponse('The registered agent record.', schemaRef('RegisteredAgent')),
           '400': responseRef('BadRequest'),
-          '401': responseRef('Unauthorized'),
-          '429': responseRef('RateLimited'),
+          ...authErrorResponses,
         },
       },
     },
@@ -246,8 +254,7 @@ export const registryOpenApiDocument = {
         responses: {
           '201': jsonResponse('The registered agent record.', schemaRef('RegisteredAgent')),
           '400': responseRef('BadRequest'),
-          '401': responseRef('Unauthorized'),
-          '429': responseRef('RateLimited'),
+          ...authErrorResponses,
         },
       },
     },
@@ -368,8 +375,7 @@ export const registryOpenApiDocument = {
         responses: {
           '200': jsonResponse('Registry import result.', schemaRef('RegistryImportResult')),
           '400': responseRef('ValidationError'),
-          '401': responseRef('Unauthorized'),
-          '429': responseRef('RateLimited'),
+          ...authErrorResponses,
         },
       },
     },
@@ -527,7 +533,7 @@ export const registryOpenApiDocument = {
         properties: {
           protocolVersion: {
             type: 'string',
-            enum: ['1.0', '1.2'],
+            enum: ['0.3', '1.0', '1.2'],
           },
           name: {
             type: 'string',
