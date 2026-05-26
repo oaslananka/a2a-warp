@@ -91,4 +91,19 @@ describe('useTaskStream', () => {
       expect(result.current.error).toBe('Task stream error: 503');
     });
   });
+
+  it('reports rejected task fetches as offline errors', async () => {
+    installEventSourceMock();
+    installFetchMock([
+      { path: '/api/tasks/recent?limit=30', error: new TypeError('network offline') },
+    ]);
+
+    const { result } = renderHook(() => useTaskStream('authenticated'));
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(result.current.tasks).toEqual([]);
+    expect(result.current.connected).toBe(false);
+    expect(result.current.error).toBe('network offline');
+  });
 });

@@ -5,6 +5,7 @@ interface FetchRoute {
   path: string;
   status?: number;
   body?: unknown;
+  error?: Error;
 }
 
 function routePath(input: RequestInfo | URL): string {
@@ -26,6 +27,10 @@ export function installFetchMock(routes: FetchRoute[]) {
         throw new Error(`Unexpected registry UI fetch: ${path}`);
       }
 
+      if (route.error) {
+        throw route.error;
+      }
+
       const body = route.body === undefined ? null : JSON.stringify(route.body);
       return new Response(body, {
         status: route.status ?? 200,
@@ -39,15 +44,48 @@ export function installFetchMock(routes: FetchRoute[]) {
   return { calls, fetchMock };
 }
 
-export class MockRegistryEventSource {
+type MessageHandler = ((event: MessageEvent<string>) => void) | null;
+type ErrorHandler = ((event: Event) => void) | null;
+
+export class MockRegistryEventSource extends EventTarget {
   static instances: MockRegistryEventSource[] = [];
 
-  onmessage: ((event: MessageEvent<string>) => void) | null = null;
-  onerror: ((event: Event) => void) | null = null;
+  private messageHandler: MessageHandler = null;
+  private errorHandler: ErrorHandler = null;
+
   closed = false;
 
   constructor(readonly url: string) {
+    super();
     MockRegistryEventSource.instances.push(this);
+  }
+
+  get onmessage(): MessageHandler {
+    return this.messageHandler;
+  }
+
+  set onmessage(handler: MessageHandler) {
+    if (this.messageHandler) {
+      this.removeEventListener('message', this.messageHandler as EventListener);
+    }
+    this.messageHandler = handler;
+    if (handler) {
+      this.addEventListener('message', handler as EventListener);
+    }
+  }
+
+  get onerror(): ErrorHandler {
+    return this.errorHandler;
+  }
+
+  set onerror(handler: ErrorHandler) {
+    if (this.errorHandler) {
+      this.removeEventListener('error', this.errorHandler);
+    }
+    this.errorHandler = handler;
+    if (handler) {
+      this.addEventListener('error', handler);
+    }
   }
 
   static reset() {
@@ -55,7 +93,7 @@ export class MockRegistryEventSource {
   }
 
   emitJson(payload: AgentStreamPayload | RegistryTaskEvent) {
-    this.onmessage?.(
+    this.dispatchEvent(
       new MessageEvent('message', {
         data: JSON.stringify(payload),
       }),
@@ -63,7 +101,7 @@ export class MockRegistryEventSource {
   }
 
   emitMalformed(data = '{not-json') {
-    this.onmessage?.(
+    this.dispatchEvent(
       new MessageEvent('message', {
         data,
       }),
@@ -71,7 +109,7 @@ export class MockRegistryEventSource {
   }
 
   fail() {
-    this.onerror?.(new Event('error'));
+    this.dispatchEvent(new Event('error'));
   }
 
   close() {
