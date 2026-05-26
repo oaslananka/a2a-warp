@@ -6,6 +6,7 @@ Use these docs for install, package boundaries, protocol compatibility, security
 
 - [Install](install.md)
 - [Quickstart](quickstart.md)
+- [Examples](examples.md)
 - [Protocol compatibility](protocol/compatibility.md)
 - [JSON Schemas](protocol/schemas.md)
 - [Architecture](development/architecture.md)
