@@ -4,7 +4,7 @@ Thanks for helping improve A2A Warp.
 
 ## Local workflow
 
-1. Use Node `24.15.0` and pnpm `11.1.3` by default (`.node-version`, `.nvmrc`, and `packageManager` are the source of truth).
+1. Use Node `24.16.0` and pnpm `11.2.2` by default (`.node-version`, `.nvmrc`, and `packageManager` are the source of truth).
 2. Install dependencies with `pnpm run setup`.
 3. Run focused tests while iterating.
 4. Run `pnpm run ui:install:browsers` once per machine before the full UI smoke path.
@@ -33,6 +33,14 @@ pnpm run ui:install:browsers
 pnpm run verify
 ```
 
+PowerShell:
+
+```powershell
+pnpm install --frozen-lockfile
+pnpm run ui:install:browsers
+pnpm run verify
+```
+
 Releases are cut by release-please manifest mode after changes merge to `main`.
 Version numbers are derived from Conventional Commit history and the
 `.release-please-manifest.json` state.
@@ -40,6 +48,12 @@ Version numbers are derived from Conventional Commit history and the
 Maintainers can validate the release configuration with:
 
 ```bash
+pnpm run release:dry-run
+```
+
+PowerShell:
+
+```powershell
 pnpm run release:dry-run
 ```
 

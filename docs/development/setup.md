@@ -1,9 +1,17 @@
 # Development Setup
 
+Linux/macOS:
+
 ```bash
 corepack enable
 pnpm install --frozen-lockfile
 pnpm run verify
 ```
 
-PowerShell uses the same commands.
+PowerShell:
+
+```powershell
+corepack enable
+pnpm install --frozen-lockfile
+pnpm run verify
+```
