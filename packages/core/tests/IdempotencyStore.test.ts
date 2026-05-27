@@ -7,6 +7,30 @@ import {
   type RedisIdempotencyClient,
 } from '../src/server/IdempotencyStore.js';
 
+type MutableStringPrototype = typeof String.prototype & {
+  toWellFormed?: () => string;
+};
+
+async function withoutNativeToWellFormed(callback: () => Promise<void>): Promise<void> {
+  const stringPrototype = String.prototype as MutableStringPrototype;
+  const originalToWellFormed = Object.getOwnPropertyDescriptor(stringPrototype, 'toWellFormed');
+
+  Object.defineProperty(stringPrototype, 'toWellFormed', {
+    configurable: true,
+    value: undefined,
+  });
+
+  try {
+    await callback();
+  } finally {
+    if (originalToWellFormed) {
+      Object.defineProperty(stringPrototype, 'toWellFormed', originalToWellFormed);
+    } else {
+      delete stringPrototype.toWellFormed;
+    }
+  }
+}
+
 describe('IdempotencyStore', () => {
   it('builds stable fingerprints independent of object key order', () => {
     expect(buildIdempotencyFingerprint({ b: 2, a: { d: 4, c: [3, 2] } })).toBe(
@@ -181,6 +205,30 @@ describe('IdempotencyStore', () => {
         fingerprint: 'fingerprint',
       }),
     );
+  });
+
+  it('falls back to local UTF-16 normalization when toWellFormed is unavailable', async () => {
+    const values = new Map<string, string>();
+    const client: RedisIdempotencyClient = {
+      get: vi.fn(async (key) => values.get(key) ?? null),
+      set: vi.fn(async (key, value) => {
+        values.set(key, value);
+      }),
+      pexpire: vi.fn(async () => 1),
+    };
+    const store = new RedisIdempotencyStore(client, 'prefix');
+
+    await withoutNativeToWellFormed(async () => {
+      await store.set(
+        'ok-\uD83D\uDE00-\uD800-\uDC00-z',
+        'route-\uD800',
+        'fingerprint',
+        { kind: 'success', value: { ok: true } },
+        1000,
+      );
+    });
+
+    expect(values.has('prefix:ok-%F0%9F%98%80-%EF%BF%BD-%EF%BF%BD-z:route-%EF%BF%BD')).toBe(true);
   });
 
   it('keeps Redis records distinct when scope and key contain delimiters', async () => {
