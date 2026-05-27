@@ -95,6 +95,26 @@ describe('IdempotencyStore', () => {
     );
   });
 
+  it('handles malformed UTF-16 in process-local storage keys', async () => {
+    const store = new InMemoryIdempotencyStore();
+
+    await store.set(
+      'tenant-\uD800',
+      'route-\uD800',
+      'fingerprint',
+      { kind: 'success', value: { ok: true } },
+      1000,
+    );
+
+    await expect(store.get('tenant-\uD800', 'route-\uD800')).resolves.toEqual(
+      expect.objectContaining({
+        scope: 'tenant-\uD800',
+        key: 'route-\uD800',
+        fingerprint: 'fingerprint',
+      }),
+    );
+  });
+
   it('stores Redis records with TTL and ignores expired payloads', async () => {
     const values = new Map<string, string>();
     const expirations = new Map<string, number>();
@@ -109,6 +129,8 @@ describe('IdempotencyStore', () => {
       }),
     };
     const store = new RedisIdempotencyStore(client, 'prefix');
+
+    await expect(store.get('scope', 'missing')).resolves.toBeNull();
 
     const record = await store.set(
       'scope',
@@ -130,6 +152,35 @@ describe('IdempotencyStore', () => {
       }),
     );
     await expect(store.get('scope', 'key')).resolves.toBeNull();
+  });
+
+  it('handles malformed UTF-16 in Redis storage keys', async () => {
+    const values = new Map<string, string>();
+    const client: RedisIdempotencyClient = {
+      get: vi.fn(async (key) => values.get(key) ?? null),
+      set: vi.fn(async (key, value) => {
+        values.set(key, value);
+      }),
+      pexpire: vi.fn(async () => 1),
+    };
+    const store = new RedisIdempotencyStore(client, 'prefix');
+
+    await store.set(
+      'tenant-\uD800',
+      'route-\uD800',
+      'fingerprint',
+      { kind: 'success', value: { ok: true } },
+      1000,
+    );
+
+    expect(values.has('prefix:tenant-%EF%BF%BD:route-%EF%BF%BD')).toBe(true);
+    await expect(store.get('tenant-\uD800', 'route-\uD800')).resolves.toEqual(
+      expect.objectContaining({
+        scope: 'tenant-\uD800',
+        key: 'route-\uD800',
+        fingerprint: 'fingerprint',
+      }),
+    );
   });
 
   it('keeps Redis records distinct when scope and key contain delimiters', async () => {
@@ -163,6 +214,8 @@ describe('IdempotencyStore', () => {
     );
 
     expect(values).toHaveLength(2);
+    expect(values.has('prefix:tenant-a%3Auser-a:route')).toBe(true);
+    expect(values.has('prefix:tenant-a:user-a%3Aroute')).toBe(true);
     await expect(store.get('tenant-a:user-a', 'route')).resolves.toEqual(
       expect.objectContaining({
         scope: 'tenant-a:user-a',
