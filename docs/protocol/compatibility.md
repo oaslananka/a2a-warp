@@ -1,10 +1,22 @@
 # Protocol Compatibility
 
-Spec reference: Agent2Agent core protocol specification and Agent2Agent specification index reviewed on 2026-05-19; conformance fixture inputs were refreshed against the Agent2Agent latest specification on 2026-05-24.
+Spec reference: official Agent2Agent `v1.0.0` release, published 2026-03-12 and checked on 2026-05-27 at <https://github.com/a2aproject/A2A/releases/tag/v1.0.0>. The release tag points at commit `173695755607e884aa9acf8ce4feed90e32727a1`; the checked `docs/specification.md` blob is `7095fc0bad3d5a05edb6cfaf92e67d96bf91290c`. Latest upstream `main` was checked at commit `cd87b9341bc0e4982d46550aaab2319b903271e4`, dated 2026-05-26. No upstream `v1.2` release was present in the checked tags (`v1.0.0`, `v1.0.0-rc`, `v0.3.0`, `v0.2.6`).
 
-Implementation target: A2A protocolVersion `1.0` plus compatibility normalization for older Agent Card shapes where tests cover the behavior.
+Implementation target: official A2A `1.0`, legacy `0.3` Agent Card normalization, and a2a-warp experimental `1.2` profile fixtures that require explicit opt-in.
 
 For the broader Node.js, package, transport, optional peer, and deprecation policy matrix, see [Compatibility](../compatibility.md).
+
+## Official Target
+
+A2A Warp defaults to official A2A `1.0` for client interface selection, runtime compatibility, and `a2a-warp conformance`. This keeps published behavior aligned with the latest official upstream A2A release instead of preferring repository-local experimental fixture profiles.
+
+## Legacy Normalization
+
+Legacy `0.3` Agent Cards and registry interface metadata may be normalized where tests cover the input shape. New runtime responses do not target `0.3`, and compatibility docs must not describe `0.3` as an active output protocol.
+
+## Experimental Profiles
+
+The `1.2` fixture directory is an a2a-warp experimental profile. It is useful for forward-looking schema and fixture coverage, but it is not treated as an official upstream A2A protocol release. `A2AClient.connect` and `a2a-warp conformance` do not prefer this profile unless the caller opts in with `allowExperimentalProtocolVersions`; CLI conformance `1.2` requires `--experimental-profiles`.
 
 | Feature                             | Status                                       | Evidence                                                                                                                                                                  |
 | ----------------------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -37,9 +49,9 @@ Fixture coverage:
 | `tests/conformance/fixtures/a2a-1.0/stream-events.json`   | A2A `1.0` `message/stream` JSON-RPC SSE flow                    |
 | `tests/conformance/fixtures/a2a-1.0/push-config.json`     | A2A `1.0` push notification configuration                       |
 | `tests/conformance/fixtures/a2a-1.0/negative-cases.json`  | A2A `1.0` negative JSON-RPC cases                               |
-| `tests/conformance/fixtures/a2a-1.2/agent-card.json`      | A2A `1.2` discovery metadata, interfaces, and capabilities      |
-| `tests/conformance/fixtures/a2a-1.2/message-request.json` | A2A `1.2` `message/send` JSON-RPC request                       |
-| `tests/conformance/fixtures/a2a-1.2/task-response.json`   | A2A `1.2` task, message history, data part, and artifact result |
-| `tests/conformance/fixtures/a2a-1.2/stream-events.json`   | A2A `1.2` `message/stream` JSON-RPC SSE flow                    |
-| `tests/conformance/fixtures/a2a-1.2/push-config.json`     | A2A `1.2` push notification configuration                       |
-| `tests/conformance/fixtures/a2a-1.2/negative-cases.json`  | A2A `1.2` negative JSON-RPC cases                               |
+| `tests/conformance/fixtures/a2a-1.2/agent-card.json`      | a2a-warp experimental `1.2` discovery metadata and capabilities |
+| `tests/conformance/fixtures/a2a-1.2/message-request.json` | a2a-warp experimental `1.2` `message/send` JSON-RPC request     |
+| `tests/conformance/fixtures/a2a-1.2/task-response.json`   | a2a-warp experimental `1.2` task, history, and data artifact    |
+| `tests/conformance/fixtures/a2a-1.2/stream-events.json`   | a2a-warp experimental `1.2` `message/stream` SSE flow           |
+| `tests/conformance/fixtures/a2a-1.2/push-config.json`     | a2a-warp experimental `1.2` push notification configuration     |
+| `tests/conformance/fixtures/a2a-1.2/negative-cases.json`  | a2a-warp experimental `1.2` negative JSON-RPC cases             |

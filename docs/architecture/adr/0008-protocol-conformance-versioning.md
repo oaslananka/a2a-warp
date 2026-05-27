@@ -7,9 +7,10 @@ Accepted for the 1.0.0 launch baseline.
 ## Context
 
 A2A Warp validates Agent2Agent behavior with versioned conformance fixtures under
-`tests/conformance/fixtures/`. The current launch baseline includes fixtures for A2A
-`1.0` and `1.2`, covering agent cards, message requests, streaming events, push
-configuration, task responses, and negative JSON-RPC cases.
+`tests/conformance/fixtures/`. The current launch baseline includes official A2A
+`1.0` fixtures and a2a-warp experimental `1.2` profile fixtures, covering agent
+cards, message requests, streaming events, push configuration, task responses, and
+negative JSON-RPC cases.
 
 Protocol versions can evolve without every consumer upgrading at once. If fixtures are
 mutated in place, regressions against older protocol behavior become hard to detect and
@@ -17,9 +18,11 @@ docs lose a stable compatibility story.
 
 ## Decision
 
-Treat each supported protocol version as a versioned conformance fixture set. New
-protocol support must add a new fixture directory and wire it into the conformance test
-matrix instead of replacing older fixture semantics.
+Treat each supported or experimental protocol profile as a versioned conformance
+fixture set. New official protocol support must add a new fixture directory and wire
+it into the conformance test matrix instead of replacing older fixture semantics.
+Experimental profiles must be documented as opt-in until an upstream release makes
+the version official.
 
 Existing fixture directories may be corrected only for clear mistakes, and those
 corrections must preserve the advertised protocol version. Compatibility documentation
@@ -53,5 +56,5 @@ Relevant coverage:
 
 - [`A2A conformance tests`](../../../tests/conformance/a2a-conformance.test.ts)
 - [`A2A 1.0 fixtures`](../../../tests/conformance/fixtures/a2a-1.0/agent-card.json)
-- [`A2A 1.2 fixtures`](../../../tests/conformance/fixtures/a2a-1.2/agent-card.json)
+- [`a2a-warp experimental 1.2 fixtures`](../../../tests/conformance/fixtures/a2a-1.2/agent-card.json)
 - [`transport contract`](../../../tests/transport-contract/transportContract.ts)

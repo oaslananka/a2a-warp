@@ -50,7 +50,7 @@ a2a-warp scaffold demo-agent --adapter custom
 a2a-warp send http://127.0.0.1:3000 "hello"
 a2a-warp task status http://127.0.0.1:3000 task-123
 a2a-warp health http://127.0.0.1:3000 --timeout-ms 1000 --json
-a2a-warp conformance http://127.0.0.1:3000 --protocol-version 1.2 --json
+a2a-warp conformance http://127.0.0.1:3000 --protocol-version 1.0 --json
 a2a-warp registry export --url http://127.0.0.1:3099 --output ./registry-export.json
 a2a-warp registry import --url http://127.0.0.1:3099 --input ./registry-export.json
 a2a-warp export-card http://127.0.0.1:3000 --output ./agent-card.json
@@ -68,7 +68,7 @@ a2a-warp scaffold demo-agent --adapter custom
 a2a-warp send http://127.0.0.1:3000 "hello"
 a2a-warp task status http://127.0.0.1:3000 task-123
 a2a-warp health http://127.0.0.1:3000 --timeout-ms 1000 --json
-a2a-warp conformance http://127.0.0.1:3000 --protocol-version 1.2 --json
+a2a-warp conformance http://127.0.0.1:3000 --protocol-version 1.0 --json
 a2a-warp registry export --url http://127.0.0.1:3099 --output .\registry-export.json
 a2a-warp registry import --url http://127.0.0.1:3099 --input .\registry-export.json
 a2a-warp export-card http://127.0.0.1:3000 --output .\agent-card.json
@@ -95,7 +95,7 @@ a2a-warp doctor --json
 
 ## A2A Protocol Compatibility
 
-The implementation targets Agent Cards, JSON-RPC request/response envelopes, messages, tasks, artifacts, task status transitions, streaming/SSE, push notification registration, and capability discovery as described in the Agent2Agent core specification reviewed on 2026-05-19. See [docs/protocol/compatibility.md](docs/protocol/compatibility.md).
+The implementation targets Agent Cards, JSON-RPC request/response envelopes, messages, tasks, artifacts, task status transitions, streaming/SSE, push notification registration, and capability discovery as described in the official Agent2Agent `v1.0.0` release, checked against tag commit `173695755607e884aa9acf8ce4feed90e32727a1` on 2026-05-27. See [docs/protocol/compatibility.md](docs/protocol/compatibility.md).
 
 See [Compatibility](docs/compatibility.md) for the supported Node.js, package, protocol, transport, optional peer, and deprecation policy matrix.
 

@@ -5,7 +5,7 @@
 
 import { EventSource, type EventSourceInit } from 'eventsource';
 import { context, propagation } from '@opentelemetry/api';
-import type { AgentCard } from '../types/agent-card.js';
+import type { AgentCard, SupportedInterface } from '../types/agent-card.js';
 import type {
   JsonRpcFailureResponse,
   JsonRpcResponse,
@@ -38,6 +38,8 @@ export interface A2AClientOptions {
   };
   trustedVerificationKeys?: VerificationKey[];
   requireVerifiedAgentCard?: boolean;
+  preferredProtocolVersion?: A2AProtocolVersion;
+  allowExperimentalProtocolVersions?: boolean;
 }
 
 interface RetryOptions {
@@ -45,6 +47,10 @@ interface RetryOptions {
   backoffMs: number;
   retryOn: number[];
 }
+
+export type A2AOfficialProtocolVersion = '1.0';
+export type A2AExperimentalProtocolVersion = '1.2';
+export type A2AProtocolVersion = A2AOfficialProtocolVersion | A2AExperimentalProtocolVersion;
 
 /**
  * HTTP and SSE client for interacting with A2A-compatible agents.
@@ -62,7 +68,8 @@ interface RetryOptions {
  * @since 1.0.0
  */
 export class A2AClient {
-  private static readonly supportedVersions = ['1.2', '1.0'] as const;
+  public static readonly supportedVersions = ['1.0'] as const;
+  public static readonly experimentalProtocolVersions = ['1.2'] as const;
   private readonly fetchImplementation: typeof fetch;
   private readonly cardPath: string;
   private readonly rpcPath: string;
@@ -103,11 +110,7 @@ export class A2AClient {
 
     const card = (await response.json()) as AgentCard;
     await A2AClient.verifyResolvedCard(card, options);
-    const selectedInterface = card.supportedInterfaces?.find((item) =>
-      A2AClient.supportedVersions.includes(
-        item.protocolVersion as (typeof A2AClient.supportedVersions)[number],
-      ),
-    ) ?? {
+    const selectedInterface = A2AClient.selectInterface(card, options) ?? {
       url: card.url,
       protocolBinding: 'HTTP+JSON' as const,
       protocolVersion: '0.3' as const,
@@ -135,6 +138,61 @@ export class A2AClient {
     const card = (await legacyResponse.json()) as AgentCard;
     await this.verifyAgentCard(card);
     return card;
+  }
+
+  private static isExperimentalProtocolVersion(
+    version: A2AProtocolVersion,
+  ): version is A2AExperimentalProtocolVersion {
+    const experimentalVersions: readonly A2AProtocolVersion[] =
+      A2AClient.experimentalProtocolVersions;
+    return experimentalVersions.includes(version);
+  }
+
+  private static getProtocolPreferences(options: A2AClientOptions): readonly A2AProtocolVersion[] {
+    const officialVersions: readonly A2AProtocolVersion[] = A2AClient.supportedVersions;
+    const experimentalVersions: readonly A2AProtocolVersion[] =
+      options.allowExperimentalProtocolVersions ? A2AClient.experimentalProtocolVersions : [];
+    const preferences = [...officialVersions, ...experimentalVersions];
+
+    if (!options.preferredProtocolVersion) {
+      return preferences;
+    }
+
+    if (
+      A2AClient.isExperimentalProtocolVersion(options.preferredProtocolVersion) &&
+      !options.allowExperimentalProtocolVersions
+    ) {
+      throw new Error(
+        'Protocol version 1.2 is an a2a-warp experimental profile. Set allowExperimentalProtocolVersions to true to opt in.',
+      );
+    }
+
+    if (!preferences.includes(options.preferredProtocolVersion)) {
+      throw new Error(
+        `Unsupported preferred protocol version: ${options.preferredProtocolVersion}`,
+      );
+    }
+
+    return [
+      options.preferredProtocolVersion,
+      ...preferences.filter((version) => version !== options.preferredProtocolVersion),
+    ];
+  }
+
+  private static selectInterface(
+    card: AgentCard,
+    options: A2AClientOptions,
+  ): SupportedInterface | undefined {
+    const interfaces = card.supportedInterfaces ?? [];
+
+    for (const protocolVersion of A2AClient.getProtocolPreferences(options)) {
+      const selectedInterface = interfaces.find((item) => item.protocolVersion === protocolVersion);
+      if (selectedInterface) {
+        return selectedInterface;
+      }
+    }
+
+    return undefined;
   }
 
   async sendMessage(params: Message | MessageSendParams): Promise<Task> {
