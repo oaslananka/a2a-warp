@@ -9,4 +9,6 @@ Independent TypeScript runtime and toolkit for the Agent2Agent protocol.
 - [Compatibility](guide/compatibility.md)
 - [Protocol Compatibility](protocol/compliance.md)
 - [Security](security/authentication.md)
+- [Threat Model](security/threat-model.md)
+- [Release Process](release/process.md)
 - [Packages](packages/core.md)
