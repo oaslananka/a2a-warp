@@ -15,6 +15,9 @@ export const conformanceProtocolVersions = [
 ] as const;
 
 export type ConformanceProtocolVersion = (typeof conformanceProtocolVersions)[number];
+const conformanceProtocolVersionValues: readonly string[] = conformanceProtocolVersions;
+const experimentalConformanceProtocolVersionValues: readonly ConformanceProtocolVersion[] =
+  experimentalConformanceProtocolVersions;
 export type ConformanceCaseStatus = 'pass' | 'fail' | 'skip';
 export type ConformanceCapability = keyof Pick<
   AgentCapabilities,
@@ -171,7 +174,11 @@ function supportsProtocolVersion(
 function isExperimentalConformanceProtocolVersion(
   protocolVersion: ConformanceProtocolVersion,
 ): boolean {
-  return experimentalConformanceProtocolVersions.includes(protocolVersion as '1.2');
+  return experimentalConformanceProtocolVersionValues.includes(protocolVersion);
+}
+
+function isConformanceProtocolVersion(value: string): value is ConformanceProtocolVersion {
+  return conformanceProtocolVersionValues.includes(value);
 }
 
 function getEndpointMetadata(
@@ -272,18 +279,17 @@ export function parseConformanceProtocolVersion(
   value: string,
   options: ParseConformanceProtocolVersionOptions = {},
 ): ConformanceProtocolVersion {
-  if (!conformanceProtocolVersions.includes(value as ConformanceProtocolVersion)) {
+  if (!isConformanceProtocolVersion(value)) {
     throw new Error('Unsupported --protocol-version value. Expected 1.0 or 1.2.');
   }
 
-  const protocolVersion = value as ConformanceProtocolVersion;
-  if (isExperimentalConformanceProtocolVersion(protocolVersion) && !options.allowExperimental) {
+  if (isExperimentalConformanceProtocolVersion(value) && !options.allowExperimental) {
     throw new Error(
       'Protocol version 1.2 is an a2a-warp experimental profile. Re-run with --experimental-profiles to opt in.',
     );
   }
 
-  return protocolVersion;
+  return value;
 }
 
 export function createConformanceMessageParams(

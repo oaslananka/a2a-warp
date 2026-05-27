@@ -140,11 +140,18 @@ export class A2AClient {
     return card;
   }
 
+  private static isExperimentalProtocolVersion(
+    version: A2AProtocolVersion,
+  ): version is A2AExperimentalProtocolVersion {
+    const experimentalVersions: readonly A2AProtocolVersion[] =
+      A2AClient.experimentalProtocolVersions;
+    return experimentalVersions.includes(version);
+  }
+
   private static getProtocolPreferences(options: A2AClientOptions): readonly A2AProtocolVersion[] {
-    const officialVersions = [...A2AClient.supportedVersions] as A2AProtocolVersion[];
-    const experimentalVersions = options.allowExperimentalProtocolVersions
-      ? ([...A2AClient.experimentalProtocolVersions] as A2AProtocolVersion[])
-      : [];
+    const officialVersions: readonly A2AProtocolVersion[] = A2AClient.supportedVersions;
+    const experimentalVersions: readonly A2AProtocolVersion[] =
+      options.allowExperimentalProtocolVersions ? A2AClient.experimentalProtocolVersions : [];
     const preferences = [...officialVersions, ...experimentalVersions];
 
     if (!options.preferredProtocolVersion) {
@@ -152,9 +159,7 @@ export class A2AClient {
     }
 
     if (
-      A2AClient.experimentalProtocolVersions.includes(
-        options.preferredProtocolVersion as A2AExperimentalProtocolVersion,
-      ) &&
+      A2AClient.isExperimentalProtocolVersion(options.preferredProtocolVersion) &&
       !options.allowExperimentalProtocolVersions
     ) {
       throw new Error(
