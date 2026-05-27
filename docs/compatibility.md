@@ -53,12 +53,12 @@ release.
 
 ## Protocol Version Matrix
 
-| Protocol version | Status in A2A Warp                               | Evidence and behavior                                                                                                                           |
-| ---------------- | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `0.3`            | Legacy input compatibility only                  | Agent Cards and registry interface metadata may be normalized when tests cover the shape. New runtime responses do not target `0.3`.            |
-| `1.0`            | Primary runtime target                           | Core server/client tests, integration tests, and Agent Card compatibility use A2A `1.0` as the canonical runtime surface.                       |
-| `1.2`            | Conformance fixture and client selection support | Versioned conformance fixtures and schemas cover `1.2` Agent Card, message, task, stream, push, and negative cases.                             |
-| Future versions  | Unsupported until added deliberately             | A new version requires schemas, fixtures, CLI conformance support, docs, and protocol compatibility tests before it is documented as supported. |
+| Protocol version | Status in A2A Warp                              | Evidence and behavior                                                                                                                                                                                           |
+| ---------------- | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `0.3`            | Legacy input compatibility only                 | Agent Cards and registry interface metadata may be normalized when tests cover the shape. New runtime responses do not target `0.3`.                                                                            |
+| `1.0`            | Primary runtime target                          | Core server/client tests, integration tests, Agent Card compatibility, and default CLI conformance use A2A `1.0` as the canonical runtime surface.                                                              |
+| `1.2`            | a2a-warp experimental profile fixtures (opt-in) | Versioned fixtures and schemas cover the experimental Agent Card, message, task, stream, push, and negative cases. Client negotiation and CLI conformance do not prefer this profile unless the caller opts in. |
+| Future versions  | Unsupported until added deliberately            | A new version requires schemas, fixtures, CLI conformance support, docs, and protocol compatibility tests before it is documented as supported.                                                                 |
 
 The executable fixture set lives under `tests/conformance/fixtures/` and is run
 with `pnpm run test:conformance`.

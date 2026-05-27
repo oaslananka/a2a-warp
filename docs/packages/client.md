@@ -4,7 +4,7 @@
 
 Primary client operations:
 
-- `A2AClient.connect(agentCardUrl)` resolves an Agent Card and selects the highest supported interface.
+- `A2AClient.connect(agentCardUrl)` resolves an Agent Card and selects the official A2A `1.0` interface by default; experimental profiles require explicit opt-in.
 - `client.sendMessage(...)` sends a JSON-RPC `message/send` request.
 - `client.sendMessageStream(...)` sends `message/stream` and yields JSON-RPC SSE task updates.
 - `client.subscribeTask(taskId)` subscribes to task updates from the configured EventSource task stream.

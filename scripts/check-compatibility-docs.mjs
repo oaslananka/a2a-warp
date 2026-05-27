@@ -18,6 +18,13 @@ function requireIncludes(path, text, snippets) {
   }
 }
 
+function requireNotIncludes(path, text, snippets) {
+  if (text === null) return;
+  for (const snippet of snippets) {
+    if (text.includes(snippet)) failures.push(`${path} contains forbidden content: ${snippet}`);
+  }
+}
+
 function requireDocsInSync(sourcePath, sourceText, mirrorPath, mirrorText) {
   if (sourceText === null || mirrorText === null) return;
   if (sourceText === mirrorText) return;
@@ -105,6 +112,12 @@ const rootReadme = readRequiredDoc('README.md');
 const docsIndex = readRequiredDoc('docs/index.md');
 const siteIndex = readRequiredDoc('docs-site/index.md');
 const siteConfig = readRequiredDoc('docs-site/.vitepress/config.mts');
+const protocolDoc = readRequiredDoc('docs/protocol/compatibility.md');
+const cliSource = readRequiredDoc('cli/src/commands/conformance.ts');
+const cliDoc = readRequiredDoc('docs/cli/conformance.md');
+const siteCliDoc = readRequiredDoc('docs-site/cli/conformance.md');
+const coreClient = readRequiredDoc('packages/core/src/client/A2AClient.ts');
+const conformanceSource = readRequiredDoc('packages/testing/src/conformance.ts');
 const rootPackage = readJson('package.json');
 const runtimeManifest = readJson('tools/runtime-versions.json');
 
@@ -157,6 +170,13 @@ requireIncludes(canonicalPath, canonicalDoc, [
   'WebSocket',
   'gRPC',
 ]);
+requireIncludes(canonicalPath, canonicalDoc, [
+  'a2a-warp experimental profile fixtures (opt-in)',
+  'do not prefer this profile unless the caller opts in',
+]);
+requireNotIncludes(canonicalPath, canonicalDoc, [
+  'Conformance fixture and client selection support',
+]);
 
 const publicPackages = getWorkspacePackages()
   .filter(
@@ -191,11 +211,61 @@ for (const { dir, packageJson } of publicPackages) {
   }
 }
 
-requireIncludes('README.md', rootReadme, ['[Compatibility](docs/compatibility.md)']);
+requireIncludes('README.md', rootReadme, [
+  '[Compatibility](docs/compatibility.md)',
+  'a2a-warp conformance http://127.0.0.1:3000 --protocol-version 1.0 --json',
+]);
+requireNotIncludes('README.md', rootReadme, [
+  'a2a-warp conformance http://127.0.0.1:3000 --protocol-version 1.2 --json',
+]);
 requireIncludes('docs/index.md', docsIndex, ['[Compatibility](compatibility.md)']);
 requireIncludes('docs-site/index.md', siteIndex, ['[Compatibility](guide/compatibility.md)']);
 requireIncludes('docs-site/.vitepress/config.mts', siteConfig, [
   "{ text: 'Compatibility', link: '/guide/compatibility' }",
+]);
+requireDocsInSync('docs/cli/conformance.md', cliDoc, 'docs-site/cli/conformance.md', siteCliDoc);
+requireIncludes('docs/cli/conformance.md', cliDoc, [
+  '--protocol-version <version>  Protocol fixture version to run: 1.0 (or 1.2 with',
+  '--experimental-profiles) (default: "1.0")',
+  '--experimental-profiles',
+  'official conformance defaults to A2A `1.0`',
+]);
+requireIncludes('docs-site/cli/conformance.md', siteCliDoc, [
+  '--protocol-version <version>  Protocol fixture version to run: 1.0 (or 1.2 with',
+  '--experimental-profiles) (default: "1.0")',
+  '--experimental-profiles',
+  'official conformance defaults to A2A `1.0`',
+]);
+requireNotIncludes('docs/cli/conformance.md', cliDoc, ['default: "1.2"']);
+requireNotIncludes('docs-site/cli/conformance.md', siteCliDoc, ['default: "1.2"']);
+requireIncludes('cli/src/commands/conformance.ts', cliSource, [
+  '--experimental-profiles',
+  'Protocol fixture version to run: 1.0 (or 1.2 with --experimental-profiles)',
+  'allowExperimental: experimentalProfiles',
+  'experimentalProfiles,',
+]);
+requireIncludes('packages/core/src/client/A2AClient.ts', coreClient, [
+  "public static readonly supportedVersions = ['1.0'] as const;",
+  "public static readonly experimentalProtocolVersions = ['1.2'] as const;",
+  'preferredProtocolVersion',
+  'allowExperimentalProtocolVersions',
+]);
+requireIncludes('packages/testing/src/conformance.ts', conformanceSource, [
+  "export const officialConformanceProtocolVersion = '1.0' as const;",
+  "export const experimentalConformanceProtocolVersions = ['1.2'] as const;",
+  'experimentalProfiles?: boolean;',
+  'allowExperimental?: boolean;',
+  'protocolVersion = officialConformanceProtocolVersion',
+]);
+requireIncludes('docs/protocol/compatibility.md', protocolDoc, [
+  '## Official Target',
+  '## Legacy Normalization',
+  '## Experimental Profiles',
+  'a2a-warp experimental',
+  'https://github.com/a2aproject/A2A/releases/tag/v1.0.0',
+  '173695755607e884aa9acf8ce4feed90e32727a1',
+  '7095fc0bad3d5a05edb6cfaf92e67d96bf91290c',
+  'requires `--experimental-profiles`',
 ]);
 
 requireIncludes(canonicalPath, canonicalDoc, [

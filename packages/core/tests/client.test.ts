@@ -10,6 +10,11 @@ describe('A2AClient', () => {
     vi.restoreAllMocks();
   });
 
+  it('exposes official protocol versions separately from experimental profiles', () => {
+    expect(A2AClient.supportedVersions).toEqual(['1.0']);
+    expect(A2AClient.experimentalProtocolVersions).toEqual(['1.2']);
+  });
+
   it('falls back to legacy agent.json when canonical card is unavailable', async () => {
     const fetchSpy = vi
       .spyOn(globalThis, 'fetch')
@@ -33,7 +38,7 @@ describe('A2AClient', () => {
     expect(fetchSpy).toHaveBeenCalledTimes(2);
   });
 
-  it('connects using the highest supported structured interface from an agent card url', async () => {
+  it('connects using the official structured interface by default', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       new Response(
         JSON.stringify({
@@ -44,14 +49,14 @@ describe('A2AClient', () => {
           version: '1.0',
           supportedInterfaces: [
             {
-              url: 'http://legacy.example/a2a',
-              protocolBinding: 'HTTP+JSON',
-              protocolVersion: '0.3',
-            },
-            {
               url: 'https://grpc.example/a2a',
               protocolBinding: 'gRPC',
               protocolVersion: '1.2',
+            },
+            {
+              url: 'https://official.example/a2a',
+              protocolBinding: 'HTTP+JSON',
+              protocolVersion: '1.0',
             },
           ],
         }),
@@ -61,8 +66,70 @@ describe('A2AClient', () => {
 
     const client = await A2AClient.connect('https://cards.example/.well-known/agent-card.json');
 
-    expect(client.baseUrl).toBe('https://grpc.example/a2a');
+    expect(client.baseUrl).toBe('https://official.example/a2a');
     expect(fetchSpy).toHaveBeenCalledWith('https://cards.example/.well-known/agent-card.json');
+  });
+
+  it('connects using an experimental protocol profile only when explicitly enabled', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          protocolVersion: '1.0',
+          name: 'Negotiated',
+          description: 'desc',
+          url: 'http://legacy.example/a2a',
+          version: '1.0',
+          supportedInterfaces: [
+            {
+              url: 'https://experimental.example/a2a',
+              protocolBinding: 'HTTP+JSON',
+              protocolVersion: '1.2',
+            },
+            {
+              url: 'https://official.example/a2a',
+              protocolBinding: 'HTTP+JSON',
+              protocolVersion: '1.0',
+            },
+          ],
+        }),
+        { status: 200 },
+      ),
+    );
+
+    const client = await A2AClient.connect('https://cards.example/.well-known/agent-card.json', {
+      allowExperimentalProtocolVersions: true,
+      preferredProtocolVersion: '1.2',
+    });
+
+    expect(client.baseUrl).toBe('https://experimental.example/a2a');
+  });
+
+  it('rejects preferred experimental protocol profiles unless enabled', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          protocolVersion: '1.0',
+          name: 'Negotiated',
+          description: 'desc',
+          url: 'http://legacy.example/a2a',
+          version: '1.0',
+          supportedInterfaces: [
+            {
+              url: 'https://experimental.example/a2a',
+              protocolBinding: 'HTTP+JSON',
+              protocolVersion: '1.2',
+            },
+          ],
+        }),
+        { status: 200 },
+      ),
+    );
+
+    await expect(
+      A2AClient.connect('https://cards.example/.well-known/agent-card.json', {
+        preferredProtocolVersion: '1.2',
+      }),
+    ).rejects.toThrow('Set allowExperimentalProtocolVersions to true');
   });
 
   it('throws JSON-RPC errors returned by the server', async () => {

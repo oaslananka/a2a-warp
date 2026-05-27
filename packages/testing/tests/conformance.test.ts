@@ -3,15 +3,16 @@ import { describe, expect, it } from 'vitest';
 import {
   createConformanceMessageParams,
   hasRequiredConformanceFailures,
+  parseConformanceProtocolVersion,
   runConformanceSuite,
 } from '../src/conformance.js';
 
 const completedTask = {
   id: 'task-1',
-  contextId: 'ctx-a2a-1-2',
+  contextId: 'ctx-a2a-1-0',
   status: {
     state: 'COMPLETED',
-    timestamp: '2026-05-24T13:00:01+03:00',
+    timestamp: '2026-05-24T12:00:01Z',
   },
   history: [],
   artifacts: [
@@ -26,7 +27,7 @@ const completedTask = {
 
 function createAgentCard(overrides: Partial<AgentCard> = {}): AgentCard {
   return {
-    protocolVersion: '1.2',
+    protocolVersion: '1.0',
     name: 'Fixture Agent',
     description: 'Conformance fixture endpoint',
     url: 'http://agent.test',
@@ -59,7 +60,6 @@ describe('conformance fixture runner', () => {
       client,
       endpointUrl: 'http://agent.test',
       packageVersion: '1.0.3',
-      protocolVersion: '1.2',
     });
 
     expect(report.schemaVersion).toBe('1.0');
@@ -67,7 +67,7 @@ describe('conformance fixture runner', () => {
     expect(report.package.version).toBe('1.0.3');
     expect(report.endpoint.url).toBe('http://agent.test');
     expect(report.endpoint.agentName).toBe('Fixture Agent');
-    expect(report.endpoint.protocolVersion).toBe('1.2');
+    expect(report.endpoint.protocolVersion).toBe('1.0');
     expect(report.summary.failed).toBe(0);
     expect(report.summary.passed).toBeGreaterThan(0);
     expect(report.skippedCapabilities.map((item) => item.capability)).toEqual([
@@ -84,7 +84,7 @@ describe('conformance fixture runner', () => {
       'capability.extendedAgentCard',
     ]);
     expect(hasRequiredConformanceFailures(report)).toBe(false);
-    expect(sentMessages[0]).toEqual(createConformanceMessageParams('1.2'));
+    expect(sentMessages[0]).toEqual(createConformanceMessageParams('1.0'));
   });
 
   it('marks required cases as failed when a fixture-backed request fails', async () => {
@@ -99,7 +99,6 @@ describe('conformance fixture runner', () => {
       client,
       endpointUrl: 'http://agent.test',
       packageVersion: '1.0.3',
-      protocolVersion: '1.2',
     });
 
     expect(report.summary.failed).toBe(1);
@@ -112,5 +111,58 @@ describe('conformance fixture runner', () => {
       }),
     );
     expect(hasRequiredConformanceFailures(report)).toBe(true);
+  });
+
+  it('rejects experimental fixture profiles unless parsing opts in', () => {
+    expect(() => parseConformanceProtocolVersion('1.2')).toThrow('--experimental-profiles');
+    expect(parseConformanceProtocolVersion('1.2', { allowExperimental: true })).toBe('1.2');
+  });
+
+  it('rejects experimental fixture profiles unless the runner opts in', async () => {
+    const client = {
+      resolveCard: async () => createAgentCard({ protocolVersion: '1.2', version: '1.2.0' }),
+      sendMessage: async () => completedTask,
+    };
+
+    await expect(
+      runConformanceSuite({
+        client,
+        endpointUrl: 'http://agent.test',
+        packageVersion: '1.0.3',
+        protocolVersion: '1.2',
+      }),
+    ).rejects.toThrow('Set experimentalProfiles to true');
+  });
+
+  it('runs experimental fixture profiles when explicitly enabled', async () => {
+    const experimentalTask = {
+      ...completedTask,
+      contextId: 'ctx-a2a-1-2',
+      status: {
+        ...completedTask.status,
+        timestamp: '2026-05-24T13:00:01+03:00',
+      },
+    } satisfies Task;
+    const sentMessages: MessageSendParams[] = [];
+    const client = {
+      resolveCard: async () => createAgentCard({ protocolVersion: '1.2', version: '1.2.0' }),
+      sendMessage: async (params: MessageSendParams) => {
+        sentMessages.push(params);
+        return experimentalTask;
+      },
+    };
+
+    const report = await runConformanceSuite({
+      client,
+      endpointUrl: 'http://agent.test',
+      packageVersion: '1.0.3',
+      protocolVersion: '1.2',
+      experimentalProfiles: true,
+    });
+
+    expect(report.protocolVersion).toBe('1.2');
+    expect(report.endpoint.protocolVersion).toBe('1.2');
+    expect(report.summary.failed).toBe(0);
+    expect(sentMessages[0]).toEqual(createConformanceMessageParams('1.2'));
   });
 });

@@ -13,7 +13,9 @@ Runs the A2A conformance fixture suite against an endpoint, emits a machine-read
 write JUnit XML for CI systems.
 
 Options:
-  --protocol-version <version>  Protocol fixture version to run: 1.0 or 1.2 (default: "1.2")
+  --protocol-version <version>  Protocol fixture version to run: 1.0 (or 1.2 with
+                                --experimental-profiles) (default: "1.0")
+  --experimental-profiles       Allow a2a-warp experimental protocol fixture profiles such as 1.2
   --json                        Machine-readable JSON output
   --junit <path>                Write a JUnit XML report to a path
   --header <key:value...>       HTTP header to send; accepts one or more key:value entries
@@ -31,13 +33,13 @@ Options:
 ### Run conformance fixtures and emit JSON. (Linux/macOS)
 
 ```bash
-a2a-warp conformance http://127.0.0.1:3000 --protocol-version 1.2 --json
+a2a-warp conformance http://127.0.0.1:3000 --protocol-version 1.0 --json
 ```
 
 ### Run conformance fixtures and emit JSON. (PowerShell)
 
 ```powershell
-a2a-warp conformance http://127.0.0.1:3000 --protocol-version 1.2 --json
+a2a-warp conformance http://127.0.0.1:3000 --protocol-version 1.0 --json
 ```
 
 ### Write a JUnit report. (Linux/macOS)
@@ -57,6 +59,8 @@ a2a-warp conformance http://127.0.0.1:3000 --junit .\reports\a2a-conformance.xml
 `--json` emits a stable conformance report with package metadata, endpoint capability metadata, pass/fail/skip counts, case results, and skipped optional capabilities.
 
 Case `status` is one of `pass`, `fail`, or `skip`. Required failures increment `summary.requiredFailed` and make the command return a nonzero exit code.
+
+`--protocol-version 1.2` is an a2a-warp experimental fixture profile and requires `--experimental-profiles`; official conformance defaults to A2A `1.0`.
 
 ## JUnit Output
 

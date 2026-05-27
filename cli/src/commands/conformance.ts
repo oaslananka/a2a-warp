@@ -27,8 +27,8 @@ export const conformanceCommandDoc = {
   examples: [
     {
       title: 'Run conformance fixtures and emit JSON.',
-      bash: ['a2a-warp conformance http://127.0.0.1:3000 --protocol-version 1.2 --json'],
-      powershell: ['a2a-warp conformance http://127.0.0.1:3000 --protocol-version 1.2 --json'],
+      bash: ['a2a-warp conformance http://127.0.0.1:3000 --protocol-version 1.0 --json'],
+      powershell: ['a2a-warp conformance http://127.0.0.1:3000 --protocol-version 1.0 --json'],
     },
     {
       title: 'Write a JUnit report.',
@@ -45,6 +45,8 @@ export const conformanceCommandDoc = {
     '',
     'Case `status` is one of `pass`, `fail`, or `skip`. Required failures increment `summary.requiredFailed` and make the command return a nonzero exit code.',
     '',
+    '`--protocol-version 1.2` is an a2a-warp experimental fixture profile and requires `--experimental-profiles`; official conformance defaults to A2A `1.0`.',
+    '',
     '## JUnit Output',
     '',
     'Use `--junit <path>` to write CI-compatible JUnit XML. The XML includes one `<testcase>` per report case, `<failure>` entries for failed cases, and `<skipped>` entries for skipped optional capabilities.',
@@ -53,6 +55,7 @@ export const conformanceCommandDoc = {
 
 interface ConformanceCommandOptions extends NetworkCommandOptions {
   protocolVersion?: string;
+  experimentalProfiles?: boolean;
   json?: boolean;
   junit?: string;
 }
@@ -133,7 +136,15 @@ export function createConformanceCommand(getOptions: RootOptionsProvider): Comma
   const command = addNetworkOptions(
     applyCommandDoc(new Command('conformance'), conformanceCommandDoc)
       .argument('<url>')
-      .option('--protocol-version <version>', 'Protocol fixture version to run: 1.0 or 1.2', '1.2')
+      .option(
+        '--protocol-version <version>',
+        'Protocol fixture version to run: 1.0 (or 1.2 with --experimental-profiles)',
+        '1.0',
+      )
+      .option(
+        '--experimental-profiles',
+        'Allow a2a-warp experimental protocol fixture profiles such as 1.2',
+      )
       .option('--json', 'Machine-readable JSON output')
       .option('--junit <path>', 'Write a JUnit XML report to a path'),
   );
@@ -144,8 +155,10 @@ export function createConformanceCommand(getOptions: RootOptionsProvider): Comma
       const outputOptions = mergeCliOptions(getOptions(), mergedCommandOptions);
 
       try {
+        const experimentalProfiles = Boolean(mergedCommandOptions.experimentalProfiles);
         const protocolVersion = parseConformanceProtocolVersion(
-          mergedCommandOptions.protocolVersion ?? '1.2',
+          mergedCommandOptions.protocolVersion ?? '1.0',
+          { allowExperimental: experimentalProfiles },
         );
         const client = createA2AClient(url, mergedCommandOptions);
         const report = await withSpinner('Running conformance suite', outputOptions, () =>
@@ -154,6 +167,7 @@ export function createConformanceCommand(getOptions: RootOptionsProvider): Comma
             endpointUrl: url,
             packageVersion: CLI_VERSION,
             protocolVersion,
+            experimentalProfiles,
           }),
         );
 

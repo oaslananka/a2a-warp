@@ -7,7 +7,12 @@ import type {
   Task,
 } from '@oaslananka/a2a-warp';
 
-export const conformanceProtocolVersions = ['1.0', '1.2'] as const;
+export const officialConformanceProtocolVersion = '1.0' as const;
+export const experimentalConformanceProtocolVersions = ['1.2'] as const;
+export const conformanceProtocolVersions = [
+  officialConformanceProtocolVersion,
+  ...experimentalConformanceProtocolVersions,
+] as const;
 
 export type ConformanceProtocolVersion = (typeof conformanceProtocolVersions)[number];
 export type ConformanceCaseStatus = 'pass' | 'fail' | 'skip';
@@ -26,6 +31,11 @@ export interface ConformanceRunOptions {
   endpointUrl: string;
   packageVersion: string;
   protocolVersion?: ConformanceProtocolVersion;
+  experimentalProfiles?: boolean;
+}
+
+export interface ParseConformanceProtocolVersionOptions {
+  allowExperimental?: boolean;
 }
 
 export interface ConformanceCaseResult {
@@ -158,6 +168,12 @@ function supportsProtocolVersion(
   );
 }
 
+function isExperimentalConformanceProtocolVersion(
+  protocolVersion: ConformanceProtocolVersion,
+): boolean {
+  return experimentalConformanceProtocolVersions.includes(protocolVersion as '1.2');
+}
+
 function getEndpointMetadata(
   endpointUrl: string,
   agentCard: AgentCard | undefined,
@@ -252,11 +268,22 @@ function summarize(cases: ConformanceCaseResult[]): ConformanceReport['summary']
   };
 }
 
-export function parseConformanceProtocolVersion(value: string): ConformanceProtocolVersion {
-  if (conformanceProtocolVersions.includes(value as ConformanceProtocolVersion)) {
-    return value as ConformanceProtocolVersion;
+export function parseConformanceProtocolVersion(
+  value: string,
+  options: ParseConformanceProtocolVersionOptions = {},
+): ConformanceProtocolVersion {
+  if (!conformanceProtocolVersions.includes(value as ConformanceProtocolVersion)) {
+    throw new Error('Unsupported --protocol-version value. Expected 1.0 or 1.2.');
   }
-  throw new Error('Unsupported --protocol-version value. Expected 1.0 or 1.2.');
+
+  const protocolVersion = value as ConformanceProtocolVersion;
+  if (isExperimentalConformanceProtocolVersion(protocolVersion) && !options.allowExperimental) {
+    throw new Error(
+      'Protocol version 1.2 is an a2a-warp experimental profile. Re-run with --experimental-profiles to opt in.',
+    );
+  }
+
+  return protocolVersion;
 }
 
 export function createConformanceMessageParams(
@@ -273,8 +300,15 @@ export async function runConformanceSuite({
   client,
   endpointUrl,
   packageVersion,
-  protocolVersion = '1.2',
+  protocolVersion = officialConformanceProtocolVersion,
+  experimentalProfiles = false,
 }: ConformanceRunOptions): Promise<ConformanceReport> {
+  if (isExperimentalConformanceProtocolVersion(protocolVersion) && !experimentalProfiles) {
+    throw new Error(
+      'Protocol version 1.2 is an a2a-warp experimental profile. Set experimentalProfiles to true to opt in.',
+    );
+  }
+
   const cases: ConformanceCaseResult[] = [];
   const skippedCapabilities: SkippedConformanceCapability[] = [];
   let agentCard: AgentCard | undefined;
