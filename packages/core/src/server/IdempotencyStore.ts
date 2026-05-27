@@ -1,5 +1,15 @@
-import { createHash } from 'node:crypto';
+import { createHmac } from 'node:crypto';
 import type { JsonRpcError } from '../types/jsonrpc.js';
+
+const IDEMPOTENCY_FINGERPRINT_ALGORITHM = 'sha256';
+const IDEMPOTENCY_FINGERPRINT_DOMAIN = 'a2a-warp:idempotency:fingerprint:v1';
+const HIGH_SURROGATE_END = 0xdbff;
+const HIGH_SURROGATE_START = 0xd800;
+const LOW_SURROGATE_END = 0xdfff;
+const LOW_SURROGATE_START = 0xdc00;
+const REPLACEMENT_CHARACTER = '\uFFFD';
+
+type StringWithToWellFormed = string & { toWellFormed?: () => string };
 
 export interface IdempotencySuccessResult {
   kind: 'success';
@@ -68,7 +78,7 @@ export class InMemoryIdempotencyStore implements IdempotencyStore {
   }
 
   private buildKey(scope: string, key: string): string {
-    return `${scope}:${key}`;
+    return buildScopedStorageKey(scope, key);
   }
 
   private pruneExpired(): void {
@@ -123,12 +133,55 @@ export class RedisIdempotencyStore implements IdempotencyStore {
   }
 
   private buildKey(scope: string, key: string): string {
-    return `${this.prefix}:${scope}:${key}`;
+    return `${this.prefix}:${buildScopedStorageKey(scope, key)}`;
   }
 }
 
 export function buildIdempotencyFingerprint(value: unknown): string {
-  return createHash('sha256').update(stableStringify(value)).digest('hex');
+  return createHmac(IDEMPOTENCY_FINGERPRINT_ALGORITHM, IDEMPOTENCY_FINGERPRINT_DOMAIN)
+    .update(stableStringify(value))
+    .digest('hex');
+}
+
+function buildScopedStorageKey(scope: string, key: string): string {
+  return `${encodeStorageKeyPart(scope)}:${encodeStorageKeyPart(key)}`;
+}
+
+function encodeStorageKeyPart(value: string): string {
+  return encodeURIComponent(toWellFormedString(value));
+}
+
+function toWellFormedString(value: string): string {
+  const toWellFormed = (value as StringWithToWellFormed).toWellFormed;
+  if (typeof toWellFormed === 'function') {
+    return toWellFormed.call(value);
+  }
+
+  let result = '';
+  for (let index = 0; index < value.length; index += 1) {
+    const codeUnit = value.charCodeAt(index);
+    if (isHighSurrogate(codeUnit)) {
+      const nextCodeUnit = value.charCodeAt(index + 1);
+      if (isLowSurrogate(nextCodeUnit)) {
+        result += value.charAt(index) + value.charAt(index + 1);
+        index += 1;
+      } else {
+        result += REPLACEMENT_CHARACTER;
+      }
+      continue;
+    }
+
+    result += isLowSurrogate(codeUnit) ? REPLACEMENT_CHARACTER : value.charAt(index);
+  }
+  return result;
+}
+
+function isHighSurrogate(codeUnit: number): boolean {
+  return codeUnit >= HIGH_SURROGATE_START && codeUnit <= HIGH_SURROGATE_END;
+}
+
+function isLowSurrogate(codeUnit: number): boolean {
+  return codeUnit >= LOW_SURROGATE_START && codeUnit <= LOW_SURROGATE_END;
 }
 
 function stableStringify(value: unknown): string {
