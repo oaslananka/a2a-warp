@@ -30,6 +30,7 @@ export default defineConfig({
       { text: 'CLI', link: '/cli/' },
       { text: 'Packages', link: '/packages/core' },
       { text: 'Protocol', link: '/protocol/compliance' },
+      { text: 'Release', link: '/release/process' },
       { text: 'GitHub', link: 'https://github.com/oaslananka/a2a-warp' },
     ],
     sidebar: {
@@ -118,7 +119,14 @@ export default defineConfig({
             { text: 'Authentication', link: '/security/authentication' },
             { text: 'Rate Limiting', link: '/security/rate-limiting' },
             { text: 'OIDC Publishing', link: '/security/oidc' },
+            { text: 'Threat Model', link: '/security/threat-model' },
           ],
+        },
+      ],
+      '/release/': [
+        {
+          text: 'Release',
+          items: [{ text: 'Release Process', link: '/release/process' }],
         },
       ],
       '/api/': [

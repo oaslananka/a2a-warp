@@ -62,6 +62,7 @@
     "docs:dev": "pnpm --dir docs-site run dev",
     "docs:build": "pnpm --dir docs-site run build",
     "docs:preview": "pnpm --dir docs-site run preview",
+    "docs:links": "node scripts/check-public-docs-links.mjs",
     "docs:api": "typedoc",
     "docs:commands:generate": "node scripts/generate-command-docs.mjs",
     "docs:generate": "node scripts/generate-api-docs.mjs && pnpm run docs:commands:generate && pnpm run openapi:generate",
