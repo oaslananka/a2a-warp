@@ -1,5 +1,8 @@
-import { createHash } from 'node:crypto';
+import { createHmac } from 'node:crypto';
 import type { JsonRpcError } from '../types/jsonrpc.js';
+
+const IDEMPOTENCY_FINGERPRINT_ALGORITHM = 'sha256';
+const IDEMPOTENCY_FINGERPRINT_DOMAIN = 'a2a-warp:idempotency:fingerprint:v1';
 
 export interface IdempotencySuccessResult {
   kind: 'success';
@@ -68,7 +71,7 @@ export class InMemoryIdempotencyStore implements IdempotencyStore {
   }
 
   private buildKey(scope: string, key: string): string {
-    return `${scope}:${key}`;
+    return buildScopedStorageKey(scope, key);
   }
 
   private pruneExpired(): void {
@@ -123,12 +126,18 @@ export class RedisIdempotencyStore implements IdempotencyStore {
   }
 
   private buildKey(scope: string, key: string): string {
-    return `${this.prefix}:${scope}:${key}`;
+    return `${this.prefix}:${buildScopedStorageKey(scope, key)}`;
   }
 }
 
 export function buildIdempotencyFingerprint(value: unknown): string {
-  return createHash('sha256').update(stableStringify(value)).digest('hex');
+  return createHmac(IDEMPOTENCY_FINGERPRINT_ALGORITHM, IDEMPOTENCY_FINGERPRINT_DOMAIN)
+    .update(stableStringify(value))
+    .digest('hex');
+}
+
+function buildScopedStorageKey(scope: string, key: string): string {
+  return `${encodeURIComponent(scope)}:${encodeURIComponent(key)}`;
 }
 
 function stableStringify(value: unknown): string {
