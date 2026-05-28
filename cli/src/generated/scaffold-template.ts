@@ -6,13 +6,13 @@ export const scaffoldTemplateConfig = {
     '@oaslananka/a2a-warp-registry': '^1.0.0',
     '@anthropic-ai/sdk': '^0.96.0',
     langchain: '^0.3.37 || ^1.0.0',
-    openai: '^6.38.0',
+    openai: '6.38.0',
     zod: '^4.4.3',
   },
   devDependencies: {
-    '@types/node': '^22.19.19',
-    tsx: '^4.22.3',
-    typescript: '^6.0.3',
+    '@types/node': '22.19.19',
+    tsx: '4.22.3',
+    typescript: '6.0.3',
   },
   runtime: {
     node: '24.16.0',
