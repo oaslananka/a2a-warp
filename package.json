@@ -110,7 +110,7 @@
     "@stryker-mutator/vitest-runner": "^9.6.1",
     "@types/node": "^22.19.19",
     "@types/supertest": "^7.2.0",
-    "@vitest/coverage-v8": "^4.1.6",
+    "@vitest/coverage-v8": "4.1.6",
     "eslint": "^10.4.0",
     "fast-check": "^4.8.0",
     "globals": "^17.6.0",
@@ -126,6 +126,6 @@
     "typedoc-plugin-markdown": "^4.11.0",
     "typescript": "^6.0.3",
     "typescript-eslint": "8.59.4",
-    "vitest": "^4.1.6"
+    "vitest": "4.1.6"
   }
 }
