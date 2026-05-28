@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.1.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-ws-v1.0.3...@oaslananka/a2a-warp-ws-v1.1.0) (2026-05-28)
+
+
+### Miscellaneous Chores
+
+* **@oaslananka/a2a-warp-ws:** Synchronize A2A Warp packages versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp bumped to 1.1.0
+
 ## [1.0.3](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-ws-v1.0.2...@oaslananka/a2a-warp-ws-v1.0.3) (2026-05-19)
 
 

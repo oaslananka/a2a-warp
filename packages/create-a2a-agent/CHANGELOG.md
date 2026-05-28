@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.1.0](https://github.com/oaslananka/a2a-warp/compare/create-a2a-warp-v1.0.3...create-a2a-warp-v1.1.0) (2026-05-28)
+
+
+### Bug Fixes
+
+* **build:** centralize runtime version pins ([98f9fd7](https://github.com/oaslananka/a2a-warp/commit/98f9fd7e80e745f7d73fc677bb8d91f7066787a3))
+* **cli:** derive scaffold versions from manifests ([3fdd70a](https://github.com/oaslananka/a2a-warp/commit/3fdd70a3fab8d4b59dc8e1af69cd0ec5165f5f6e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp-cli bumped to 1.1.0
+
 ## [1.0.3](https://github.com/oaslananka/a2a-warp/compare/create-a2a-warp-v1.0.2...create-a2a-warp-v1.0.3) (2026-05-19)
 
 
