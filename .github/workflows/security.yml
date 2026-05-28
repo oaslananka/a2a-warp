@@ -44,6 +44,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release download "v${GITLEAKS_VERSION}" --repo gitleaks/gitleaks --pattern "gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" --output gitleaks.tar.gz
+          echo "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  gitleaks.tar.gz" | sha256sum -c -
           tar -xzf gitleaks.tar.gz gitleaks
           sudo install -m 0755 gitleaks /usr/local/bin/gitleaks
       - run: gitleaks detect --source . --config .gitleaks.toml --redact --verbose
@@ -100,6 +101,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release download "v${ACTIONLINT_VERSION}" --repo rhysd/actionlint --pattern "actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" --output actionlint.tar.gz
+          echo "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8  actionlint.tar.gz" | sha256sum -c -
           tar -xzf actionlint.tar.gz actionlint
           sudo install -m 0755 actionlint /usr/local/bin/actionlint
       - run: actionlint .github/workflows/*.yml

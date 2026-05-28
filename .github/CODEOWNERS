@@ -38,3 +38,11 @@
 # Root-level configs
 /release-please-config.json @oaslananka
 /.release-please-manifest.json @oaslananka
+
+# Root config files
+/package.json @oaslananka
+/pnpm-lock.yaml @oaslananka
+
+# Documentation and scripts
+/docs/ @oaslananka
+/scripts/ @oaslananka
