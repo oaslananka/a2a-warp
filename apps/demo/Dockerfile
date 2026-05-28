@@ -13,10 +13,10 @@ COPY packages/registry/package.json ./packages/registry/
 COPY cli/package.json ./cli/
 COPY apps/demo/package.json ./apps/demo/
 
-RUN pnpm install --frozen-lockfile --filter a2a-demo...
+RUN pnpm install --frozen-lockfile --filter a2a-warp-demo...
 
 COPY . .
-RUN pnpm --filter a2a-demo... --if-present run build
+RUN pnpm --filter a2a-warp-demo... run build
 
 WORKDIR /app/apps/demo
 USER node
