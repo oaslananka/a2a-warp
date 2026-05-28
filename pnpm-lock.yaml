@@ -32,73 +32,73 @@ importers:
   .:
     devDependencies:
       '@arethetypeswrong/cli':
-        specifier: ^0.18.2
+        specifier: 0.18.2
         version: 0.18.2
       '@commitlint/cli':
-        specifier: ^21.0.1
+        specifier: 21.0.1
         version: 21.0.1(@types/node@22.19.19)(conventional-commits-parser@6.4.0)(typescript@6.0.3)
       '@commitlint/config-conventional':
-        specifier: ^21.0.1
+        specifier: 21.0.1
         version: 21.0.1
       '@eslint/js':
-        specifier: ^10.0.1
+        specifier: 10.0.1
         version: 10.0.1(eslint@10.4.0(jiti@2.7.0))
       '@stryker-mutator/core':
-        specifier: ^9.6.1
+        specifier: 9.6.1
         version: 9.6.1(@types/node@22.19.19)
       '@stryker-mutator/vitest-runner':
-        specifier: ^9.6.1
+        specifier: 9.6.1
         version: 9.6.1(@stryker-mutator/core@9.6.1(@types/node@22.19.19))(vitest@4.1.6)
       '@types/node':
-        specifier: ^22.19.19
+        specifier: 22.19.19
         version: 22.19.19
       '@types/supertest':
-        specifier: ^7.2.0
+        specifier: 7.2.0
         version: 7.2.0
       '@vitest/coverage-v8':
         specifier: 4.1.6
         version: 4.1.6(vitest@4.1.6)
       eslint:
-        specifier: ^10.4.0
+        specifier: 10.4.0
         version: 10.4.0(jiti@2.7.0)
       fast-check:
-        specifier: ^4.8.0
+        specifier: 4.8.0
         version: 4.8.0
       globals:
-        specifier: ^17.6.0
+        specifier: 17.6.0
         version: 17.6.0
       husky:
-        specifier: ^9.1.7
+        specifier: 9.1.7
         version: 9.1.7
       jscpd:
-        specifier: ^4.2.3
+        specifier: 4.2.3
         version: 4.2.3
       knip:
-        specifier: ^6.14.1
+        specifier: 6.14.1
         version: 6.14.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
       lint-staged:
-        specifier: ^17.0.5
+        specifier: 17.0.5
         version: 17.0.5
       markdownlint-cli2:
-        specifier: ^0.22.1
+        specifier: 0.22.1
         version: 0.22.1
       prettier:
-        specifier: ^3.8.3
+        specifier: 3.8.3
         version: 3.8.3
       publint:
-        specifier: ^0.3.21
+        specifier: 0.3.21
         version: 0.3.21
       supertest:
-        specifier: ^7.2.2
+        specifier: 7.2.2
         version: 7.2.2
       typedoc:
-        specifier: ^0.28.19
+        specifier: 0.28.19
         version: 0.28.19(typescript@6.0.3)
       typedoc-plugin-markdown:
-        specifier: ^4.11.0
+        specifier: 4.11.0
         version: 4.11.0(typedoc@0.28.19(typescript@6.0.3))
       typescript:
-        specifier: ^6.0.3
+        specifier: 6.0.3
         version: 6.0.3
       typescript-eslint:
         specifier: 8.59.3
@@ -132,13 +132,13 @@ importers:
         version: 4.4.3
     devDependencies:
       '@types/node':
-        specifier: ^22.19.19
+        specifier: 22.19.19
         version: 22.19.19
       tsx:
-        specifier: ^4.22.3
+        specifier: 4.22.3
         version: 4.22.3
       typescript:
-        specifier: ^6.0.3
+        specifier: 6.0.3
         version: 6.0.3
 
   apps/registry-ui:
@@ -212,10 +212,10 @@ importers:
         version: 9.4.0
     devDependencies:
       '@types/node':
-        specifier: ^22.19.19
+        specifier: 22.19.19
         version: 22.19.19
       typescript:
-        specifier: ^6.0.3
+        specifier: 6.0.3
         version: 6.0.3
 
   docs-site:
@@ -354,13 +354,13 @@ importers:
         version: link:../core
     devDependencies:
       openai:
-        specifier: ^6.38.0
+        specifier: 6.38.0
         version: 6.38.0(ws@8.20.1)(zod@4.4.3)
       typescript:
-        specifier: ^6.0.3
+        specifier: 6.0.3
         version: 6.0.3
       zod:
-        specifier: ^4.4.3
+        specifier: 4.4.3
         version: 4.4.3
 
   packages/client:
@@ -370,7 +370,7 @@ importers:
         version: link:../core
     devDependencies:
       typescript:
-        specifier: ^6.0.3
+        specifier: 6.0.3
         version: 6.0.3
 
   packages/codex-bridge:
@@ -380,7 +380,7 @@ importers:
         version: link:../core
     devDependencies:
       typescript:
-        specifier: ^6.0.3
+        specifier: 6.0.3
         version: 6.0.3
 
   packages/core:
@@ -420,10 +420,10 @@ importers:
         version: 4.4.3
     devDependencies:
       '@types/express':
-        specifier: ^5.0.6
+        specifier: 5.0.6
         version: 5.0.6
       typescript:
-        specifier: ^6.0.3
+        specifier: 6.0.3
         version: 6.0.3
 
   packages/create-a2a-agent:
@@ -433,7 +433,7 @@ importers:
         version: link:../../cli
     devDependencies:
       '@types/node':
-        specifier: ^22.19.19
+        specifier: 22.19.19
         version: 22.19.19
 
   packages/grpc:
@@ -449,7 +449,7 @@ importers:
         version: link:../core
     devDependencies:
       typescript:
-        specifier: ^6.0.3
+        specifier: 6.0.3
         version: 6.0.3
 
   packages/mcp-bridge:
@@ -462,7 +462,7 @@ importers:
         version: link:../core
     devDependencies:
       typescript:
-        specifier: ^6.0.3
+        specifier: 6.0.3
         version: 6.0.3
       vitest:
         specifier: 4.1.6
@@ -481,13 +481,13 @@ importers:
         version: 5.2.1
     devDependencies:
       '@types/cors':
-        specifier: ^2.8.19
+        specifier: 2.8.19
         version: 2.8.19
       '@types/express':
-        specifier: ^5.0.6
+        specifier: 5.0.6
         version: 5.0.6
       typescript:
-        specifier: ^6.0.3
+        specifier: 6.0.3
         version: 6.0.3
 
   packages/testing:
@@ -497,7 +497,7 @@ importers:
         version: link:../core
     devDependencies:
       typescript:
-        specifier: ^6.0.3
+        specifier: 6.0.3
         version: 6.0.3
 
   packages/ws:
@@ -507,13 +507,13 @@ importers:
         version: link:../core
     devDependencies:
       '@types/ws':
-        specifier: ^8.18.1
+        specifier: 8.18.1
         version: 8.18.1
       vitest:
         specifier: 4.1.6
         version: 4.1.6(@opentelemetry/api@1.9.1)(@types/node@22.19.19)(@vitest/coverage-v8@4.1.6)(esbuild@0.28.0)(jiti@2.7.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(tsx@4.22.3)(yaml@2.9.0)
       ws:
-        specifier: ^8.20.1
+        specifier: 8.20.1
         version: 8.20.1
 
 packages:
