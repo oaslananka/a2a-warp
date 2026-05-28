@@ -42,8 +42,8 @@
     "ora": "^9.4.0"
   },
   "devDependencies": {
-    "@types/node": "^22.19.19",
-    "typescript": "^6.0.3"
+    "@types/node": "22.19.19",
+    "typescript": "6.0.3"
   },
   "type": "module",
   "engines": {

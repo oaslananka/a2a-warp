@@ -56,9 +56,9 @@
     }
   },
   "devDependencies": {
-    "openai": "^6.38.0",
-    "typescript": "^6.0.3",
-    "zod": "^4.4.3"
+    "openai": "6.38.0",
+    "typescript": "6.0.3",
+    "zod": "4.4.3"
   },
   "type": "module",
   "engines": {

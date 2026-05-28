@@ -34,9 +34,9 @@
     }
   },
   "devDependencies": {
-    "@types/ws": "^8.18.1",
+    "@types/ws": "8.18.1",
     "vitest": "4.1.6",
-    "ws": "^8.20.1"
+    "ws": "8.20.1"
   },
   "dependencies": {
     "@oaslananka/a2a-warp": "workspace:^"

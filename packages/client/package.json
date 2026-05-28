@@ -33,7 +33,7 @@
     "@oaslananka/a2a-warp": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^6.0.3"
+    "typescript": "6.0.3"
   },
   "type": "module",
   "engines": {
