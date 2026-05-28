@@ -1,6 +1,6 @@
 {
   "name": "@oaslananka/a2a-warp-client",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Standalone A2A Warp client exports for Agent2Agent discovery and JSON-RPC calls.",
   "keywords": [
     "a2a",
