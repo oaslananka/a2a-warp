@@ -5,7 +5,6 @@ const LIMITS = {
   '@oaslananka/a2a-warp-adapters': { esm: 80_000, cjs: 85_000 },
   '@oaslananka/a2a-warp-registry': { esm: 60_000, cjs: 65_000 },
   '@oaslananka/a2a-warp-cli': { esm: 200_000, cjs: 210_000 },
-  '@oaslananka/a2a-warp-client': { esm: 20_000, cjs: 25_000 },
 };
 
 const BUNDLE_LIMITS = [
@@ -33,8 +32,6 @@ const BUNDLE_LIMITS = [
   },
   { name: '@oaslananka/a2a-warp-cli', format: 'esm', path: 'cli/dist/index.mjs' },
   { name: '@oaslananka/a2a-warp-cli', format: 'cjs', path: 'cli/dist/index.cjs' },
-  { name: '@oaslananka/a2a-warp-client', format: 'esm', path: 'packages/client/dist/index.mjs' },
-  { name: '@oaslananka/a2a-warp-client', format: 'cjs', path: 'packages/client/dist/index.cjs' },
 ];
 
 let hasFailure = false;

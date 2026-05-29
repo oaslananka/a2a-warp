@@ -15,10 +15,6 @@ const expected = new Map([
     { name: '@oaslananka/a2a-warp', version: manifest['packages/core'] },
   ],
   [
-    'packages/client/package.json',
-    { name: '@oaslananka/a2a-warp-client', version: manifest['packages/client'] },
-  ],
-  [
     'packages/adapters/package.json',
     { name: '@oaslananka/a2a-warp-adapters', version: manifest['packages/adapters'] },
   ],
@@ -44,12 +40,8 @@ const expected = new Map([
     { name: '@oaslananka/a2a-warp-grpc', version: manifest['packages/grpc'] },
   ],
   [
-    'packages/testing/package.json',
-    { name: '@oaslananka/a2a-warp-testing', version: manifest['packages/testing'] },
-  ],
-  [
-    'packages/codex-bridge/package.json',
-    { name: '@oaslananka/a2a-warp-codex-bridge', version: manifest['packages/codex-bridge'] },
+    'packages/schemas/package.json',
+    { name: '@oaslananka/a2a-warp-schemas', version: manifest['packages/schemas'] },
   ],
 ]);
 const localNames = new Set([...expected.values()].map((entry) => entry.name));

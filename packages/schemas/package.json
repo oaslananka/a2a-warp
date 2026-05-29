@@ -1,0 +1,52 @@
+{
+  "name": "@oaslananka/a2a-warp-schemas",
+  "version": "1.2.0",
+  "description": "JSON Schema files for the A2A protocol — agent card, message, task, artifact, JSON-RPC, and registry payloads.",
+  "keywords": [
+    "a2a",
+    "agent2agent",
+    "json-schema",
+    "a2a-schemas",
+    "typescript"
+  ],
+  "author": "oaslananka",
+  "license": "Apache-2.0",
+  "homepage": "https://oaslananka.github.io/a2a-warp/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oaslananka/a2a-warp.git",
+    "directory": "packages/schemas"
+  },
+  "bugs": {
+    "url": "https://github.com/oaslananka/a2a-warp/issues"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=22.22.1 <25"
+  },
+  "exports": {
+    "./agent-card": "./schemas/agent-card.schema.json",
+    "./message": "./schemas/message.schema.json",
+    "./task": "./schemas/task.schema.json",
+    "./artifact": "./schemas/artifact.schema.json",
+    "./json-rpc": "./schemas/json-rpc.schema.json",
+    "./registry-agent": "./schemas/registry-agent.schema.json",
+    "./registry-export": "./schemas/registry-export.schema.json",
+    "./registry-task-event": "./schemas/registry-task-event.schema.json"
+  },
+  "files": [
+    "schemas",
+    "README.md",
+    "LICENSE",
+    "package.json"
+  ],
+  "scripts": {
+    "build": "node ../../scripts/build-schemas-package.mjs",
+    "typecheck": "echo 'no typecheck needed: static JSON package'",
+    "test": "pnpm --dir ../.. run schemas:check"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

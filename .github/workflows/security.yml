@@ -26,6 +26,7 @@ env:
   ACTIONLINT_VERSION: '1.7.12'
   OSV_SCANNER_VERSION: 'v2.3.8'
   ZIZMOR_VERSION: '1.25.2'
+  PIPX_VERSION: '1.7.1'
   GO_VERSION: '1.26.2'
 
 jobs:
@@ -83,7 +84,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           persist-credentials: false
-      - run: python -m pip install --user pipx
+      - run: python -m pip install --user "pipx==${PIPX_VERSION}"
       - run: python -m pipx run "zizmor==${ZIZMOR_VERSION}" .github/workflows/ --min-severity medium
 
   actionlint:

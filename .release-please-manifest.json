@@ -1,6 +1,5 @@
 {
   "packages/core": "1.2.0",
-  "packages/client": "1.2.0",
   "packages/adapters": "1.2.0",
   "packages/registry": "1.2.0",
   "cli": "1.2.0",
@@ -8,6 +7,5 @@
   "packages/mcp-bridge": "1.2.0",
   "packages/ws": "1.2.0",
   "packages/grpc": "1.2.0",
-  "packages/testing": "1.2.0",
-  "packages/codex-bridge": "1.2.0"
+  "packages/schemas": "1.2.0"
 }

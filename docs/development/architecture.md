@@ -20,27 +20,21 @@ types/schemas -> core runtime -> transports -> client/registry -> adapters/bridg
 
 ```mermaid
 flowchart LR
-  Types["Protocol types and JSON schemas"]
-  Core["@oaslananka/a2a-warp<br/>core runtime"]
+  Schemas["@oaslananka/a2a-warp-schemas"]
+  Core["@oaslananka/a2a-warp<br/>core runtime<br/>(client, testing, codex-bridge)"]
   Transports["@oaslananka/a2a-warp-ws<br/>@oaslananka/a2a-warp-grpc"]
-  Client["@oaslananka/a2a-warp-client"]
   Registry["@oaslananka/a2a-warp-registry"]
   Adapters["@oaslananka/a2a-warp-adapters"]
-  Bridges["@oaslananka/a2a-warp-mcp-bridge<br/>@oaslananka/a2a-warp-codex-bridge"]
-  Testing["@oaslananka/a2a-warp-testing"]
+  Bridges["@oaslananka/a2a-warp-mcp-bridge"]
   Cli["@oaslananka/a2a-warp-cli<br/>create-a2a-warp"]
   Apps["apps/*<br/>docs-site<br/>examples/*"]
 
-  Types --> Core
+  Schemas --> Core
   Core --> Transports
-  Core --> Client
   Core --> Registry
   Core --> Adapters
   Core --> Bridges
-  Core --> Testing
-  Client --> Bridges
   Registry --> Cli
-  Testing --> Cli
   Cli --> Apps
   Adapters --> Apps
   Transports --> Apps
@@ -52,35 +46,33 @@ Everything else consumes that public API instead of importing runtime internals.
 
 ## Package Responsibilities
 
-| Workspace package or surface        | Responsibility                                                                                                                                                                                                                                               |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `@oaslananka/a2a-warp`              | Core package. Owns Agent2Agent protocol types, public schemas, `A2AServer`, `A2AClient`, `AgentRegistryClient`, `TaskManager`, `AsyncTaskManager`, auth middleware, task storage, URL policy, telemetry, rate limiting, idempotency, and agent card signing. |
-| `@oaslananka/a2a-warp-client`       | Standalone client entry point for consumers that only need client/discovery APIs. It depends on public core exports only.                                                                                                                                    |
-| `@oaslananka/a2a-warp-registry`     | Registry service for agent registration, discovery, tenant-aware listing, health polling, task projection, registry metrics, REST routes, and SSE event streams.                                                                                             |
-| `@oaslananka/a2a-warp-adapters`     | Adapter package for provider and framework integrations. Adapters implement the public runtime task contract and keep provider SDKs optional where possible.                                                                                                 |
-| `@oaslananka/a2a-warp-ws`           | WebSocket transport helpers and transport-contract coverage for A2A runtime calls over `ws`.                                                                                                                                                                 |
-| `@oaslananka/a2a-warp-grpc`         | gRPC transport helpers and transport-contract coverage for A2A runtime calls over `@grpc/grpc-js`.                                                                                                                                                           |
-| `@oaslananka/a2a-warp-mcp-bridge`   | Mapping helpers between A2A agents and MCP tool/skill descriptions. It may use core/client public APIs and MCP SDK types.                                                                                                                                    |
-| `@oaslananka/a2a-warp-codex-bridge` | Mapping helpers for exposing A2A agents through Codex-style tool surfaces.                                                                                                                                                                                   |
-| `@oaslananka/a2a-warp-testing`      | Test fixtures, matchers, conformance helpers, mock clients, and local A2A test-server utilities.                                                                                                                                                             |
-| `@oaslananka/a2a-warp-cli`          | Command-line interface for validation, discovery, send, task, registry, conformance, benchmark, health, monitor, doctor, export-card, and scaffold commands.                                                                                                 |
-| `create-a2a-warp`                   | Project scaffolder that renders CLI-owned templates and runtime version metadata.                                                                                                                                                                            |
-| `a2a-warp-demo`                     | Local multi-agent demo app that consumes runtime, registry, and adapters.                                                                                                                                                                                    |
-| `a2a-warp-registry-ui`              | Registry UI app that consumes registry REST/SSE endpoints through fetch and EventSource mocks in tests.                                                                                                                                                      |
-| `docs-site`                         | VitePress documentation site that mirrors canonical topics from `docs/`.                                                                                                                                                                                     |
-| `examples/*`                        | Local, no-paid-service examples for authenticated server, streaming, push notifications, registry tenancy, WebSocket, gRPC, MCP bridge, and adapter templates.                                                                                               |
+| Workspace package or surface      | Responsibility                                                                                                                                                                                                                                                                                                                                              |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@oaslananka/a2a-warp`            | Core package. Owns Agent2Agent protocol types, public schemas, `A2AServer`, `A2AClient`, `AgentRegistryClient`, `TaskManager`, `AsyncTaskManager`, auth middleware, task storage, URL policy, telemetry, rate limiting, idempotency, agent card signing, standalone client re-exports, test fixtures and conformance helpers, and Codex-style tool bridges. |
+| `@oaslananka/a2a-warp-registry`   | Registry service for agent registration, discovery, tenant-aware listing, health polling, task projection, registry metrics, REST routes, and SSE event streams.                                                                                                                                                                                            |
+| `@oaslananka/a2a-warp-adapters`   | Adapter package for provider and framework integrations. Adapters implement the public runtime task contract and keep provider SDKs optional where possible.                                                                                                                                                                                                |
+| `@oaslananka/a2a-warp-ws`         | WebSocket transport helpers and transport-contract coverage for A2A runtime calls over `ws`.                                                                                                                                                                                                                                                                |
+| `@oaslananka/a2a-warp-grpc`       | gRPC transport helpers and transport-contract coverage for A2A runtime calls over `@grpc/grpc-js`.                                                                                                                                                                                                                                                          |
+| `@oaslananka/a2a-warp-mcp-bridge` | Mapping helpers between A2A agents and MCP tool/skill descriptions. It may use core/client public APIs and MCP SDK types.                                                                                                                                                                                                                                   |
+| `@oaslananka/a2a-warp-schemas`    | Standalone JSON Schema package for editor, CI, and validation pipelines.                                                                                                                                                                                                                                                                                    |
+| `@oaslananka/a2a-warp-cli`        | Command-line interface for validation, discovery, send, task, registry, conformance, benchmark, health, monitor, doctor, export-card, and scaffold commands.                                                                                                                                                                                                |
+| `create-a2a-warp`                 | Project scaffolder that renders CLI-owned templates and runtime version metadata.                                                                                                                                                                                                                                                                           |
+| `a2a-warp-demo`                   | Local multi-agent demo app that consumes runtime, registry, and adapters.                                                                                                                                                                                                                                                                                   |
+| `a2a-warp-registry-ui`            | Registry UI app that consumes registry REST/SSE endpoints through fetch and EventSource mocks in tests.                                                                                                                                                                                                                                                     |
+| `docs-site`                       | VitePress documentation site that mirrors canonical topics from `docs/`.                                                                                                                                                                                                                                                                                    |
+| `examples/*`                      | Local, no-paid-service examples for authenticated server, streaming, push notifications, registry tenancy, WebSocket, gRPC, MCP bridge, and adapter templates.                                                                                                                                                                                              |
 
 ## Dependency Direction
 
 The hard boundary is enforced by `scripts/check-workspace-graph.mjs`.
 
-| Owner                 | Must not import                                                                     |
-| --------------------- | ----------------------------------------------------------------------------------- |
-| `packages/core`       | client, adapters, registry, CLI, MCP bridge, WebSocket, gRPC, testing, Codex bridge |
-| `packages/client`     | adapters, registry, CLI, MCP bridge, WebSocket, gRPC, testing, Codex bridge         |
-| `packages/registry`   | adapters, CLI, MCP bridge, testing, Codex bridge                                    |
-| `packages/adapters`   | registry, CLI, MCP bridge, testing, Codex bridge                                    |
-| `packages/mcp-bridge` | registry, adapters, CLI, testing, Codex bridge                                      |
+| Owner                 | Must not import                                               |
+| --------------------- | ------------------------------------------------------------- |
+| `packages/core`       | adapters, registry, CLI, MCP bridge, WebSocket, gRPC, schemas |
+| `packages/registry`   | adapters, CLI, MCP bridge, schemas                            |
+| `packages/adapters`   | registry, CLI, MCP bridge, schemas                            |
+| `packages/mcp-bridge` | registry, adapters, CLI, schemas                              |
+| `packages/schemas`    | core, adapters, registry, CLI, MCP bridge, WebSocket, gRPC    |
 
 Allowed dependencies still need to use public package entry points. Deep imports across
 package boundaries are treated as design drift unless the package explicitly exports that
@@ -332,8 +324,8 @@ Current summary output:
 
 ```text
 Workspace graph validation passed.
-Checked 10 public package import aliases across 32 forbidden dependency edges.
-Dependency direction: types/schemas -> core runtime -> transports -> client/registry -> adapters/bridges -> CLI/apps.
+Checked 8 public package import aliases across 36 forbidden dependency edges.
+Dependency direction: types/schemas -> core runtime -> transports -> registry -> adapters/bridges -> CLI/apps.
 ```
 
 `pnpm run verify:structure` runs this graph gate together with public surface, command

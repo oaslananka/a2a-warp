@@ -4,7 +4,6 @@ const config = readJson('release-please-config.json');
 const manifest = readJson('.release-please-manifest.json');
 const expected = new Map([
   ['packages/core', '@oaslananka/a2a-warp'],
-  ['packages/client', '@oaslananka/a2a-warp-client'],
   ['packages/adapters', '@oaslananka/a2a-warp-adapters'],
   ['packages/registry', '@oaslananka/a2a-warp-registry'],
   ['cli', '@oaslananka/a2a-warp-cli'],
@@ -12,8 +11,7 @@ const expected = new Map([
   ['packages/mcp-bridge', '@oaslananka/a2a-warp-mcp-bridge'],
   ['packages/ws', '@oaslananka/a2a-warp-ws'],
   ['packages/grpc', '@oaslananka/a2a-warp-grpc'],
-  ['packages/testing', '@oaslananka/a2a-warp-testing'],
-  ['packages/codex-bridge', '@oaslananka/a2a-warp-codex-bridge'],
+  ['packages/schemas', '@oaslananka/a2a-warp-schemas'],
 ]);
 const failures = [];
 for (const [path, name] of expected) {

@@ -74,6 +74,19 @@ export function listExportSpecifiers(packageJson) {
   );
 }
 
+function isExportJson(packageJson, specifier) {
+  const exportMap = packageJson.exports;
+  if (!exportMap || typeof exportMap !== 'object') return false;
+  for (const [key, value] of Object.entries(exportMap)) {
+    const target = typeof value === 'string' ? value : value?.import ?? value?.default ?? '';
+    if (target.endsWith('.json')) {
+      const exportName = key === '.' ? packageJson.name : `${packageJson.name}/${key.slice(2)}`;
+      if (exportName === specifier) return true;
+    }
+  }
+  return false;
+}
+
 export function createImportSmokeSource(packages) {
   const imports = [];
   const body = ['const modules = [];'];
@@ -82,7 +95,8 @@ export function createImportSmokeSource(packages) {
   for (const entry of packages) {
     for (const specifier of listExportSpecifiers(entry.packageJson)) {
       const binding = `module${index}`;
-      imports.push(`import * as ${binding} from ${quoteSpecifier(specifier)};`);
+      const jsonAttr = isExportJson(entry.packageJson, specifier) ? " with { type: 'json' }" : '';
+      imports.push(`import * as ${binding} from ${quoteSpecifier(specifier)}${jsonAttr};`);
       body.push(`modules.push(${binding});`);
       index += 1;
     }
@@ -108,7 +122,8 @@ export function createTypecheckSmokeSource(packages) {
   for (const entry of packages) {
     for (const specifier of listExportSpecifiers(entry.packageJson)) {
       const binding = `module${index}`;
-      imports.push(`import * as ${binding} from ${quoteSpecifier(specifier)};`);
+      const jsonAttr = isExportJson(entry.packageJson, specifier) ? " with { type: 'json' }" : '';
+      imports.push(`import * as ${binding} from ${quoteSpecifier(specifier)}${jsonAttr};`);
       body.push(`modules.push(${binding});`);
       index += 1;
     }
@@ -327,6 +342,7 @@ function writeConsumerProject(consumerDir, packedPackages) {
           moduleResolution: 'NodeNext',
           strict: true,
           skipLibCheck: true,
+          resolveJsonModule: true,
           noEmit: true,
         },
         include: ['smoke-types.ts'],

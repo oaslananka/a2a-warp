@@ -16,7 +16,7 @@
 
 'pkg:client':
   - changed-files:
-      - any-glob-to-any-file: 'packages/client/**'
+      - any-glob-to-any-file: 'packages/core/src/client/**'
 
 'pkg:cli':
   - changed-files:
@@ -28,13 +28,15 @@
 
 'pkg:mcp-bridge':
   - changed-files:
-      - any-glob-to-any-file:
-          - 'packages/mcp-bridge/**'
-          - 'packages/codex-bridge/**'
+      - any-glob-to-any-file: 'packages/mcp-bridge/**'
 
 'pkg:testing':
   - changed-files:
-      - any-glob-to-any-file: 'packages/testing/**'
+      - any-glob-to-any-file: 'packages/core/src/testing/**'
+
+'pkg:schemas':
+  - changed-files:
+      - any-glob-to-any-file: 'packages/schemas/**'
 
 'area:apps':
   - changed-files:

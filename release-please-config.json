@@ -11,7 +11,6 @@
       "groupName": "A2A Warp packages",
       "components": [
         "@oaslananka/a2a-warp",
-        "@oaslananka/a2a-warp-client",
         "@oaslananka/a2a-warp-adapters",
         "@oaslananka/a2a-warp-registry",
         "@oaslananka/a2a-warp-cli",
@@ -19,8 +18,7 @@
         "@oaslananka/a2a-warp-mcp-bridge",
         "@oaslananka/a2a-warp-ws",
         "@oaslananka/a2a-warp-grpc",
-        "@oaslananka/a2a-warp-testing",
-        "@oaslananka/a2a-warp-codex-bridge"
+        "@oaslananka/a2a-warp-schemas"
       ]
     }
   ],
@@ -28,11 +26,6 @@
     "packages/core": {
       "package-name": "@oaslananka/a2a-warp",
       "component": "@oaslananka/a2a-warp",
-      "changelog-path": "CHANGELOG.md"
-    },
-    "packages/client": {
-      "package-name": "@oaslananka/a2a-warp-client",
-      "component": "@oaslananka/a2a-warp-client",
       "changelog-path": "CHANGELOG.md"
     },
     "packages/adapters": {
@@ -70,14 +63,9 @@
       "component": "@oaslananka/a2a-warp-grpc",
       "changelog-path": "CHANGELOG.md"
     },
-    "packages/testing": {
-      "package-name": "@oaslananka/a2a-warp-testing",
-      "component": "@oaslananka/a2a-warp-testing",
-      "changelog-path": "CHANGELOG.md"
-    },
-    "packages/codex-bridge": {
-      "package-name": "@oaslananka/a2a-warp-codex-bridge",
-      "component": "@oaslananka/a2a-warp-codex-bridge",
+    "packages/schemas": {
+      "package-name": "@oaslananka/a2a-warp-schemas",
+      "component": "@oaslananka/a2a-warp-schemas",
       "changelog-path": "CHANGELOG.md"
     }
   }

@@ -5,7 +5,7 @@ import {
   hasRequiredConformanceFailures,
   parseConformanceProtocolVersion,
   runConformanceSuite,
-} from '../src/conformance.js';
+} from '../src/testing/conformance.js';
 
 const completedTask = {
   id: 'task-1',
