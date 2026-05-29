@@ -2,14 +2,13 @@ import { readText, fail } from './check-utils.mjs';
 
 const packages = [
   ['@oaslananka/a2a-warp', 'docs/packages/core.md'],
-  ['@oaslananka/a2a-warp-client', 'docs/packages/client.md'],
   ['@oaslananka/a2a-warp-adapters', 'docs/packages/adapters.md'],
   ['@oaslananka/a2a-warp-registry', 'docs/packages/registry.md'],
   ['@oaslananka/a2a-warp-cli', 'docs/packages/cli.md'],
   ['@oaslananka/a2a-warp-mcp-bridge', 'docs/packages/mcp-bridge.md'],
   ['@oaslananka/a2a-warp-ws', 'docs/packages/ws.md'],
   ['@oaslananka/a2a-warp-grpc', 'docs/packages/grpc.md'],
-  ['@oaslananka/a2a-warp-testing', 'docs/packages/testing.md'],
+  ['@oaslananka/a2a-warp-schemas', 'docs/packages/schemas.md'],
 ];
 const failures = [];
 const readme = readText('README.md');

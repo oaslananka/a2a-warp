@@ -24,14 +24,11 @@
     "composite": true,
     "paths": {
       "@oaslananka/a2a-warp": ["./packages/core/src/index.ts"],
-      "@oaslananka/a2a-warp-client": ["./packages/client/src/index.ts"],
       "@oaslananka/a2a-warp-adapters": ["./packages/adapters/src/index.ts"],
       "@oaslananka/a2a-warp-registry": ["./packages/registry/src/index.ts"],
-      "@oaslananka/a2a-warp-testing": ["./packages/testing/src/index.ts"],
       "@oaslananka/a2a-warp-cli": ["./cli/src/index.ts"],
       "@oaslananka/a2a-warp-grpc": ["./packages/grpc/src/index.ts"],
-      "@oaslananka/a2a-warp-ws": ["./packages/ws/src/index.ts"],
-      "@oaslananka/a2a-warp-codex-bridge": ["./packages/codex-bridge/src/index.ts"]
+      "@oaslananka/a2a-warp-ws": ["./packages/ws/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "dist", "**/*.test.ts"]

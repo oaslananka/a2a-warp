@@ -81,6 +81,7 @@
     "release:dry-run": "node scripts/check-release-config.mjs",
     "release:artifacts": "node scripts/prepare-release-artifacts.mjs",
     "release:validate": "node scripts/validate-release-config.mjs",
+    "release:parity": "node scripts/check-package-registry-parity.mjs",
     "release:state": "node scripts/release-state.mjs",
     "check:name-collisions": "node scripts/check-name-collisions.mjs",
     "check:bundle-sizes": "node scripts/check-bundle-sizes.mjs",

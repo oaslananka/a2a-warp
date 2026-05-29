@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { basename, dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -6,7 +6,11 @@ import prettier from 'prettier';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const checkOnly = process.argv.includes('--check');
-const schemaDirectories = ['docs/protocol/schemas', 'docs-site/public/schemas'];
+const schemaDirectories = [
+  'docs/protocol/schemas',
+  'docs-site/public/schemas',
+  'packages/schemas/schemas',
+];
 const coreRequire = createRequire(resolve(repoRoot, 'packages/core/package.json'));
 const { z } = coreRequire('zod');
 const prettierOptions = (await prettier.resolveConfig(resolve(repoRoot, 'package.json'))) ?? {};
@@ -25,8 +29,11 @@ for (const definition of definitions) {
 }
 const failures = [];
 
-for (const directory of schemaDirectories) {
+  for (const directory of schemaDirectories) {
   const absoluteDirectory = resolve(repoRoot, directory);
+  if (!checkOnly) {
+    mkdirSync(absoluteDirectory, { recursive: true });
+  }
   const existing = new Set(readSchemaFileNames(absoluteDirectory));
 
   for (const [fileName, content] of expectedByName) {

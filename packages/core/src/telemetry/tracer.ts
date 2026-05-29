@@ -26,8 +26,13 @@ export const a2aWarpTracer: Pick<Tracer, 'startSpan'> = {
   },
 };
 
-export function withA2ABaggage(taskId?: string, contextId?: string): void {
-  let currentBaggage = propagation.getBaggage(context.active()) ?? propagation.createBaggage({});
+export function withA2ABaggage(
+  taskId?: string,
+  contextId?: string,
+  activeContext?: Context,
+): Context {
+  const current = activeContext ?? context.active();
+  let currentBaggage = propagation.getBaggage(current) ?? propagation.createBaggage({});
 
   if (taskId) {
     currentBaggage = currentBaggage.setEntry('a2a.task_id', {
@@ -43,8 +48,19 @@ export function withA2ABaggage(taskId?: string, contextId?: string): void {
     });
   }
 
-  const nextContext = propagation.setBaggage(context.active(), currentBaggage);
-  context.with(nextContext, () => undefined);
+  return propagation.setBaggage(current, currentBaggage);
+}
+
+export function extractA2AContext(carrier: Record<string, string | string[] | undefined>): Context {
+  return propagation.extract(context.active(), carrier, {
+    get(c, key) {
+      const value = (c as Record<string, string | string[] | undefined>)[key];
+      return Array.isArray(value) ? value[0] : value;
+    },
+    keys(c) {
+      return Object.keys(c as Record<string, string | string[] | undefined>);
+    },
+  });
 }
 
 export { SpanStatusCode };

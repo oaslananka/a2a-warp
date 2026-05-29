@@ -7,7 +7,7 @@ import {
   runConformanceSuite,
   type ConformanceCaseResult,
   type ConformanceReport,
-} from '@oaslananka/a2a-warp-testing';
+} from '@oaslananka/a2a-warp/testing';
 import {
   emitResult,
   withSpinner,

@@ -1,6 +1,12 @@
 # Client Package
 
-`@oaslananka/a2a-warp-client` re-exports the standalone client surface from the core package.
+`@oaslananka/a2a-warp/client` re-exports the standalone client surface from the core package.
+
+Import from `@oaslananka/a2a-warp/client`:
+
+```typescript
+import { A2AClient } from '@oaslananka/a2a-warp/client';
+```
 
 Primary client operations:
 

@@ -37,14 +37,12 @@ const requiredHeadings = [
 
 const requiredPackages = [
   '@oaslananka/a2a-warp',
-  '@oaslananka/a2a-warp-client',
   '@oaslananka/a2a-warp-registry',
   '@oaslananka/a2a-warp-adapters',
   '@oaslananka/a2a-warp-ws',
   '@oaslananka/a2a-warp-grpc',
   '@oaslananka/a2a-warp-mcp-bridge',
-  '@oaslananka/a2a-warp-testing',
-  '@oaslananka/a2a-warp-codex-bridge',
+  '@oaslananka/a2a-warp-schemas',
   'create-a2a-warp',
   '@oaslananka/a2a-warp-cli',
   'a2a-warp-demo',
@@ -121,8 +119,8 @@ for (const link of requiredLinks) {
 
 const summarySnippet = [
   'Workspace graph validation passed.',
-  'Checked 10 public package import aliases across 32 forbidden dependency edges.',
-  'Dependency direction: types/schemas -> core runtime -> transports -> client/registry -> adapters/bridges -> CLI/apps.',
+  'Checked 8 public package import aliases across 36 forbidden dependency edges.',
+  'Dependency direction: types/schemas -> core runtime -> transports -> registry -> adapters/bridges -> CLI/apps.',
 ];
 
 for (const line of summarySnippet) {

@@ -42,6 +42,7 @@ import {
 import {
   createOriginGuardMiddleware,
   createRequestContextMiddleware,
+  createTelemetryContextMiddleware,
   jsonParseErrorHandler,
 } from './http/middleware.js';
 import { bindTaskObservers, normalizePushNotificationConfig } from './http/pushCallbacks.js';
@@ -106,6 +107,7 @@ export abstract class A2AServer {
 
   private setupMiddleware(): void {
     this.app.use(createRequestContextMiddleware());
+    this.app.use(createTelemetryContextMiddleware());
     this.app.use(
       createOriginGuardMiddleware({
         allowedOrigins: this.options.allowedOrigins,

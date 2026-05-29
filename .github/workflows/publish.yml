@@ -100,3 +100,5 @@ jobs:
           done
           "${npm_cli[@]}" audit signatures
           popd
+      - name: Verify package registry parity
+        run: pnpm run release:parity

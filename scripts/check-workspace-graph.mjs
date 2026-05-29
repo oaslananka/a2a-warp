@@ -3,52 +3,29 @@ import { listFiles, readText, fail } from './check-utils.mjs';
 const printSummary = process.argv.includes('--summary');
 const packageByImport = new Map([
   ['@oaslananka/a2a-warp', 'core'],
-  ['@oaslananka/a2a-warp-client', 'client'],
   ['@oaslananka/a2a-warp-adapters', 'adapters'],
   ['@oaslananka/a2a-warp-registry', 'registry'],
   ['@oaslananka/a2a-warp-cli', 'cli'],
   ['@oaslananka/a2a-warp-mcp-bridge', 'mcp-bridge'],
   ['@oaslananka/a2a-warp-ws', 'ws'],
   ['@oaslananka/a2a-warp-grpc', 'grpc'],
-  ['@oaslananka/a2a-warp-testing', 'testing'],
-  ['@oaslananka/a2a-warp-codex-bridge', 'codex-bridge'],
+  ['@oaslananka/a2a-warp-schemas', 'schemas'],
 ]);
 const disallowed = {
-  core: new Set([
-    'client',
-    'adapters',
-    'registry',
-    'cli',
-    'mcp-bridge',
-    'ws',
-    'grpc',
-    'testing',
-    'codex-bridge',
-  ]),
-  client: new Set([
-    'adapters',
-    'registry',
-    'cli',
-    'mcp-bridge',
-    'ws',
-    'grpc',
-    'testing',
-    'codex-bridge',
-  ]),
-  registry: new Set(['adapters', 'cli', 'mcp-bridge', 'testing', 'codex-bridge']),
-  adapters: new Set(['registry', 'cli', 'mcp-bridge', 'testing', 'codex-bridge']),
-  'mcp-bridge': new Set(['registry', 'adapters', 'cli', 'testing', 'codex-bridge']),
+  core: new Set(['adapters', 'registry', 'cli', 'mcp-bridge', 'ws', 'grpc', 'schemas']),
+  registry: new Set(['adapters', 'cli', 'mcp-bridge', 'schemas']),
+  adapters: new Set(['registry', 'cli', 'mcp-bridge', 'schemas']),
+  'mcp-bridge': new Set(['registry', 'adapters', 'cli', 'schemas']),
+  schemas: new Set(['core', 'adapters', 'registry', 'cli', 'mcp-bridge', 'ws', 'grpc']),
 };
 function ownerForFile(file) {
   if (file.startsWith('packages/core/')) return 'core';
-  if (file.startsWith('packages/client/')) return 'client';
   if (file.startsWith('packages/adapters/')) return 'adapters';
   if (file.startsWith('packages/registry/')) return 'registry';
   if (file.startsWith('packages/mcp-bridge/')) return 'mcp-bridge';
   if (file.startsWith('packages/ws/')) return 'ws';
   if (file.startsWith('packages/grpc/')) return 'grpc';
-  if (file.startsWith('packages/testing/')) return 'testing';
-  if (file.startsWith('packages/codex-bridge/')) return 'codex-bridge';
+  if (file.startsWith('packages/schemas/')) return 'schemas';
   if (file.startsWith('cli/')) return 'cli';
   return undefined;
 }

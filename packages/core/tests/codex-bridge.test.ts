@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createA2ASendMessageTool, createRegistryListTool } from '../src/index.js';
+import { createA2ASendMessageTool, createRegistryListTool } from '../src/codex-bridge/index.js';
 
-describe('@oaslananka/a2a-warp-codex-bridge', () => {
+describe('@oaslananka/a2a-warp/codex-bridge', () => {
   it('creates a send-message tool that maps A2A task output into tool output', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(
       new Response(

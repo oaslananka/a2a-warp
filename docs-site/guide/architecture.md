@@ -29,8 +29,8 @@ Expected summary:
 
 ```text
 Workspace graph validation passed.
-Checked 10 public package import aliases across 32 forbidden dependency edges.
-Dependency direction: types/schemas -> core runtime -> transports -> client/registry -> adapters/bridges -> CLI/apps.
+Checked 8 public package import aliases across 36 forbidden dependency edges.
+Dependency direction: types/schemas -> core runtime -> transports -> registry -> adapters/bridges -> CLI/apps.
 ```
 
 ## Verification Links

@@ -2,14 +2,11 @@ import { execFileSync } from 'node:child_process';
 
 const paths = [
   'packages/core/src',
-  'packages/client/src',
   'packages/adapters/src',
   'packages/registry/src',
   'packages/ws/src',
   'packages/grpc/src',
   'packages/mcp-bridge/src',
-  'packages/testing/src',
-  'packages/codex-bridge/src',
   'packages/create-a2a-agent/src',
   'cli/src',
   'apps/demo',

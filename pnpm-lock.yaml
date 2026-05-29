@@ -198,9 +198,6 @@ importers:
       '@oaslananka/a2a-warp-registry':
         specifier: workspace:^
         version: link:../packages/registry
-      '@oaslananka/a2a-warp-testing':
-        specifier: workspace:^
-        version: link:../packages/testing
       chalk:
         specifier: ^5.6.2
         version: 5.6.2
@@ -363,26 +360,6 @@ importers:
         specifier: 4.4.3
         version: 4.4.3
 
-  packages/client:
-    dependencies:
-      '@oaslananka/a2a-warp':
-        specifier: workspace:*
-        version: link:../core
-    devDependencies:
-      typescript:
-        specifier: 6.0.3
-        version: 6.0.3
-
-  packages/codex-bridge:
-    dependencies:
-      '@oaslananka/a2a-warp':
-        specifier: workspace:*
-        version: link:../core
-    devDependencies:
-      typescript:
-        specifier: 6.0.3
-        version: 6.0.3
-
   packages/core:
     dependencies:
       '@opentelemetry/api':
@@ -490,15 +467,7 @@ importers:
         specifier: 6.0.3
         version: 6.0.3
 
-  packages/testing:
-    dependencies:
-      '@oaslananka/a2a-warp':
-        specifier: workspace:*
-        version: link:../core
-    devDependencies:
-      typescript:
-        specifier: 6.0.3
-        version: 6.0.3
+  packages/schemas: {}
 
   packages/ws:
     dependencies:

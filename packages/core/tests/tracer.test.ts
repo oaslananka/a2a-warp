@@ -83,7 +83,7 @@ vi.mock('@opentelemetry/api', () => {
   };
 });
 
-import { baggageEntryMetadataFromString, context, propagation, trace } from '@opentelemetry/api';
+import { baggageEntryMetadataFromString, propagation, trace } from '@opentelemetry/api';
 import { SpanStatusCode, a2aWarpTracer, withA2ABaggage } from '../src/telemetry/tracer.js';
 
 describe('tracer helpers', () => {
@@ -94,7 +94,7 @@ describe('tracer helpers', () => {
   it('creates baggage entries for task and context ids', () => {
     vi.mocked(propagation.getBaggage).mockReturnValue(undefined);
 
-    withA2ABaggage('task-1', 'ctx-1');
+    const result = withA2ABaggage('task-1', 'ctx-1');
 
     expect(propagation.createBaggage).toHaveBeenCalledWith({});
     expect(baggageEntryMetadataFromString).toHaveBeenCalledWith('a2a');
@@ -107,7 +107,10 @@ describe('tracer helpers', () => {
         }),
       }),
     );
-    expect(context.with).toHaveBeenCalled();
+    expect(result).toEqual({
+      activeContext: 'active-context',
+      baggage: expect.anything(),
+    });
   });
 
   it('reuses existing baggage when no ids are provided', () => {
@@ -116,10 +119,14 @@ describe('tracer helpers', () => {
     });
     vi.mocked(propagation.getBaggage).mockReturnValue(existingBaggage);
 
-    withA2ABaggage();
+    const result = withA2ABaggage();
 
     expect(propagation.createBaggage).not.toHaveBeenCalled();
     expect(propagation.setBaggage).toHaveBeenCalledWith('active-context', existingBaggage);
+    expect(result).toEqual({
+      activeContext: 'active-context',
+      baggage: existingBaggage,
+    });
   });
 
   it('exports the tracer instance and span status codes', () => {

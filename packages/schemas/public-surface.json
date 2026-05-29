@@ -1,0 +1,12 @@
+{
+  "exports": [
+    "./agent-card",
+    "./artifact",
+    "./json-rpc",
+    "./message",
+    "./registry-agent",
+    "./registry-export",
+    "./registry-task-event",
+    "./task"
+  ]
+}

@@ -117,7 +117,7 @@ const cliSource = readRequiredDoc('cli/src/commands/conformance.ts');
 const cliDoc = readRequiredDoc('docs/cli/conformance.md');
 const siteCliDoc = readRequiredDoc('docs-site/cli/conformance.md');
 const coreClient = readRequiredDoc('packages/core/src/client/A2AClient.ts');
-const conformanceSource = readRequiredDoc('packages/testing/src/conformance.ts');
+const conformanceSource = readRequiredDoc('packages/core/src/testing/conformance.ts');
 const rootPackage = readJson('package.json');
 const runtimeManifest = readJson('tools/runtime-versions.json');
 
@@ -250,7 +250,7 @@ requireIncludes('packages/core/src/client/A2AClient.ts', coreClient, [
   'preferredProtocolVersion',
   'allowExperimentalProtocolVersions',
 ]);
-requireIncludes('packages/testing/src/conformance.ts', conformanceSource, [
+requireIncludes('packages/core/src/testing/conformance.ts', conformanceSource, [
   "export const officialConformanceProtocolVersion = '1.0' as const;",
   "export const experimentalConformanceProtocolVersions = ['1.2'] as const;",
   'experimentalProfiles?: boolean;',

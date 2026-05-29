@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { A2ATestServer } from '../src/A2ATestServer.js';
-import { MockA2AClient } from '../src/MockA2AClient.js';
-import { basicAgentCard, createTestAgentCard } from '../src/fixtures/agent-cards.js';
-import { createTestMessage, createTestTask } from '../src/fixtures/tasks.js';
-import { toHaveCompletedTask } from '../src/matchers/toHaveCompletedTask.js';
+import { A2ATestServer } from '../src/testing/A2ATestServer.js';
+import { MockA2AClient } from '../src/testing/MockA2AClient.js';
+import { basicAgentCard, createTestAgentCard } from '../src/testing/fixtures/agent-cards.js';
+import { createTestMessage, createTestTask } from '../src/testing/fixtures/tasks.js';
+import { toHaveCompletedTask } from '../src/testing/matchers/toHaveCompletedTask.js';
 
 async function waitFor(
   predicate: () => boolean,
@@ -23,7 +23,7 @@ async function waitFor(
   throw new Error('Condition was not met before timeout');
 }
 
-describe('@oaslananka/a2a-warp-testing', () => {
+describe('@oaslananka/a2a-warp/testing', () => {
   const servers: A2ATestServer[] = [];
 
   afterEach(async () => {

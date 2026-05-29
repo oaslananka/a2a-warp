@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { context, propagation } from '@opentelemetry/api';
 import type { ErrorRequestHandler, Request, RequestHandler } from 'express';
 import { attachRequestContext, createAnonymousRequestContext } from '../../auth/requestContext.js';
 import { ErrorCodes, type JsonRpcResponse } from '../../types/jsonrpc.js';
@@ -20,6 +21,21 @@ export function createRequestContextMiddleware(): RequestHandler {
     req.requestId = req.header('x-request-id') ?? randomUUID();
     attachRequestContext(req, createAnonymousRequestContext(req));
     next();
+  };
+}
+
+export function createTelemetryContextMiddleware(): RequestHandler {
+  return (req, _res, next) => {
+    const extracted = propagation.extract(context.active(), req.headers, {
+      get(carrier, key) {
+        const value = (carrier as Record<string, string | string[] | undefined>)[key];
+        return Array.isArray(value) ? value[0] : value;
+      },
+      keys(carrier) {
+        return Object.keys(carrier as Record<string, string | string[] | undefined>);
+      },
+    });
+    context.with(extracted, () => next());
   };
 }
 
