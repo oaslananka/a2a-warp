@@ -86,3 +86,17 @@ jobs:
 
             "${npm_cli[@]}" publish "$package_file" --access public --provenance
           done
+      - name: Verify npm provenance
+        run: |
+          npm_cli=(npx --yes "npm@${NPM_VERSION}")
+          verify_dir="$(mktemp -d)"
+          pushd "$verify_dir"
+          npm init -y
+          for package_file in "${GITHUB_WORKSPACE}"/.artifacts/npm/*.tgz; do
+            package_json="$(tar -xOzf "$package_file" package/package.json)"
+            package_name="$(node -e "const fs = require('node:fs'); const pkg = JSON.parse(fs.readFileSync(0, 'utf8')); process.stdout.write(pkg.name);" <<< "$package_json")"
+            package_version="$(node -e "const fs = require('node:fs'); const pkg = JSON.parse(fs.readFileSync(0, 'utf8')); process.stdout.write(pkg.version);" <<< "$package_json")"
+            "${npm_cli[@]}" install "${package_name}@${package_version}"
+          done
+          "${npm_cli[@]}" audit signatures
+          popd
