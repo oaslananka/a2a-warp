@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.25.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-v1.24.0...@oaslananka/a2a-warp-v1.25.0) (2026-05-30)
+
+
+### Miscellaneous Chores
+
+* **@oaslananka/a2a-warp:** Synchronize A2A Warp packages versions
+
 ## [1.24.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-v1.23.1...@oaslananka/a2a-warp-v1.24.0) (2026-05-30)
 
 
