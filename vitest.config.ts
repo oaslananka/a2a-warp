@@ -1,6 +1,12 @@
+import path from 'node:path';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@oaslananka/a2a-warp-core': path.resolve(__dirname, 'packages/core-types/src'),
+    },
+  },
   test: {
     globals: true,
     environment: 'node',
