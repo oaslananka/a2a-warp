@@ -45,21 +45,51 @@ exports. Install the core package and use the subpath instead.
 | `@oaslananka/a2a-warp-testing`      | `@oaslananka/a2a-warp/testing`      | `pnpm add @oaslananka/a2a-warp` |
 | `@oaslananka/a2a-warp-codex-bridge` | `@oaslananka/a2a-warp/codex-bridge` | `pnpm add @oaslananka/a2a-warp` |
 
+## Adapter Package Split
+
+`@oaslananka/a2a-warp-adapters` has been split into individual per-provider packages.
+The old package is deprecated — install only the adapters you need.
+
+| Old name                        | New name                                  | Install command                                    |
+| ------------------------------- | ----------------------------------------- | -------------------------------------------------- |
+| `@oaslananka/a2a-warp-adapters` | `@oaslananka/a2a-warp-adapter-openai`     | `pnpm add @oaslananka/a2a-warp-adapter-openai`     |
+|                                 | `@oaslananka/a2a-warp-adapter-anthropic`  | `pnpm add @oaslananka/a2a-warp-adapter-anthropic`  |
+|                                 | `@oaslananka/a2a-warp-adapter-langchain`  | `pnpm add @oaslananka/a2a-warp-adapter-langchain`  |
+|                                 | `@oaslananka/a2a-warp-adapter-google-adk` | `pnpm add @oaslananka/a2a-warp-adapter-google-adk` |
+|                                 | `@oaslananka/a2a-warp-adapter-llamaindex` | `pnpm add @oaslananka/a2a-warp-adapter-llamaindex` |
+|                                 | `@oaslananka/a2a-warp-adapter-crewai`     | `pnpm add @oaslananka/a2a-warp-adapter-crewai`     |
+
+### Import updates
+
+```diff
+- import { OpenAIAdapter } from '@oaslananka/a2a-warp-adapters';
++ import { OpenAIAdapter } from '@oaslananka/a2a-warp-adapter-openai';
+
+- import { AnthropicAdapter } from '@oaslananka/a2a-warp-adapters';
++ import { AnthropicAdapter } from '@oaslananka/a2a-warp-adapter-anthropic';
+```
+
 ## Canonical Package Map
 
 The current published package topology is:
 
-| Package                               | Purpose                                                               | Install                                        |
-| ------------------------------------- | --------------------------------------------------------------------- | ---------------------------------------------- |
-| `@oaslananka/a2a-warp`                | Core runtime, client, auth, telemetry, storage, testing, codex-bridge | `pnpm add @oaslananka/a2a-warp`                |
-| `@oaslananka/a2a-warp-adapters`       | Provider and framework adapters                                       | `pnpm add @oaslananka/a2a-warp-adapters`       |
-| `@oaslananka/a2a-warp-registry`       | Registry server and discovery                                         | `pnpm add @oaslananka/a2a-warp-registry`       |
-| `@oaslananka/a2a-warp-cli`            | CLI binary `a2a-warp`                                                 | `pnpm add @oaslananka/a2a-warp-cli`            |
-| `create-a2a-warp`                     | Project scaffolder                                                    | `pnpm create a2a-warp`                         |
-| `@oaslananka/a2a-warp-bridge-mcp`     | MCP bridge                                                            | `pnpm add @oaslananka/a2a-warp-bridge-mcp`     |
-| `@oaslananka/a2a-warp-transport-ws`   | WebSocket transport                                                   | `pnpm add @oaslananka/a2a-warp-transport-ws`   |
-| `@oaslananka/a2a-warp-transport-grpc` | gRPC transport                                                        | `pnpm add @oaslananka/a2a-warp-transport-grpc` |
-| `@oaslananka/a2a-warp-schemas`        | JSON schemas                                                          | `pnpm add @oaslananka/a2a-warp-schemas`        |
+| Package                                   | Purpose                                                               | Install                                            |
+| ----------------------------------------- | --------------------------------------------------------------------- | -------------------------------------------------- |
+| `@oaslananka/a2a-warp`                    | Core runtime, client, auth, telemetry, storage, testing, codex-bridge | `pnpm add @oaslananka/a2a-warp`                    |
+| `@oaslananka/a2a-warp-adapter-base`       | Abstract base adapter and contract helpers                            | (consumed by adapter packages)                     |
+| `@oaslananka/a2a-warp-adapter-openai`     | OpenAI adapter                                                        | `pnpm add @oaslananka/a2a-warp-adapter-openai`     |
+| `@oaslananka/a2a-warp-adapter-anthropic`  | Anthropic Claude adapter                                              | `pnpm add @oaslananka/a2a-warp-adapter-anthropic`  |
+| `@oaslananka/a2a-warp-adapter-langchain`  | LangChain adapter                                                     | `pnpm add @oaslananka/a2a-warp-adapter-langchain`  |
+| `@oaslananka/a2a-warp-adapter-google-adk` | Google ADK adapter                                                    | `pnpm add @oaslananka/a2a-warp-adapter-google-adk` |
+| `@oaslananka/a2a-warp-adapter-llamaindex` | LlamaIndex adapter                                                    | `pnpm add @oaslananka/a2a-warp-adapter-llamaindex` |
+| `@oaslananka/a2a-warp-adapter-crewai`     | CrewAI HTTP bridge adapter                                            | `pnpm add @oaslananka/a2a-warp-adapter-crewai`     |
+| `@oaslananka/a2a-warp-registry`           | Registry server and discovery                                         | `pnpm add @oaslananka/a2a-warp-registry`           |
+| `@oaslananka/a2a-warp-cli`                | CLI binary `a2a-warp`                                                 | `pnpm add @oaslananka/a2a-warp-cli`                |
+| `create-a2a-warp`                         | Project scaffolder                                                    | `pnpm create a2a-warp`                             |
+| `@oaslananka/a2a-warp-bridge-mcp`         | MCP bridge                                                            | `pnpm add @oaslananka/a2a-warp-bridge-mcp`         |
+| `@oaslananka/a2a-warp-transport-ws`       | WebSocket transport                                                   | `pnpm add @oaslananka/a2a-warp-transport-ws`       |
+| `@oaslananka/a2a-warp-transport-grpc`     | gRPC transport                                                        | `pnpm add @oaslananka/a2a-warp-transport-grpc`     |
+| `@oaslananka/a2a-warp-schemas`            | JSON schemas                                                          | `pnpm add @oaslananka/a2a-warp-schemas`            |
 
 Subpath exports under `@oaslananka/a2a-warp`:
 

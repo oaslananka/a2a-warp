@@ -1,7 +1,8 @@
 {
   "name": "@oaslananka/a2a-warp-adapters",
   "version": "1.25.0",
-  "description": "Framework adapters for connecting TypeScript agents to the Agent2Agent protocol.",
+  "description": "Deprecated — use individual @oaslananka/a2a-warp-adapter-* packages instead.",
+  "deprecated": "This package is deprecated. Install individual adapters: @oaslananka/a2a-warp-adapter-openai, @oaslananka/a2a-warp-adapter-anthropic, @oaslananka/a2a-warp-adapter-langchain, @oaslananka/a2a-warp-adapter-google-adk, @oaslananka/a2a-warp-adapter-llamaindex, @oaslananka/a2a-warp-adapter-crewai",
   "keywords": [
     "a2a",
     "agent2agent",
@@ -33,7 +34,14 @@
     "test": "pnpm --dir ../.. run build && vitest run --root ../.. --config vitest.config.ts --project unit packages/adapters/tests"
   },
   "dependencies": {
-    "@oaslananka/a2a-warp": "workspace:^"
+    "@oaslananka/a2a-warp": "workspace:^",
+    "@oaslananka/a2a-warp-adapter-base": "workspace:^",
+    "@oaslananka/a2a-warp-adapter-openai": "workspace:^",
+    "@oaslananka/a2a-warp-adapter-anthropic": "workspace:^",
+    "@oaslananka/a2a-warp-adapter-langchain": "workspace:^",
+    "@oaslananka/a2a-warp-adapter-google-adk": "workspace:^",
+    "@oaslananka/a2a-warp-adapter-llamaindex": "workspace:^",
+    "@oaslananka/a2a-warp-adapter-crewai": "workspace:^"
   },
   "peerDependencies": {
     "@anthropic-ai/sdk": "^0.39.0 || ^0.95.0 || ^0.96.0 || ^0.99.0",

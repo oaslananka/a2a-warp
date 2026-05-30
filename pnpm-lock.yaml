@@ -117,7 +117,7 @@ importers:
         version: link:../../packages/core
       '@oaslananka/a2a-warp-adapters':
         specifier: workspace:*
-        version: file:packages/adapters(@anthropic-ai/sdk@0.99.0(zod@4.4.3))(openai@6.39.0(ws@8.21.0)(zod@4.4.3))
+        version: link:../../packages/adapters
       '@oaslananka/a2a-warp-registry':
         specifier: workspace:*
         version: link:../../packages/registry
@@ -232,7 +232,7 @@ importers:
         version: link:../../packages/core
       '@oaslananka/a2a-warp-adapters':
         specifier: workspace:*
-        version: file:packages/adapters(@anthropic-ai/sdk@0.99.0(zod@4.4.3))(openai@6.39.0(ws@8.21.0)(zod@4.4.3))
+        version: link:../../packages/adapters
     devDependencies:
       '@types/node':
         specifier: ^22.19.19
@@ -344,11 +344,123 @@ importers:
         specifier: ^6.0.3
         version: 6.0.3
 
+  packages/adapter-anthropic:
+    dependencies:
+      '@oaslananka/a2a-warp':
+        specifier: workspace:^
+        version: link:../core
+      '@oaslananka/a2a-warp-adapter-base':
+        specifier: workspace:^
+        version: link:../adapter-base
+    devDependencies:
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
+
+  packages/adapter-base:
+    dependencies:
+      '@oaslananka/a2a-warp':
+        specifier: workspace:^
+        version: link:../core
+    devDependencies:
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
+
+  packages/adapter-crewai:
+    dependencies:
+      '@oaslananka/a2a-warp':
+        specifier: workspace:^
+        version: link:../core
+      '@oaslananka/a2a-warp-adapter-base':
+        specifier: workspace:^
+        version: link:../adapter-base
+    devDependencies:
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
+
+  packages/adapter-google-adk:
+    dependencies:
+      '@oaslananka/a2a-warp':
+        specifier: workspace:^
+        version: link:../core
+      '@oaslananka/a2a-warp-adapter-base':
+        specifier: workspace:^
+        version: link:../adapter-base
+    devDependencies:
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
+
+  packages/adapter-langchain:
+    dependencies:
+      '@oaslananka/a2a-warp':
+        specifier: workspace:^
+        version: link:../core
+      '@oaslananka/a2a-warp-adapter-base':
+        specifier: workspace:^
+        version: link:../adapter-base
+    devDependencies:
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
+
+  packages/adapter-llamaindex:
+    dependencies:
+      '@oaslananka/a2a-warp':
+        specifier: workspace:^
+        version: link:../core
+      '@oaslananka/a2a-warp-adapter-base':
+        specifier: workspace:^
+        version: link:../adapter-base
+    devDependencies:
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
+
+  packages/adapter-openai:
+    dependencies:
+      '@oaslananka/a2a-warp':
+        specifier: workspace:^
+        version: link:../core
+      '@oaslananka/a2a-warp-adapter-base':
+        specifier: workspace:^
+        version: link:../adapter-base
+    devDependencies:
+      openai:
+        specifier: 6.39.0
+        version: 6.39.0(ws@8.21.0)(zod@4.4.3)
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
+
   packages/adapters:
     dependencies:
       '@oaslananka/a2a-warp':
         specifier: workspace:^
         version: link:../core
+      '@oaslananka/a2a-warp-adapter-anthropic':
+        specifier: workspace:^
+        version: file:packages/adapter-anthropic(@anthropic-ai/sdk@0.99.0(zod@4.4.3))
+      '@oaslananka/a2a-warp-adapter-base':
+        specifier: workspace:^
+        version: link:../adapter-base
+      '@oaslananka/a2a-warp-adapter-crewai':
+        specifier: workspace:^
+        version: link:../adapter-crewai
+      '@oaslananka/a2a-warp-adapter-google-adk':
+        specifier: workspace:^
+        version: link:../adapter-google-adk
+      '@oaslananka/a2a-warp-adapter-langchain':
+        specifier: workspace:^
+        version: link:../adapter-langchain
+      '@oaslananka/a2a-warp-adapter-llamaindex':
+        specifier: workspace:^
+        version: link:../adapter-llamaindex
+      '@oaslananka/a2a-warp-adapter-openai':
+        specifier: workspace:^
+        version: link:../adapter-openai
     devDependencies:
       openai:
         specifier: 6.39.0
@@ -1531,23 +1643,18 @@ packages:
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
 
-  '@oaslananka/a2a-warp-adapters@file:packages/adapters':
-    resolution: {directory: packages/adapters, type: directory}
+  '@oaslananka/a2a-warp-adapter-anthropic@file:packages/adapter-anthropic':
+    resolution: {directory: packages/adapter-anthropic, type: directory}
     engines: {node: '>=22.22.1 <25'}
     peerDependencies:
       '@anthropic-ai/sdk': ^0.39.0 || ^0.95.0 || ^0.96.0 || ^0.99.0
-      langchain: ^0.3.37 || ^1.0.0
-      llamaindex: ^0.9.11 || ^0.12.0
-      openai: ^4.20.0 || ^6.0.0
     peerDependenciesMeta:
       '@anthropic-ai/sdk':
         optional: true
-      langchain:
-        optional: true
-      llamaindex:
-        optional: true
-      openai:
-        optional: true
+
+  '@oaslananka/a2a-warp-adapter-base@file:packages/adapter-base':
+    resolution: {directory: packages/adapter-base, type: directory}
+    engines: {node: '>=22.22.1 <25'}
 
   '@oaslananka/a2a-warp-transport-ws@file:packages/transport-ws':
     resolution: {directory: packages/transport-ws, type: directory}
@@ -6346,12 +6453,18 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.20.1
 
-  '@oaslananka/a2a-warp-adapters@file:packages/adapters(@anthropic-ai/sdk@0.99.0(zod@4.4.3))(openai@6.39.0(ws@8.21.0)(zod@4.4.3))':
+  '@oaslananka/a2a-warp-adapter-anthropic@file:packages/adapter-anthropic(@anthropic-ai/sdk@0.99.0(zod@4.4.3))':
     dependencies:
       '@oaslananka/a2a-warp': file:packages/core
+      '@oaslananka/a2a-warp-adapter-base': file:packages/adapter-base
     optionalDependencies:
       '@anthropic-ai/sdk': 0.99.0(zod@4.4.3)
-      openai: 6.39.0(ws@8.21.0)(zod@4.4.3)
+    transitivePeerDependencies:
+      - supports-color
+
+  '@oaslananka/a2a-warp-adapter-base@file:packages/adapter-base':
+    dependencies:
+      '@oaslananka/a2a-warp': file:packages/core
     transitivePeerDependencies:
       - supports-color
 

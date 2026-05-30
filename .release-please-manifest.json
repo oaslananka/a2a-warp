@@ -1,6 +1,13 @@
 {
   "packages/core": "1.25.0",
   "packages/adapters": "1.25.0",
+  "packages/adapter-base": "1.25.0",
+  "packages/adapter-openai": "1.25.0",
+  "packages/adapter-anthropic": "1.25.0",
+  "packages/adapter-langchain": "1.25.0",
+  "packages/adapter-google-adk": "1.25.0",
+  "packages/adapter-llamaindex": "1.25.0",
+  "packages/adapter-crewai": "1.25.0",
   "packages/registry": "1.25.0",
   "cli": "1.25.0",
   "packages/create-a2a-agent": "1.25.0",

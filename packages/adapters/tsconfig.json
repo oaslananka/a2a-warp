@@ -10,6 +10,27 @@
   "references": [
     {
       "path": "../core"
+    },
+    {
+      "path": "../adapter-base"
+    },
+    {
+      "path": "../adapter-openai"
+    },
+    {
+      "path": "../adapter-anthropic"
+    },
+    {
+      "path": "../adapter-langchain"
+    },
+    {
+      "path": "../adapter-google-adk"
+    },
+    {
+      "path": "../adapter-llamaindex"
+    },
+    {
+      "path": "../adapter-crewai"
     }
   ]
 }

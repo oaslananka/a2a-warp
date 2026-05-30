@@ -79,17 +79,24 @@ a2a-warp doctor --json
 
 ## Package List
 
-| Package                               | Purpose                                                                                                  |
-| ------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `@oaslananka/a2a-warp`                | Core runtime, client APIs, auth, telemetry, storage, middleware, testing helpers, and Codex-style tools. |
-| `@oaslananka/a2a-warp-adapters`       | Optional framework/provider adapters.                                                                    |
-| `@oaslananka/a2a-warp-registry`       | Registry server, discovery client, health polling, and storage helpers.                                  |
-| `@oaslananka/a2a-warp-cli`            | CLI binary `a2a-warp`.                                                                                   |
-| `create-a2a-warp`                     | Project scaffolder.                                                                                      |
-| `@oaslananka/a2a-warp-bridge-mcp`     | A2A and MCP mapping helpers.                                                                             |
-| `@oaslananka/a2a-warp-transport-ws`   | WebSocket transport helpers.                                                                             |
-| `@oaslananka/a2a-warp-transport-grpc` | gRPC transport helpers.                                                                                  |
-| `@oaslananka/a2a-warp-schemas`        | Standalone JSON Schema files for editor, CI, and validation pipelines.                                   |
+| Package                                   | Purpose                                                                                                  |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `@oaslananka/a2a-warp`                    | Core runtime, client APIs, auth, telemetry, storage, middleware, testing helpers, and Codex-style tools. |
+| `@oaslananka/a2a-warp-adapters`           | **Deprecated** — use individual `@oaslananka/a2a-warp-adapter-*` packages instead.                       |
+| `@oaslananka/a2a-warp-adapter-base`       | Abstract base adapter and contract helpers.                                                              |
+| `@oaslananka/a2a-warp-adapter-openai`     | OpenAI Chat API adapter.                                                                                 |
+| `@oaslananka/a2a-warp-adapter-anthropic`  | Anthropic Claude Messages API adapter.                                                                   |
+| `@oaslananka/a2a-warp-adapter-langchain`  | LangChain / LangGraph runnable adapter.                                                                  |
+| `@oaslananka/a2a-warp-adapter-google-adk` | Google Agent Development Kit HTTP adapter.                                                               |
+| `@oaslananka/a2a-warp-adapter-llamaindex` | LlamaIndex query/chat engine adapter.                                                                    |
+| `@oaslananka/a2a-warp-adapter-crewai`     | CrewAI HTTP bridge adapter.                                                                              |
+| `@oaslananka/a2a-warp-registry`           | Registry server, discovery client, health polling, and storage helpers.                                  |
+| `@oaslananka/a2a-warp-cli`                | CLI binary `a2a-warp`.                                                                                   |
+| `create-a2a-warp`                         | Project scaffolder.                                                                                      |
+| `@oaslananka/a2a-warp-bridge-mcp`         | A2A and MCP mapping helpers.                                                                             |
+| `@oaslananka/a2a-warp-transport-ws`       | WebSocket transport helpers.                                                                             |
+| `@oaslananka/a2a-warp-transport-grpc`     | gRPC transport helpers.                                                                                  |
+| `@oaslananka/a2a-warp-schemas`            | Standalone JSON Schema files for editor, CI, and validation pipelines.                                   |
 
 ## A2A Protocol Compatibility
 

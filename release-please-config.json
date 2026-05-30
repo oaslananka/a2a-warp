@@ -12,6 +12,13 @@
       "components": [
         "@oaslananka/a2a-warp",
         "@oaslananka/a2a-warp-adapters",
+        "@oaslananka/a2a-warp-adapter-base",
+        "@oaslananka/a2a-warp-adapter-openai",
+        "@oaslananka/a2a-warp-adapter-anthropic",
+        "@oaslananka/a2a-warp-adapter-langchain",
+        "@oaslananka/a2a-warp-adapter-google-adk",
+        "@oaslananka/a2a-warp-adapter-llamaindex",
+        "@oaslananka/a2a-warp-adapter-crewai",
         "@oaslananka/a2a-warp-registry",
         "@oaslananka/a2a-warp-cli",
         "create-a2a-warp",
@@ -61,6 +68,41 @@
     "packages/transport-grpc": {
       "package-name": "@oaslananka/a2a-warp-transport-grpc",
       "component": "@oaslananka/a2a-warp-transport-grpc",
+      "changelog-path": "CHANGELOG.md"
+    },
+    "packages/adapter-base": {
+      "package-name": "@oaslananka/a2a-warp-adapter-base",
+      "component": "@oaslananka/a2a-warp-adapter-base",
+      "changelog-path": "CHANGELOG.md"
+    },
+    "packages/adapter-openai": {
+      "package-name": "@oaslananka/a2a-warp-adapter-openai",
+      "component": "@oaslananka/a2a-warp-adapter-openai",
+      "changelog-path": "CHANGELOG.md"
+    },
+    "packages/adapter-anthropic": {
+      "package-name": "@oaslananka/a2a-warp-adapter-anthropic",
+      "component": "@oaslananka/a2a-warp-adapter-anthropic",
+      "changelog-path": "CHANGELOG.md"
+    },
+    "packages/adapter-langchain": {
+      "package-name": "@oaslananka/a2a-warp-adapter-langchain",
+      "component": "@oaslananka/a2a-warp-adapter-langchain",
+      "changelog-path": "CHANGELOG.md"
+    },
+    "packages/adapter-google-adk": {
+      "package-name": "@oaslananka/a2a-warp-adapter-google-adk",
+      "component": "@oaslananka/a2a-warp-adapter-google-adk",
+      "changelog-path": "CHANGELOG.md"
+    },
+    "packages/adapter-llamaindex": {
+      "package-name": "@oaslananka/a2a-warp-adapter-llamaindex",
+      "component": "@oaslananka/a2a-warp-adapter-llamaindex",
+      "changelog-path": "CHANGELOG.md"
+    },
+    "packages/adapter-crewai": {
+      "package-name": "@oaslananka/a2a-warp-adapter-crewai",
+      "component": "@oaslananka/a2a-warp-adapter-crewai",
       "changelog-path": "CHANGELOG.md"
     },
     "packages/schemas": {
