@@ -15,7 +15,7 @@
     "@oaslananka/a2a-warp-adapters": "workspace:*",
     "@oaslananka/a2a-warp-registry": "workspace:*",
     "dotenv": "^17.4.2",
-    "openai": "^6.38.0",
+    "openai": "^6.39.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
