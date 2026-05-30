@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.3.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-registry-v1.2.0...@oaslananka/a2a-warp-registry-v1.3.0) (2026-05-29)
+
+
+### Features
+
+* **registry:** add export import commands ([7084e53](https://github.com/oaslananka/a2a-warp/commit/7084e538750062cb20bfcf7ef9da9b745af20f99))
+* **registry:** add OpenAPI contract ([931ced5](https://github.com/oaslananka/a2a-warp/commit/931ced5442fdda0fe0fe6de7b290dbfd904532c2))
+
+
+### Bug Fixes
+
+* **build:** centralize runtime version pins ([98f9fd7](https://github.com/oaslananka/a2a-warp/commit/98f9fd7e80e745f7d73fc677bb8d91f7066787a3))
+* **core:** centralize outbound policy ([#17](https://github.com/oaslananka/a2a-warp/issues/17)) ([d2ac0a8](https://github.com/oaslananka/a2a-warp/commit/d2ac0a88dc79144cb7fdad9c54b3c4f8cecf4126))
+* protect main, fix Docker/version issues, sync runtime ([#59](https://github.com/oaslananka/a2a-warp/issues/59), [#63](https://github.com/oaslananka/a2a-warp/issues/63), [#91](https://github.com/oaslananka/a2a-warp/issues/91), [#103](https://github.com/oaslananka/a2a-warp/issues/103)) ([#110](https://github.com/oaslananka/a2a-warp/issues/110)) ([a1d74e0](https://github.com/oaslananka/a2a-warp/commit/a1d74e033dbd1f1b4c957334c3333647a8fba567))
+* **registry:** make redis indexes atomic ([#22](https://github.com/oaslananka/a2a-warp/issues/22)) ([540ebf6](https://github.com/oaslananka/a2a-warp/commit/540ebf6351ac86f27ccc67f6bf8dd14934e33ede))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp bumped to 1.3.0
+
 ## [1.2.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-registry-v1.1.0...@oaslananka/a2a-warp-registry-v1.2.0) (2026-05-28)
 
 
