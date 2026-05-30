@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.21.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-schemas-v1.20.0...@oaslananka/a2a-warp-schemas-v1.21.0) (2026-05-30)
+
+
+### Bug Fixes
+
+* **packaging:** consolidate client, testing, and codex-bridge into core subpath exports ([#125](https://github.com/oaslananka/a2a-warp/issues/125)) ([76ea7dd](https://github.com/oaslananka/a2a-warp/commit/76ea7dd28bdec8c91567c18b2e1fa367d44633e4))
+
 ## [1.20.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-schemas-v1.19.0...@oaslananka/a2a-warp-schemas-v1.20.0) (2026-05-30)
 
 
