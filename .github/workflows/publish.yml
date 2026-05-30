@@ -175,8 +175,10 @@ jobs:
         run: |
           # npm 11+ auto-detects OIDC tokens in GH Actions and uses them for
           # auth/provenance, overriding NODE_AUTH_TOKEN. Explicitly write the
-          # .npmrc and pass --no-provenance so token-based auth is used.
-          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > "${HOME}/.npmrc"
+          # .npmrc (to the userconfig path that setup-node configured) and
+          # pass --no-provenance so token-based auth is used.
+          npmrc_path="${NPM_CONFIG_USERCONFIG:-${HOME}/.npmrc}"
+          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > "${npmrc_path}"
 
           npm_cli=(npx --yes "npm@${NPM_VERSION}")
           "${npm_cli[@]}" --version
