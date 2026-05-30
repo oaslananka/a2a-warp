@@ -6,7 +6,9 @@ name: Release Please
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
+  issues: write
 
 defaults:
   run:
