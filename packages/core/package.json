@@ -30,6 +30,7 @@
     "test": "vitest run --root ../.. --config vitest.config.ts --project unit packages/core/tests"
   },
   "dependencies": {
+    "@oaslananka/a2a-warp-core": "workspace:^",
     "@opentelemetry/api": "^1.9.1",
     "@opentelemetry/exporter-metrics-otlp-http": "^0.218.0",
     "@opentelemetry/exporter-trace-otlp-http": "^0.218.0",

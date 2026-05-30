@@ -490,6 +490,9 @@ importers:
 
   packages/core:
     dependencies:
+      '@oaslananka/a2a-warp-core':
+        specifier: workspace:^
+        version: link:../core-types
       '@opentelemetry/api':
         specifier: ^1.9.1
         version: 1.9.1
@@ -527,6 +530,12 @@ importers:
       '@types/express':
         specifier: 5.0.6
         version: 5.0.6
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
+
+  packages/core-types:
+    devDependencies:
       typescript:
         specifier: 6.0.3
         version: 6.0.3
@@ -1654,6 +1663,10 @@ packages:
 
   '@oaslananka/a2a-warp-adapter-base@file:packages/adapter-base':
     resolution: {directory: packages/adapter-base, type: directory}
+    engines: {node: '>=22.22.1 <25'}
+
+  '@oaslananka/a2a-warp-core@file:packages/core-types':
+    resolution: {directory: packages/core-types, type: directory}
     engines: {node: '>=22.22.1 <25'}
 
   '@oaslananka/a2a-warp-transport-ws@file:packages/transport-ws':
@@ -6468,6 +6481,8 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@oaslananka/a2a-warp-core@file:packages/core-types': {}
+
   '@oaslananka/a2a-warp-transport-ws@file:packages/transport-ws(ws@8.20.1)':
     dependencies:
       '@oaslananka/a2a-warp': file:packages/core
@@ -6477,6 +6492,7 @@ snapshots:
 
   '@oaslananka/a2a-warp@file:packages/core':
     dependencies:
+      '@oaslananka/a2a-warp-core': file:packages/core-types
       '@opentelemetry/api': 1.9.1
       '@opentelemetry/exporter-metrics-otlp-http': 0.218.0(@opentelemetry/api@1.9.1)
       '@opentelemetry/exporter-trace-otlp-http': 0.218.0(@opentelemetry/api@1.9.1)

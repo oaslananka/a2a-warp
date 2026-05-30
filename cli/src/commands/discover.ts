@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { type AgentSkill } from '@oaslananka/a2a-warp';
+import { type AgentCard, type AgentSkill } from '@oaslananka/a2a-warp';
 import { emitResult, withSpinner, type RootOptionsProvider } from '../io.js';
 import { addNetworkOptions, createA2AClient, type NetworkCommandOptions } from '../network.js';
 import { applyCommandDoc, type CliCommandDoc } from './doc-metadata.js';
@@ -31,7 +31,7 @@ export async function discoverAgent(
   url: string,
   options: { json?: boolean } = {},
   networkOptions: NetworkCommandOptions = {},
-) {
+): Promise<AgentCard> {
   const client = createA2AClient(url, networkOptions);
   const card = await client.resolveCard();
 

@@ -12,6 +12,7 @@
       "components": [
         "@oaslananka/a2a-warp",
         "@oaslananka/a2a-warp-adapters",
+        "@oaslananka/a2a-warp-core",
         "@oaslananka/a2a-warp-adapter-base",
         "@oaslananka/a2a-warp-adapter-openai",
         "@oaslananka/a2a-warp-adapter-anthropic",
@@ -103,6 +104,11 @@
     "packages/adapter-crewai": {
       "package-name": "@oaslananka/a2a-warp-adapter-crewai",
       "component": "@oaslananka/a2a-warp-adapter-crewai",
+      "changelog-path": "CHANGELOG.md"
+    },
+    "packages/core-types": {
+      "package-name": "@oaslananka/a2a-warp-core",
+      "component": "@oaslananka/a2a-warp-core",
       "changelog-path": "CHANGELOG.md"
     },
     "packages/schemas": {

@@ -1,5 +1,6 @@
 {
   "packages/core": "1.25.0",
+  "packages/core-types": "1.25.0",
   "packages/adapters": "1.25.0",
   "packages/adapter-base": "1.25.0",
   "packages/adapter-openai": "1.25.0",
