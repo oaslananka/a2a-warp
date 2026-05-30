@@ -158,7 +158,7 @@ jobs:
           sed -i "s/generatedCliVersion = '.*'/generatedCliVersion = '${VERSION}'/" cli/src/generated/version.ts
           for pkg in @oaslananka/a2a-warp @oaslananka/a2a-warp-adapters @oaslananka/a2a-warp-registry; do
             esc_pkg="${pkg//\//\\/}"
-            sed -i "s/\(${esc_pkg}\)': '^\)[0-9]*\.[0-9]*\.[0-9]*'/\\1': '^${VERSION}'/" cli/src/generated/scaffold-template.ts
+            sed -i "s/\(${esc_pkg}\)': '^[0-9]*\.[0-9]*\.[0-9]*'/\\1': '^${VERSION}'/" cli/src/generated/scaffold-template.ts
           done
       - name: Commit and push generated file changes
         if: steps.detect.outputs.is_release == 'true'
