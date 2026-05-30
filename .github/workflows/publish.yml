@@ -47,6 +47,7 @@ jobs:
     permissions:
       attestations: write
       contents: read
+      id-token: write
     steps:
       # ── Resolve the tag from whichever event triggered ──
       - name: Resolve release tag
