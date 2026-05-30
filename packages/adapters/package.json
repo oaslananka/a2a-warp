@@ -1,6 +1,6 @@
 {
   "name": "@oaslananka/a2a-warp-adapters",
-  "version": "1.23.1",
+  "version": "1.24.0",
   "description": "Framework adapters for connecting TypeScript agents to the Agent2Agent protocol.",
   "keywords": [
     "a2a",
