@@ -2,7 +2,7 @@
   "name": "a2a-warp-registry-ui",
   "version": "1.0.0",
   "private": true,
-  "packageManager": "pnpm@11.3.0",
+  "packageManager": "pnpm@11.4.0",
   "engines": {
     "node": ">=22.22.1 <25",
     "pnpm": ">=11 <12"
