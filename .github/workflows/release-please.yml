@@ -68,8 +68,8 @@ jobs:
       - name: Check for release commit
         id: detect
         run: |
-          commit_msg="$(git log -1 --format=%s)"
-          if [[ "$commit_msg" =~ ^chore:\ release\ main ]]; then
+          commit_msg="$(git log -1 --format=%B)"
+          if [[ "$commit_msg" =~ chore:\ release\ main ]]; then
             echo "is_release=true" >> "$GITHUB_OUTPUT"
           else
             echo "is_release=false" >> "$GITHUB_OUTPUT"
@@ -133,8 +133,8 @@ jobs:
       - name: Detect release commit
         id: detect
         run: |
-          commit_msg="$(git log -1 --format=%s)"
-          if [[ "$commit_msg" =~ ^chore:\ release\ main ]]; then
+          commit_msg="$(git log -1 --format=%B)"
+          if [[ "$commit_msg" =~ chore:\ release\ main ]]; then
             echo "is_release=true" >> "$GITHUB_OUTPUT"
           else
             echo "is_release=false" >> "$GITHUB_OUTPUT"
