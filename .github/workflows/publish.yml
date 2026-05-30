@@ -74,6 +74,13 @@ jobs:
         run: |
           npm_cli=(npx --yes "npm@${NPM_VERSION}")
           "${npm_cli[@]}" --version
+
+          unset NODE_AUTH_TOKEN
+
+          if [[ -n "${NPM_CONFIG_USERCONFIG:-}" ]]; then
+            "${npm_cli[@]}" config delete //registry.npmjs.org/:_authToken --userconfig "$NPM_CONFIG_USERCONFIG" || true
+          fi
+
           for package_file in ./.artifacts/npm/*.tgz; do
             package_json="$(tar -xOzf "$package_file" package/package.json)"
             package_name="$(node -e "const fs = require('node:fs'); const pkg = JSON.parse(fs.readFileSync(0, 'utf8')); process.stdout.write(pkg.name);" <<< "$package_json")"
@@ -84,7 +91,7 @@ jobs:
               continue
             fi
 
-            "${npm_cli[@]}" publish "$package_file" --access public --provenance
+            "${npm_cli[@]}" publish "$package_file" --access public
           done
       - name: Verify npm provenance
         run: |
