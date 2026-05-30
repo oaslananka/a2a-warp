@@ -8,7 +8,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY tsconfig*.json ./
 COPY packages/core/package.json ./packages/core/
 COPY packages/adapters/package.json ./packages/adapters/
-COPY packages/grpc/package.json ./packages/grpc/
+COPY packages/transport-grpc/package.json ./packages/transport-grpc/
 COPY packages/registry/package.json ./packages/registry/
 COPY cli/package.json ./cli/
 COPY apps/demo/package.json ./apps/demo/

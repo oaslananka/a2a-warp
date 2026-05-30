@@ -1,5 +1,5 @@
 {
-  "name": "@oaslananka/a2a-warp-ws",
+  "name": "@oaslananka/a2a-warp-transport-ws",
   "version": "1.25.0",
   "description": "WebSocket transport helpers for A2A Warp agents.",
   "keywords": [
@@ -15,7 +15,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/oaslananka/a2a-warp.git",
-    "directory": "packages/ws"
+    "directory": "packages/transport-ws"
   },
   "bugs": {
     "url": "https://github.com/oaslananka/a2a-warp/issues"
@@ -59,7 +59,7 @@
   ],
   "scripts": {
     "build": "node ../../scripts/build-tsc-package.mjs",
-    "test": "pnpm --dir ../.. run build && vitest run --root ../.. --config vitest.config.ts --project unit packages/ws/tests",
+    "test": "pnpm --dir ../.. run build && vitest run --root ../.. --config vitest.config.ts --project unit packages/transport-ws/tests",
     "typecheck": "tsc -b"
   },
   "publishConfig": {

@@ -8,10 +8,10 @@
       "path": "./packages/registry"
     },
     {
-      "path": "./packages/grpc"
+      "path": "./packages/transport-grpc"
     },
     {
-      "path": "./packages/ws"
+      "path": "./packages/transport-ws"
     },
     {
       "path": "./packages/create-a2a-agent"

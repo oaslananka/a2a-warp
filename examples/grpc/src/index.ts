@@ -6,7 +6,7 @@ import {
   type Message,
   type Task,
 } from '@oaslananka/a2a-warp';
-import { GrpcClient, GrpcServer } from '@oaslananka/a2a-warp-grpc';
+import { GrpcClient, GrpcServer } from '@oaslananka/a2a-warp-transport-grpc';
 
 class GrpcEchoAgent extends A2AServer {
   constructor() {

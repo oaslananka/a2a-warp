@@ -33,17 +33,17 @@ range and is already EOL in the Node.js project schedule checked for this policy
 All public packages in the 1.2.x line share the same Node engine range:
 `>=22.22.1 <25`.
 
-| Package                           | Current version | Node range      | Compatibility notes                                                                          |
-| --------------------------------- | --------------- | --------------- | -------------------------------------------------------------------------------------------- |
-| `@oaslananka/a2a-warp`            | `1.25.0`        | `>=22.22.1 <25` | Core runtime, client APIs, auth, telemetry, storage, testing helpers, and Codex-style tools. |
-| `@oaslananka/a2a-warp-adapters`   | `1.25.0`        | `>=22.22.1 <25` | Optional provider and framework adapters.                                                    |
-| `@oaslananka/a2a-warp-registry`   | `1.25.0`        | `>=22.22.1 <25` | Registry server, discovery, health, and storage helpers.                                     |
-| `@oaslananka/a2a-warp-cli`        | `1.25.0`        | `>=22.22.1 <25` | Published `a2a-warp` command-line interface.                                                 |
-| `create-a2a-warp`                 | `1.25.0`        | `>=22.22.1 <25` | Project scaffolder.                                                                          |
-| `@oaslananka/a2a-warp-mcp-bridge` | `1.25.0`        | `>=22.22.1 <25` | A2A and MCP mapping helpers.                                                                 |
-| `@oaslananka/a2a-warp-ws`         | `1.25.0`        | `>=22.22.1 <25` | WebSocket transport helpers.                                                                 |
-| `@oaslananka/a2a-warp-grpc`       | `1.25.0`        | `>=22.22.1 <25` | gRPC transport helpers.                                                                      |
-| `@oaslananka/a2a-warp-schemas`    | `1.25.0`        | `>=22.22.1 <25` | Standalone JSON Schema files for editor and CI validation.                                   |
+| Package                               | Current version | Node range      | Compatibility notes                                                                          |
+| ------------------------------------- | --------------- | --------------- | -------------------------------------------------------------------------------------------- |
+| `@oaslananka/a2a-warp`                | `1.25.0`        | `>=22.22.1 <25` | Core runtime, client APIs, auth, telemetry, storage, testing helpers, and Codex-style tools. |
+| `@oaslananka/a2a-warp-adapters`       | `1.25.0`        | `>=22.22.1 <25` | Optional provider and framework adapters.                                                    |
+| `@oaslananka/a2a-warp-registry`       | `1.25.0`        | `>=22.22.1 <25` | Registry server, discovery, health, and storage helpers.                                     |
+| `@oaslananka/a2a-warp-cli`            | `1.25.0`        | `>=22.22.1 <25` | Published `a2a-warp` command-line interface.                                                 |
+| `create-a2a-warp`                     | `1.25.0`        | `>=22.22.1 <25` | Project scaffolder.                                                                          |
+| `@oaslananka/a2a-warp-bridge-mcp`     | `1.25.0`        | `>=22.22.1 <25` | A2A and MCP mapping helpers.                                                                 |
+| `@oaslananka/a2a-warp-transport-ws`   | `1.25.0`        | `>=22.22.1 <25` | WebSocket transport helpers.                                                                 |
+| `@oaslananka/a2a-warp-transport-grpc` | `1.25.0`        | `>=22.22.1 <25` | gRPC transport helpers.                                                                      |
+| `@oaslananka/a2a-warp-schemas`        | `1.25.0`        | `>=22.22.1 <25` | Standalone JSON Schema files for editor and CI validation.                                   |
 
 Patch releases may add compatible bug fixes, tests, and docs. New public package
 surfaces must update `public-surface.json`, package docs, and this matrix before
@@ -67,8 +67,8 @@ with `pnpm run test:conformance`.
 | ----------------- | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
 | HTTP+JSON         | Supported                    | Agent Card discovery, JSON-RPC `message/send`, task reads, task cancellation, push notification routes, registry routes, health, and metrics. | Core, registry, integration, and conformance tests.                 |
 | SSE               | Supported                    | `message/stream`, task event streaming, heartbeat/close behavior, and task resubscribe surfaces.                                              | Core SSE tests, integration tests, and conformance stream fixtures. |
-| WebSocket         | Supported package surface    | Request/response A2A JSON-RPC over `@oaslananka/a2a-warp-ws`.                                                                                 | WebSocket package tests and shared transport contract tests.        |
-| gRPC              | Retained package surface     | A2A task and agent-card flows through `@oaslananka/a2a-warp-grpc`.                                                                            | gRPC package tests and shared transport contract tests.             |
+| WebSocket         | Supported package surface    | Request/response A2A JSON-RPC over `@oaslananka/a2a-warp-transport-ws`.                                                                       | WebSocket package tests and shared transport contract tests.        |
+| gRPC              | Retained package surface     | A2A task and agent-card flows through `@oaslananka/a2a-warp-transport-grpc`.                                                                  | gRPC package tests and shared transport contract tests.             |
 | MCP bridge        | Bridge, not an A2A transport | Maps supported MCP tool shapes to A2A tool/task concepts.                                                                                     | MCP bridge mapping tests.                                           |
 
 No transport should be documented for broad deployment without matching tests and
@@ -79,14 +79,14 @@ security documentation for its auth, origin, TLS, or callback behavior.
 Provider and framework SDKs stay peer dependencies where possible so default
 installs do not pull every integration stack.
 
-| Package                         | Peer dependency      | Supported range                                  |
-| ------------------------------- | -------------------- | ------------------------------------------------ |
-| `@oaslananka/a2a-warp`          | `@opentelemetry/api` | `^1.9.1`                                         |
-| `@oaslananka/a2a-warp-adapters` | `@anthropic-ai/sdk`  | `^0.39.0 \|\| ^0.95.0 \|\| ^0.96.0 \|\| ^0.99.0` |
-| `@oaslananka/a2a-warp-adapters` | `langchain`          | `^0.3.37 \|\| ^1.0.0`                            |
-| `@oaslananka/a2a-warp-adapters` | `llamaindex`         | `^0.9.11 \|\| ^0.12.0`                           |
-| `@oaslananka/a2a-warp-adapters` | `openai`             | `^4.20.0 \|\| ^6.0.0`                            |
-| `@oaslananka/a2a-warp-ws`       | `ws`                 | `^8.18.0`                                        |
+| Package                             | Peer dependency      | Supported range                                  |
+| ----------------------------------- | -------------------- | ------------------------------------------------ |
+| `@oaslananka/a2a-warp`              | `@opentelemetry/api` | `^1.9.1`                                         |
+| `@oaslananka/a2a-warp-adapters`     | `@anthropic-ai/sdk`  | `^0.39.0 \|\| ^0.95.0 \|\| ^0.96.0 \|\| ^0.99.0` |
+| `@oaslananka/a2a-warp-adapters`     | `langchain`          | `^0.3.37 \|\| ^1.0.0`                            |
+| `@oaslananka/a2a-warp-adapters`     | `llamaindex`         | `^0.9.11 \|\| ^0.12.0`                           |
+| `@oaslananka/a2a-warp-adapters`     | `openai`             | `^4.20.0 \|\| ^6.0.0`                            |
+| `@oaslananka/a2a-warp-transport-ws` | `ws`                 | `^8.18.0`                                        |
 
 Adapter tests use fake provider objects by default. Live provider behavior must
 remain opt-in and cannot be required by the default local verification gate.

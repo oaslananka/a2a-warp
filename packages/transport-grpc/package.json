@@ -1,5 +1,5 @@
 {
-  "name": "@oaslananka/a2a-warp-grpc",
+  "name": "@oaslananka/a2a-warp-transport-grpc",
   "version": "1.25.0",
   "description": "gRPC transport helpers for A2A Warp agents.",
   "keywords": [
@@ -15,7 +15,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/oaslananka/a2a-warp.git",
-    "directory": "packages/grpc"
+    "directory": "packages/transport-grpc"
   },
   "bugs": {
     "url": "https://github.com/oaslananka/a2a-warp/issues"
@@ -27,7 +27,7 @@
   "scripts": {
     "build": "node ../../scripts/build-tsc-package.mjs",
     "typecheck": "tsc -b",
-    "test": "pnpm --dir ../.. run build && vitest run --root ../.. --config vitest.config.ts --project unit packages/grpc/tests"
+    "test": "pnpm --dir ../.. run build && vitest run --root ../.. --config vitest.config.ts --project unit packages/transport-grpc/tests"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.14.4",

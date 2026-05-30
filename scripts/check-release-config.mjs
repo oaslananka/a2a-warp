@@ -8,9 +8,9 @@ const expected = new Map([
   ['packages/registry', '@oaslananka/a2a-warp-registry'],
   ['cli', '@oaslananka/a2a-warp-cli'],
   ['packages/create-a2a-agent', 'create-a2a-warp'],
-  ['packages/mcp-bridge', '@oaslananka/a2a-warp-mcp-bridge'],
-  ['packages/ws', '@oaslananka/a2a-warp-ws'],
-  ['packages/grpc', '@oaslananka/a2a-warp-grpc'],
+  ['packages/bridge-mcp', '@oaslananka/a2a-warp-bridge-mcp'],
+  ['packages/transport-ws', '@oaslananka/a2a-warp-transport-ws'],
+  ['packages/transport-grpc', '@oaslananka/a2a-warp-transport-grpc'],
   ['packages/schemas', '@oaslananka/a2a-warp-schemas'],
 ]);
 const failures = [];

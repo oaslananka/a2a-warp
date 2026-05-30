@@ -28,16 +28,16 @@ const expected = new Map([
     { name: 'create-a2a-warp', version: manifest['packages/create-a2a-agent'] },
   ],
   [
-    'packages/mcp-bridge/package.json',
-    { name: '@oaslananka/a2a-warp-mcp-bridge', version: manifest['packages/mcp-bridge'] },
+    'packages/bridge-mcp/package.json',
+    { name: '@oaslananka/a2a-warp-bridge-mcp', version: manifest['packages/bridge-mcp'] },
   ],
   [
-    'packages/ws/package.json',
-    { name: '@oaslananka/a2a-warp-ws', version: manifest['packages/ws'] },
+    'packages/transport-ws/package.json',
+    { name: '@oaslananka/a2a-warp-transport-ws', version: manifest['packages/transport-ws'] },
   ],
   [
-    'packages/grpc/package.json',
-    { name: '@oaslananka/a2a-warp-grpc', version: manifest['packages/grpc'] },
+    'packages/transport-grpc/package.json',
+    { name: '@oaslananka/a2a-warp-transport-grpc', version: manifest['packages/transport-grpc'] },
   ],
   [
     'packages/schemas/package.json',

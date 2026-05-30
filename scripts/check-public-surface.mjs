@@ -4,8 +4,8 @@ const inventories = [
   ['packages/core/package.json', 'packages/core/public-surface.json'],
   ['packages/registry/package.json', 'packages/registry/public-surface.json'],
   ['packages/adapters/package.json', 'packages/adapters/public-surface.json'],
-  ['packages/ws/package.json', 'packages/ws/public-surface.json'],
-  ['packages/mcp-bridge/package.json', 'packages/mcp-bridge/public-surface.json'],
+  ['packages/transport-ws/package.json', 'packages/transport-ws/public-surface.json'],
+  ['packages/bridge-mcp/package.json', 'packages/bridge-mcp/public-surface.json'],
   ['packages/schemas/package.json', 'packages/schemas/public-surface.json'],
 ];
 const failures = [];

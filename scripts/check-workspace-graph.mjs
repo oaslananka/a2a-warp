@@ -6,9 +6,9 @@ const packageByImport = new Map([
   ['@oaslananka/a2a-warp-adapters', 'adapters'],
   ['@oaslananka/a2a-warp-registry', 'registry'],
   ['@oaslananka/a2a-warp-cli', 'cli'],
-  ['@oaslananka/a2a-warp-mcp-bridge', 'mcp-bridge'],
-  ['@oaslananka/a2a-warp-ws', 'ws'],
-  ['@oaslananka/a2a-warp-grpc', 'grpc'],
+  ['@oaslananka/a2a-warp-bridge-mcp', 'mcp-bridge'],
+  ['@oaslananka/a2a-warp-transport-ws', 'ws'],
+  ['@oaslananka/a2a-warp-transport-grpc', 'grpc'],
   ['@oaslananka/a2a-warp-schemas', 'schemas'],
 ]);
 const disallowed = {
@@ -22,9 +22,9 @@ function ownerForFile(file) {
   if (file.startsWith('packages/core/')) return 'core';
   if (file.startsWith('packages/adapters/')) return 'adapters';
   if (file.startsWith('packages/registry/')) return 'registry';
-  if (file.startsWith('packages/mcp-bridge/')) return 'mcp-bridge';
-  if (file.startsWith('packages/ws/')) return 'ws';
-  if (file.startsWith('packages/grpc/')) return 'grpc';
+  if (file.startsWith('packages/bridge-mcp/')) return 'mcp-bridge';
+  if (file.startsWith('packages/transport-ws/')) return 'ws';
+  if (file.startsWith('packages/transport-grpc/')) return 'grpc';
   if (file.startsWith('packages/schemas/')) return 'schemas';
   if (file.startsWith('cli/')) return 'cli';
   return undefined;

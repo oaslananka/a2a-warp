@@ -5,9 +5,9 @@ const packages = [
   ['@oaslananka/a2a-warp-adapters', 'docs/packages/adapters.md'],
   ['@oaslananka/a2a-warp-registry', 'docs/packages/registry.md'],
   ['@oaslananka/a2a-warp-cli', 'docs/packages/cli.md'],
-  ['@oaslananka/a2a-warp-mcp-bridge', 'docs/packages/mcp-bridge.md'],
-  ['@oaslananka/a2a-warp-ws', 'docs/packages/ws.md'],
-  ['@oaslananka/a2a-warp-grpc', 'docs/packages/grpc.md'],
+  ['@oaslananka/a2a-warp-bridge-mcp', 'docs/packages/bridge-mcp.md'],
+  ['@oaslananka/a2a-warp-transport-ws', 'docs/packages/transport-ws.md'],
+  ['@oaslananka/a2a-warp-transport-grpc', 'docs/packages/transport-grpc.md'],
   ['@oaslananka/a2a-warp-schemas', 'docs/packages/schemas.md'],
 ];
 const failures = [];

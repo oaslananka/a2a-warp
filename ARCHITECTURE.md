@@ -17,16 +17,16 @@ package import graph is checked by `scripts/check-workspace-graph.mjs`.
 
 The primary workspace surfaces are:
 
-| Surface                                                   | Role                                                                                                                                          |
-| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@oaslananka/a2a-warp`                                    | Core runtime, protocol types, JSON-RPC server, client, auth, storage, telemetry, URL policy, schemas, testing helpers, and Codex-style tools. |
-| `@oaslananka/a2a-warp-registry`                           | Registry REST/SSE service, discovery, health polling, task projections, and registry storage.                                                 |
-| `@oaslananka/a2a-warp-adapters`                           | Provider/framework adapters built on the public core runtime contract.                                                                        |
-| `@oaslananka/a2a-warp-ws` and `@oaslananka/a2a-warp-grpc` | Transport helpers that adapt the core runtime to WebSocket and gRPC contracts.                                                                |
-| `@oaslananka/a2a-warp-mcp-bridge`                         | Bridge package that maps public runtime objects into MCP tool surfaces.                                                                       |
-| `@oaslananka/a2a-warp-schemas`                            | Standalone JSON Schema files for editor, CI, and validation pipelines.                                                                        |
-| `@oaslananka/a2a-warp-cli` and `create-a2a-warp`          | Command surface and scaffold generator.                                                                                                       |
-| `apps/*`, `docs-site`, and `examples/*`                   | Demo, registry UI, VitePress site, and local runnable examples.                                                                               |
+| Surface                                                                       | Role                                                                                                                                          |
+| ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@oaslananka/a2a-warp`                                                        | Core runtime, protocol types, JSON-RPC server, client, auth, storage, telemetry, URL policy, schemas, testing helpers, and Codex-style tools. |
+| `@oaslananka/a2a-warp-registry`                                               | Registry REST/SSE service, discovery, health polling, task projections, and registry storage.                                                 |
+| `@oaslananka/a2a-warp-adapters`                                               | Provider/framework adapters built on the public core runtime contract.                                                                        |
+| `@oaslananka/a2a-warp-transport-ws` and `@oaslananka/a2a-warp-transport-grpc` | Transport helpers that adapt the core runtime to WebSocket and gRPC contracts.                                                                |
+| `@oaslananka/a2a-warp-bridge-mcp`                                             | Bridge package that maps public runtime objects into MCP tool surfaces.                                                                       |
+| `@oaslananka/a2a-warp-schemas`                                                | Standalone JSON Schema files for editor, CI, and validation pipelines.                                                                        |
+| `@oaslananka/a2a-warp-cli` and `create-a2a-warp`                              | Command surface and scaffold generator.                                                                                                       |
+| `apps/*`, `docs-site`, and `examples/*`                                       | Demo, registry UI, VitePress site, and local runnable examples.                                                                               |
 
 ## Dependency Direction
 

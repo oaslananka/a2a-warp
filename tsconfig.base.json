@@ -27,8 +27,8 @@
       "@oaslananka/a2a-warp-adapters": ["./packages/adapters/src/index.ts"],
       "@oaslananka/a2a-warp-registry": ["./packages/registry/src/index.ts"],
       "@oaslananka/a2a-warp-cli": ["./cli/src/index.ts"],
-      "@oaslananka/a2a-warp-grpc": ["./packages/grpc/src/index.ts"],
-      "@oaslananka/a2a-warp-ws": ["./packages/ws/src/index.ts"]
+      "@oaslananka/a2a-warp-transport-grpc": ["./packages/transport-grpc/src/index.ts"],
+      "@oaslananka/a2a-warp-transport-ws": ["./packages/transport-ws/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "dist", "**/*.test.ts"]

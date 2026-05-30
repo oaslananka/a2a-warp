@@ -259,9 +259,9 @@ importers:
       '@oaslananka/a2a-warp':
         specifier: workspace:*
         version: link:../../packages/core
-      '@oaslananka/a2a-warp-grpc':
+      '@oaslananka/a2a-warp-transport-grpc':
         specifier: workspace:*
-        version: link:../../packages/grpc
+        version: link:../../packages/transport-grpc
     devDependencies:
       '@types/node':
         specifier: ^22.19.19
@@ -272,9 +272,9 @@ importers:
 
   examples/mcp-bridge:
     dependencies:
-      '@oaslananka/a2a-warp-mcp-bridge':
+      '@oaslananka/a2a-warp-bridge-mcp':
         specifier: workspace:*
-        version: link:../../packages/mcp-bridge
+        version: link:../../packages/bridge-mcp
     devDependencies:
       '@types/node':
         specifier: ^22.19.19
@@ -330,9 +330,9 @@ importers:
       '@oaslananka/a2a-warp':
         specifier: workspace:*
         version: link:../../packages/core
-      '@oaslananka/a2a-warp-ws':
+      '@oaslananka/a2a-warp-transport-ws':
         specifier: workspace:*
-        version: file:packages/ws(ws@8.20.1)
+        version: file:packages/transport-ws(ws@8.20.1)
       ws:
         specifier: ^8.20.1
         version: 8.20.1
@@ -359,6 +359,22 @@ importers:
       zod:
         specifier: 4.4.3
         version: 4.4.3
+
+  packages/bridge-mcp:
+    dependencies:
+      '@modelcontextprotocol/sdk':
+        specifier: ^1.29.0
+        version: 1.29.0
+      '@oaslananka/a2a-warp':
+        specifier: workspace:^
+        version: link:../core
+    devDependencies:
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
+      vitest:
+        specifier: 4.1.7
+        version: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@22.19.19)(@vitest/coverage-v8@4.1.7)(esbuild@0.28.0)(jiti@2.7.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(tsx@4.22.3)(yaml@2.9.0)
 
   packages/core:
     dependencies:
@@ -413,38 +429,6 @@ importers:
         specifier: 22.19.19
         version: 22.19.19
 
-  packages/grpc:
-    dependencies:
-      '@grpc/grpc-js':
-        specifier: ^1.14.4
-        version: 1.14.4
-      '@grpc/proto-loader':
-        specifier: ^0.8.1
-        version: 0.8.1
-      '@oaslananka/a2a-warp':
-        specifier: workspace:*
-        version: link:../core
-    devDependencies:
-      typescript:
-        specifier: 6.0.3
-        version: 6.0.3
-
-  packages/mcp-bridge:
-    dependencies:
-      '@modelcontextprotocol/sdk':
-        specifier: ^1.29.0
-        version: 1.29.0
-      '@oaslananka/a2a-warp':
-        specifier: workspace:^
-        version: link:../core
-    devDependencies:
-      typescript:
-        specifier: 6.0.3
-        version: 6.0.3
-      vitest:
-        specifier: 4.1.7
-        version: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@22.19.19)(@vitest/coverage-v8@4.1.7)(esbuild@0.28.0)(jiti@2.7.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(tsx@4.22.3)(yaml@2.9.0)
-
   packages/registry:
     dependencies:
       '@oaslananka/a2a-warp':
@@ -469,7 +453,23 @@ importers:
 
   packages/schemas: {}
 
-  packages/ws:
+  packages/transport-grpc:
+    dependencies:
+      '@grpc/grpc-js':
+        specifier: ^1.14.4
+        version: 1.14.4
+      '@grpc/proto-loader':
+        specifier: ^0.8.1
+        version: 0.8.1
+      '@oaslananka/a2a-warp':
+        specifier: workspace:*
+        version: link:../core
+    devDependencies:
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
+
+  packages/transport-ws:
     dependencies:
       '@oaslananka/a2a-warp':
         specifier: workspace:^
@@ -1549,8 +1549,8 @@ packages:
       openai:
         optional: true
 
-  '@oaslananka/a2a-warp-ws@file:packages/ws':
-    resolution: {directory: packages/ws, type: directory}
+  '@oaslananka/a2a-warp-transport-ws@file:packages/transport-ws':
+    resolution: {directory: packages/transport-ws, type: directory}
     engines: {node: '>=22.22.1 <25'}
     peerDependencies:
       ws: ^8.18.0
@@ -6355,7 +6355,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@oaslananka/a2a-warp-ws@file:packages/ws(ws@8.20.1)':
+  '@oaslananka/a2a-warp-transport-ws@file:packages/transport-ws(ws@8.20.1)':
     dependencies:
       '@oaslananka/a2a-warp': file:packages/core
       ws: 8.20.1

@@ -38,9 +38,9 @@ pnpm run verify
 - `packages/client/`: standalone client re-exports.
 - `packages/adapters/`: optional framework/provider adapters.
 - `packages/registry/`: registry server, discovery, health, matching, and storage helpers.
-- `packages/mcp-bridge/`: A2A and MCP mapping helpers.
-- `packages/ws/`: WebSocket transport helpers.
-- `packages/grpc/`: gRPC transport helpers.
+- `packages/bridge-mcp/`: A2A and MCP mapping helpers.
+- `packages/transport-ws/`: WebSocket transport helpers.
+- `packages/transport-grpc/`: gRPC transport helpers.
 - `packages/testing/`: fixtures, matchers, and local server helpers.
 - `packages/codex-bridge/`: Codex-style tool bridge helpers.
 - `packages/create-a2a-agent/`: `create-a2a-warp` scaffolder.
@@ -67,7 +67,7 @@ types/schemas -> core utilities -> protocol runtime -> transports -> client SDK 
 
 `packages/adapters` may import public core APIs, not registry server internals.
 
-`packages/mcp-bridge` may import core/client public APIs and MCP-specific types only.
+`packages/bridge-mcp` may import core/client public APIs and MCP-specific types only.
 
 `cli` may import public package APIs and must not import app internals.
 

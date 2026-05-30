@@ -6,9 +6,9 @@ const names = [
   '@oaslananka/a2a-warp-adapters',
   '@oaslananka/a2a-warp-registry',
   '@oaslananka/a2a-warp-cli',
-  '@oaslananka/a2a-warp-mcp-bridge',
-  '@oaslananka/a2a-warp-ws',
-  '@oaslananka/a2a-warp-grpc',
+  '@oaslananka/a2a-warp-bridge-mcp',
+  '@oaslananka/a2a-warp-transport-ws',
+  '@oaslananka/a2a-warp-transport-grpc',
   '@oaslananka/a2a-warp-schemas',
   'create-a2a-warp',
 ];

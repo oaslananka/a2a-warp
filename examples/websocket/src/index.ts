@@ -1,6 +1,6 @@
 import { pathToFileURL } from 'node:url';
 import { ErrorCodes, JsonRpcError } from '@oaslananka/a2a-warp';
-import { WsClient, WsServer } from '@oaslananka/a2a-warp-ws';
+import { WsClient, WsServer } from '@oaslananka/a2a-warp-transport-ws';
 
 export interface WebSocketExampleResult {
   mode: 'websocket';

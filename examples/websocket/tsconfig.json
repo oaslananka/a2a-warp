@@ -7,5 +7,5 @@
   },
   "include": ["src/**/*.ts", "tests/**/*.ts"],
   "exclude": ["node_modules", "dist"],
-  "references": [{ "path": "../../packages/core" }, { "path": "../../packages/ws" }]
+  "references": [{ "path": "../../packages/core" }, { "path": "../../packages/transport-ws" }]
 }

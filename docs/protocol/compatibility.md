@@ -28,7 +28,7 @@ The `1.2` fixture directory is an a2a-warp experimental profile. It is useful fo
 | Streaming/SSE                       | Implemented                                  | `packages/core/tests/SSEStreamer.test.ts`; `tests/conformance/fixtures/a2a-1.0/stream-events.json`; `tests/conformance/fixtures/a2a-1.2/stream-events.json`               |
 | Push notifications                  | Implemented where configured                 | `tests/integration/push-notification.test.ts`; `tests/conformance/fixtures/a2a-1.0/push-config.json`; `tests/conformance/fixtures/a2a-1.2/push-config.json`               |
 | Capability discovery                | Implemented                                  | registry and client tests; `tests/conformance/fixtures/a2a-1.0/agent-card.json`; `tests/conformance/fixtures/a2a-1.2/agent-card.json`                                     |
-| MCP bridge mapping                  | Implemented for repository-supported mapping | `packages/mcp-bridge/tests/mcp.test.ts`                                                                                                                                   |
+| MCP bridge mapping                  | Implemented for repository-supported mapping | `packages/bridge-mcp/tests/mcp.test.ts`                                                                                                                                   |
 | gRPC transport                      | Package surface retained                     | Build/package checks plus package tests when added                                                                                                                        |
 
 ## Executable Conformance Fixtures

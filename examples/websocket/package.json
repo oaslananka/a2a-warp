@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@oaslananka/a2a-warp": "workspace:*",
-    "@oaslananka/a2a-warp-ws": "workspace:*",
+    "@oaslananka/a2a-warp-transport-ws": "workspace:*",
     "ws": "^8.20.1"
   },
   "devDependencies": {

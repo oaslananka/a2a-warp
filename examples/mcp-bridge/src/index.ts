@@ -3,7 +3,7 @@ import {
   createA2ASkillFromMcpTool,
   createMcpToolFromAgent,
   handleA2AMcpToolCall,
-} from '@oaslananka/a2a-warp-mcp-bridge';
+} from '@oaslananka/a2a-warp-bridge-mcp';
 
 export interface McpBridgeExampleResult {
   mode: 'mcp-bridge';

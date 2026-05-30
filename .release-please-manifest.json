@@ -4,8 +4,8 @@
   "packages/registry": "1.25.0",
   "cli": "1.25.0",
   "packages/create-a2a-agent": "1.25.0",
-  "packages/mcp-bridge": "1.25.0",
-  "packages/ws": "1.25.0",
-  "packages/grpc": "1.25.0",
+  "packages/bridge-mcp": "1.25.0",
+  "packages/transport-ws": "1.25.0",
+  "packages/transport-grpc": "1.25.0",
   "packages/schemas": "1.25.0"
 }

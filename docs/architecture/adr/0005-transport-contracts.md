@@ -53,6 +53,6 @@ pnpm run verify:structure
 Relevant coverage:
 
 - [`transportContract.ts`](../../../tests/transport-contract/transportContract.ts)
-- [`WebSocket transport contract`](../../../packages/ws/tests/transport-contract.test.ts)
-- [`gRPC transport contract`](../../../packages/grpc/tests/transport-contract.test.ts)
+- [`WebSocket transport contract`](../../../packages/transport-ws/tests/transport-contract.test.ts)
+- [`gRPC transport contract`](../../../packages/transport-grpc/tests/transport-contract.test.ts)
 - [`client/server integration`](../../../tests/integration/client-server.test.ts)

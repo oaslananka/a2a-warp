@@ -7,8 +7,8 @@ Allowed imports: public core/client APIs and MCP SDK types. Do not import provid
 Test commands:
 
 ```bash
-pnpm --filter @oaslananka/a2a-warp-mcp-bridge run typecheck
-pnpm --filter @oaslananka/a2a-warp-mcp-bridge run test
+pnpm --filter @oaslananka/a2a-warp-bridge-mcp run typecheck
+pnpm --filter @oaslananka/a2a-warp-bridge-mcp run test
 ```
 
 Feature rule: add parity tests for every new mapping and ensure secrets are not forwarded to downstream tools or logs.
