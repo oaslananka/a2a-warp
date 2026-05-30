@@ -36,14 +36,14 @@ All public packages in the 1.2.x line share the same Node engine range:
 | Package                           | Current version | Node range      | Compatibility notes                                                                          |
 | --------------------------------- | --------------- | --------------- | -------------------------------------------------------------------------------------------- |
 | `@oaslananka/a2a-warp`            | `1.23.1`        | `>=22.22.1 <25` | Core runtime, client APIs, auth, telemetry, storage, testing helpers, and Codex-style tools. |
-| `@oaslananka/a2a-warp-adapters`   | `1.23.0`        | `>=22.22.1 <25` | Optional provider and framework adapters.                                                    |
-| `@oaslananka/a2a-warp-registry`   | `1.23.0`        | `>=22.22.1 <25` | Registry server, discovery, health, and storage helpers.                                     |
-| `@oaslananka/a2a-warp-cli`        | `1.23.0`        | `>=22.22.1 <25` | Published `a2a-warp` command-line interface.                                                 |
-| `create-a2a-warp`                 | `1.23.0`        | `>=22.22.1 <25` | Project scaffolder.                                                                          |
-| `@oaslananka/a2a-warp-mcp-bridge` | `1.23.0`        | `>=22.22.1 <25` | A2A and MCP mapping helpers.                                                                 |
-| `@oaslananka/a2a-warp-ws`         | `1.23.0`        | `>=22.22.1 <25` | WebSocket transport helpers.                                                                 |
-| `@oaslananka/a2a-warp-grpc`       | `1.23.0`        | `>=22.22.1 <25` | gRPC transport helpers.                                                                      |
-| `@oaslananka/a2a-warp-schemas`    | `1.23.0`        | `>=22.22.1 <25` | Standalone JSON Schema files for editor and CI validation.                                   |
+| `@oaslananka/a2a-warp-adapters`   | `1.23.1`        | `>=22.22.1 <25` | Optional provider and framework adapters.                                                    |
+| `@oaslananka/a2a-warp-registry`   | `1.23.1`        | `>=22.22.1 <25` | Registry server, discovery, health, and storage helpers.                                     |
+| `@oaslananka/a2a-warp-cli`        | `1.23.1`        | `>=22.22.1 <25` | Published `a2a-warp` command-line interface.                                                 |
+| `create-a2a-warp`                 | `1.23.1`        | `>=22.22.1 <25` | Project scaffolder.                                                                          |
+| `@oaslananka/a2a-warp-mcp-bridge` | `1.23.1`        | `>=22.22.1 <25` | A2A and MCP mapping helpers.                                                                 |
+| `@oaslananka/a2a-warp-ws`         | `1.23.1`        | `>=22.22.1 <25` | WebSocket transport helpers.                                                                 |
+| `@oaslananka/a2a-warp-grpc`       | `1.23.1`        | `>=22.22.1 <25` | gRPC transport helpers.                                                                      |
+| `@oaslananka/a2a-warp-schemas`    | `1.23.1`        | `>=22.22.1 <25` | Standalone JSON Schema files for editor and CI validation.                                   |
 
 Patch releases may add compatible bug fixes, tests, and docs. New public package
 surfaces must update `public-surface.json`, package docs, and this matrix before
