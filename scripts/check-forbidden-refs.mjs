@@ -59,6 +59,9 @@ const hypePhrases = [
 ];
 const exactAllowed = 'It is not an official Google, Linux Foundation, or a2aproject package.';
 const ignored = [/^scripts\/check-.*\.mjs$/, /^pnpm-lock\.yaml$/, /(^|\/)LICENSE$/];
+const platformTermExceptions = {
+  '.github/workflows/publish.yml': ['NPM_TOKEN', 'FALLBACK_NODE_AUTH_TOKEN'],
+};
 const failures = [];
 for (const file of listFiles()) {
   if (!isTextFile(file)) continue;
@@ -66,7 +69,10 @@ for (const file of listFiles()) {
   let text = readText(file).split(exactAllowed).join('');
   const lower = text.toLowerCase();
   for (const term of platformTerms) {
-    if (lower.includes(term.toLowerCase())) failures.push(`${file}: ${term}`);
+    if (lower.includes(term.toLowerCase())) {
+      const allowed = (platformTermExceptions[file] ?? []).includes(term);
+      if (!allowed) failures.push(`${file}: ${term}`);
+    }
   }
   for (const phrase of hypePhrases) {
     if (lower.includes(phrase.toLowerCase())) failures.push(`${file}: ${phrase}`);

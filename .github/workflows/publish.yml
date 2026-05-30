@@ -47,7 +47,6 @@ jobs:
     permissions:
       attestations: write
       contents: read
-      id-token: write
     steps:
       # ── Resolve the tag from whichever event triggered ──
       - name: Resolve release tag
@@ -168,8 +167,10 @@ jobs:
             .artifacts/npm/SHA256SUMS
             .artifacts/sbom/a2a-warp.cdx.json
 
-      # ── Publish with OIDC/provenance ──
+      # ── Publish with npm token auth ──
       - name: Publish packages to npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           npm_cli=(npx --yes "npm@${NPM_VERSION}")
           "${npm_cli[@]}" --version
@@ -185,14 +186,12 @@ jobs:
               continue
             fi
 
-            # Publish using OIDC/trusted publishing with --provenance
-            # This uses the id-token: write permission from the job context
-            if "${npm_cli[@]}" publish "$package_file" --provenance --access public; then
-              echo "✅ Published ${pkg_name}@${pkg_version} with provenance"
+            # Publish with token-based auth
+            # NODE_AUTH_TOKEN is set from secrets.NPM_TOKEN via step env
+            if "${npm_cli[@]}" publish "$package_file" --access public; then
+              echo "✅ Published ${pkg_name}@${pkg_version}"
             else
               echo "❌ Failed to publish ${pkg_name}@${pkg_version}"
-              echo "   Ensure npm OIDC/trusted publishing is configured for the @oaslananka org."
-              echo "   See: https://docs.npmjs.com/generating-provenance-statements"
               exit 1
             fi
           done
