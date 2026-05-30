@@ -80,12 +80,12 @@ jobs:
           COMPONENTS="$(
             jq -r '
               .packages | to_entries[] |
-              "\(.value.component)@\(.key)"
+              "\(.value.component)|\(.key)"
             ' release-please-config.json
           )"
 
           echo "=== Creating tags for v${VERSION} ==="
-          while IFS='@' read -r component path; do
+          while IFS='|' read -r component _path; do
             tag="${component}-v${VERSION}"
             # Skip if tag already exists
             if git ls-remote --tags origin "refs/tags/${tag}" 2>/dev/null | grep -q .; then
