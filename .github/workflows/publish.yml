@@ -1,11 +1,15 @@
 name: Publish
 
 'on':
+  push:
+    tags:
+      - 'v*'
   workflow_dispatch:
     inputs:
       ref:
-        description: Commit SHA or ref to publish
-        required: true
+        description: 'Branch or tag to publish (default: main)'
+        required: false
+        default: main
       confirm_publish:
         description: Type A2A-WARP-PUBLISH to publish
         required: true
@@ -14,7 +18,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ inputs.ref }}
+  group: ${{ github.workflow }}-${{ github.ref_name }}
   cancel-in-progress: false
 
 defaults:
@@ -28,7 +32,14 @@ env:
 jobs:
   publish:
     name: Publish / npm
-    if: ${{ github.repository == 'oaslananka/a2a-warp' && inputs.confirm_publish == 'A2A-WARP-PUBLISH' }}
+    if: |
+      ${{
+        github.repository == 'oaslananka/a2a-warp' &&
+        (
+          github.event_name == 'push' ||
+          inputs.confirm_publish == 'A2A-WARP-PUBLISH'
+        )
+      }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     environment: npm-publish
@@ -39,7 +50,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
-          ref: ${{ inputs.ref }}
+          ref: ${{ github.event_name == 'push' && github.ref || inputs.ref }}
           fetch-depth: 0
           persist-credentials: false
       - uses: ./.github/actions/setup-pnpm
