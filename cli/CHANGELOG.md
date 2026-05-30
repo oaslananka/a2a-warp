@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.23.1](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-cli-v1.23.0...@oaslananka/a2a-warp-cli-v1.23.1) (2026-05-30)
+
+
+### Bug Fixes
+
+* auto-create release and sync generated files after Release PR merge ([70ded8b](https://github.com/oaslananka/a2a-warp/commit/70ded8b0e11ed1367773ed4c31705b41216529aa))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp bumped to 1.23.1
+    * @oaslananka/a2a-warp-registry bumped to 1.23.1
+
 ## [1.23.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-cli-v1.22.0...@oaslananka/a2a-warp-cli-v1.23.0) (2026-05-30)
 
 
