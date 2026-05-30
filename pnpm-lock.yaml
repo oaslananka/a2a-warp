@@ -232,7 +232,7 @@ importers:
         version: link:../../packages/core
       '@oaslananka/a2a-warp-adapters':
         specifier: workspace:*
-        version: file:packages/adapters(@anthropic-ai/sdk@0.96.0(zod@4.4.3))(openai@6.38.0(ws@8.21.0)(zod@4.4.3))
+        version: file:packages/adapters(@anthropic-ai/sdk@0.96.0(zod@4.4.3))(openai@6.39.0(ws@8.21.0)(zod@4.4.3))
     devDependencies:
       '@types/node':
         specifier: ^22.19.19
@@ -351,8 +351,8 @@ importers:
         version: link:../core
     devDependencies:
       openai:
-        specifier: 6.38.0
-        version: 6.38.0(ws@8.21.0)(zod@4.4.3)
+        specifier: 6.39.0
+        version: 6.39.0(ws@8.21.0)(zod@4.4.3)
       typescript:
         specifier: 6.0.3
         version: 6.0.3
@@ -4400,6 +4400,18 @@ packages:
       zod:
         optional: true
 
+  openai@6.39.0:
+    resolution: {integrity: sha512-O61LIsimY3acVabwvomwFhwrnN36yvHY2quIfy9keEcFytGgWeV35yLHQ6NVMLSBxRpHmcg2yuhCnlu2HT4pLQ==}
+    hasBin: true
+    peerDependencies:
+      ws: ^8.18.0
+      zod: ^3.25 || ^4.0
+    peerDependenciesMeta:
+      ws:
+        optional: true
+      zod:
+        optional: true
+
   optionator@0.9.4:
     resolution: {integrity: sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g==}
     engines: {node: '>= 0.8.0'}
@@ -6495,6 +6507,15 @@ snapshots:
     optionalDependencies:
       '@anthropic-ai/sdk': 0.96.0(zod@4.4.3)
       openai: 6.38.0(ws@8.21.0)(zod@4.4.3)
+    transitivePeerDependencies:
+      - supports-color
+
+  '@oaslananka/a2a-warp-adapters@file:packages/adapters(@anthropic-ai/sdk@0.96.0(zod@4.4.3))(openai@6.39.0(ws@8.21.0)(zod@4.4.3))':
+    dependencies:
+      '@oaslananka/a2a-warp': file:packages/core
+    optionalDependencies:
+      '@anthropic-ai/sdk': 0.96.0(zod@4.4.3)
+      openai: 6.39.0(ws@8.21.0)(zod@4.4.3)
     transitivePeerDependencies:
       - supports-color
 
@@ -9393,6 +9414,11 @@ snapshots:
       regex-recursion: 6.0.2
 
   openai@6.38.0(ws@8.21.0)(zod@4.4.3):
+    optionalDependencies:
+      ws: 8.21.0
+      zod: 4.4.3
+
+  openai@6.39.0(ws@8.21.0)(zod@4.4.3):
     optionalDependencies:
       ws: 8.21.0
       zod: 4.4.3
