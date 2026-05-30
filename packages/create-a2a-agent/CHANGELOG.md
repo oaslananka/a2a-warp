@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.8.0](https://github.com/oaslananka/a2a-warp/compare/create-a2a-warp-v1.7.0...create-a2a-warp-v1.8.0) (2026-05-30)
+
+
+### Bug Fixes
+
+* **build:** centralize runtime version pins ([98f9fd7](https://github.com/oaslananka/a2a-warp/commit/98f9fd7e80e745f7d73fc677bb8d91f7066787a3))
+* **cli:** derive scaffold versions from manifests ([3fdd70a](https://github.com/oaslananka/a2a-warp/commit/3fdd70a3fab8d4b59dc8e1af69cd0ec5165f5f6e))
+* protect main, fix Docker/version issues, sync runtime ([#59](https://github.com/oaslananka/a2a-warp/issues/59), [#63](https://github.com/oaslananka/a2a-warp/issues/63), [#91](https://github.com/oaslananka/a2a-warp/issues/91), [#103](https://github.com/oaslananka/a2a-warp/issues/103)) ([#110](https://github.com/oaslananka/a2a-warp/issues/110)) ([a1d74e0](https://github.com/oaslananka/a2a-warp/commit/a1d74e033dbd1f1b4c957334c3333647a8fba567))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp-cli bumped to 1.8.0
+
 ## [1.7.0](https://github.com/oaslananka/a2a-warp/compare/create-a2a-warp-v1.6.0...create-a2a-warp-v1.7.0) (2026-05-30)
 
 
