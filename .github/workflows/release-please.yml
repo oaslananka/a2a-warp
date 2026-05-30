@@ -139,13 +139,12 @@ jobs:
           else
             echo "is_release=false" >> "$GITHUB_OUTPUT"
           fi
-      - name: Regenerate compatibility docs
+      - name: Regenerate generated files
         if: steps.detect.outputs.is_release == 'true'
         run: |
           set -euo pipefail
           VERSION="$(jq -r '."packages/core"' .release-please-manifest.json)"
           echo "=== Syncing compatibility docs to ${VERSION} ==="
-          # Update version in all package rows of the version matrix
           for f in docs/compatibility.md docs-site/guide/compatibility.md; do
             if [ -f "$f" ]; then
               sed -i -E \
@@ -154,6 +153,13 @@ jobs:
               echo "Updated $f"
             fi
           done
+          # Update CLI generated files to match new versions
+          echo "=== Syncing CLI generated files ==="
+          sed -i "s/generatedCliVersion = '.*'/generatedCliVersion = '${VERSION}'/" cli/src/generated/version.ts
+          for pkg in @oaslananka/a2a-warp @oaslananka/a2a-warp-adapters @oaslananka/a2a-warp-registry; do
+            esc_pkg="${pkg//\//\\/}"
+            sed -i "s/\(${esc_pkg}\)': '^\)[0-9]*\.[0-9]*\.[0-9]*'/\\1': '^${VERSION}'/" cli/src/generated/scaffold-template.ts
+          done
       - name: Commit and push generated file changes
         if: steps.detect.outputs.is_release == 'true'
         run: |
@@ -161,8 +167,8 @@ jobs:
           if ! git diff --quiet; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add docs/compatibility.md docs-site/guide/compatibility.md
-            git commit -m "fix: sync compatibility docs for release"
+            git add -A
+            git commit -m "fix: sync generated files for release"
             git push
           else
             echo "No generated file changes to commit"
