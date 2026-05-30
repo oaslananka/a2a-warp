@@ -1,2 +1,2 @@
 // This file is written by scripts/build-tsc-package.mjs from cli/package.json.
-export const generatedCliVersion = '1.5.0';
+export const generatedCliVersion = '1.6.0';
