@@ -110,14 +110,14 @@ importers:
   apps/demo:
     dependencies:
       '@anthropic-ai/sdk':
-        specifier: ^0.96.0
-        version: 0.96.0(zod@4.4.3)
+        specifier: ^0.99.0
+        version: 0.99.0(zod@4.4.3)
       '@oaslananka/a2a-warp':
         specifier: workspace:*
         version: link:../../packages/core
       '@oaslananka/a2a-warp-adapters':
         specifier: workspace:*
-        version: file:packages/adapters(@anthropic-ai/sdk@0.96.0(zod@4.4.3))(openai@6.39.0(ws@8.21.0)(zod@4.4.3))
+        version: file:packages/adapters(@anthropic-ai/sdk@0.99.0(zod@4.4.3))(openai@6.39.0(ws@8.21.0)(zod@4.4.3))
       '@oaslananka/a2a-warp-registry':
         specifier: workspace:*
         version: link:../../packages/registry
@@ -232,7 +232,7 @@ importers:
         version: link:../../packages/core
       '@oaslananka/a2a-warp-adapters':
         specifier: workspace:*
-        version: file:packages/adapters(@anthropic-ai/sdk@0.96.0(zod@4.4.3))(openai@6.39.0(ws@8.21.0)(zod@4.4.3))
+        version: file:packages/adapters(@anthropic-ai/sdk@0.99.0(zod@4.4.3))(openai@6.39.0(ws@8.21.0)(zod@4.4.3))
     devDependencies:
       '@types/node':
         specifier: ^22.19.19
@@ -566,8 +566,8 @@ packages:
   '@andrewbranch/untar.js@1.0.3':
     resolution: {integrity: sha512-Jh15/qVmrLGhkKJBdXlK1+9tY4lZruYjsgkDFj08ZmDiWVBLJcqkok7Z0/R0In+i1rScBpJlSvrTS2Lm41Pbnw==}
 
-  '@anthropic-ai/sdk@0.96.0':
-    resolution: {integrity: sha512-KlCsODtTyb17bLUVCSDC2HtSvAbJf60sEiPEax9dInF+aDF92vS4TZJ5XD7YCQXNb1/5icYaw8Y7wMjPlIV9Zg==}
+  '@anthropic-ai/sdk@0.99.0':
+    resolution: {integrity: sha512-vdicFA9YjtvgpG8rxp39hqW4oxpkdRGPTq0QEts5TZhr2GkLozDduK/GiXrLQ7PzrKYBtIkQFdRW+QBjzlsABg==}
     hasBin: true
     peerDependencies:
       zod: ^3.25.0 || ^4.0.0
@@ -1535,7 +1535,7 @@ packages:
     resolution: {directory: packages/adapters, type: directory}
     engines: {node: '>=22.22.1 <25'}
     peerDependencies:
-      '@anthropic-ai/sdk': ^0.39.0 || ^0.95.0 || ^0.96.0
+      '@anthropic-ai/sdk': ^0.39.0 || ^0.95.0 || ^0.96.0 || ^0.99.0
       langchain: ^0.3.37 || ^1.0.0
       llamaindex: ^0.9.11 || ^0.12.0
       openai: ^4.20.0 || ^6.0.0
@@ -5423,7 +5423,7 @@ snapshots:
 
   '@andrewbranch/untar.js@1.0.3': {}
 
-  '@anthropic-ai/sdk@0.96.0(zod@4.4.3)':
+  '@anthropic-ai/sdk@0.99.0(zod@4.4.3)':
     dependencies:
       json-schema-to-ts: 3.1.1
       standardwebhooks: 1.0.0
@@ -6346,11 +6346,11 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.20.1
 
-  '@oaslananka/a2a-warp-adapters@file:packages/adapters(@anthropic-ai/sdk@0.96.0(zod@4.4.3))(openai@6.39.0(ws@8.21.0)(zod@4.4.3))':
+  '@oaslananka/a2a-warp-adapters@file:packages/adapters(@anthropic-ai/sdk@0.99.0(zod@4.4.3))(openai@6.39.0(ws@8.21.0)(zod@4.4.3))':
     dependencies:
       '@oaslananka/a2a-warp': file:packages/core
     optionalDependencies:
-      '@anthropic-ai/sdk': 0.96.0(zod@4.4.3)
+      '@anthropic-ai/sdk': 0.99.0(zod@4.4.3)
       openai: 6.39.0(ws@8.21.0)(zod@4.4.3)
     transitivePeerDependencies:
       - supports-color
