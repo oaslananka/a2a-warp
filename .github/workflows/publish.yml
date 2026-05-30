@@ -1,15 +1,16 @@
 name: Publish
 
 'on':
+  release:
+    types: [published]
   push:
     tags:
-      - 'v*'
+      - '@oaslananka/a2a-warp-v*'
   workflow_dispatch:
     inputs:
-      ref:
-        description: 'Branch or tag to publish (default: main)'
-        required: false
-        default: main
+      tag:
+        description: 'Release tag to publish (e.g., @oaslananka/a2a-warp-v1.25.0)'
+        required: true
       confirm_publish:
         description: Type A2A-WARP-PUBLISH to publish
         required: true
@@ -18,7 +19,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref_name }}
+  group: ${{ github.workflow }}-${{ github.event_name == 'release' && github.event.release.tag_name || github.event_name == 'push' && github.ref_name || inputs.tag }}
   cancel-in-progress: false
 
 defaults:
@@ -32,7 +33,14 @@ env:
 jobs:
   publish:
     name: Publish / npm
-    if: ${{ github.repository == 'oaslananka/a2a-warp' && (github.event_name == 'push' || inputs.confirm_publish == 'A2A-WARP-PUBLISH') }}
+    if: >-
+      ${{
+        github.repository == 'oaslananka/a2a-warp' && (
+          github.event_name == 'release' ||
+          github.event_name == 'push' ||
+          inputs.confirm_publish == 'A2A-WARP-PUBLISH'
+        )
+      }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     environment: npm-publish
@@ -41,22 +49,98 @@ jobs:
       contents: read
       id-token: write
     steps:
+      # ── Resolve the tag from whichever event triggered ──
+      - name: Resolve release tag
+        id: tag
+        run: |
+          case '${{ github.event_name }}' in
+            release)
+              TAG='${{ github.event.release.tag_name }}'
+              ;;
+            push)
+              TAG='${{ github.ref_name }}'
+              ;;
+            workflow_dispatch)
+              TAG='${{ inputs.tag }}'
+              ;;
+          esac
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "Resolved tag: ${TAG}"
+
+      # ── Validate tag format: @oaslananka/a2a-warp-v<semver> ──
+      - name: Validate tag format and extract version
+        id: version
+        run: |
+          TAG='${{ steps.tag.outputs.tag }}'
+          if [[ -z "${TAG}" ]]; then
+            echo "❌ No tag resolved from event ${{ github.event_name }}"
+            exit 1
+          fi
+          if [[ ! "${TAG}" =~ ^@oaslananka/a2a-warp-v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+            echo "❌ Tag '${TAG}' does not match expected format: @oaslananka/a2a-warp-v<semver>"
+            echo "   Example: @oaslananka/a2a-warp-v1.25.0"
+            exit 1
+          fi
+          VERSION="${BASH_REMATCH[1]}"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "✅ Tag validated: ${TAG} → version ${VERSION}"
+
+      # ── Checkout the exact tag ──
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
-          ref: ${{ github.event_name == 'push' && github.ref || inputs.ref }}
+          ref: ${{ steps.tag.outputs.tag }}
           fetch-depth: 0
           persist-credentials: false
+
       - uses: ./.github/actions/setup-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: https://registry.npmjs.org
+
+      # ── Build and test ──
       - run: pnpm run lint:identity
       - run: pnpm run typecheck
       - run: pnpm run test
       - run: pnpm run build
       - run: pnpm run pack:dry-run
+
       - name: Generate release artifacts
         run: pnpm run release:artifacts
+
+      # ── Preflight: package versions match release tag ──
+      - name: 'Preflight: validate package versions match tag'
+        run: |
+          EXPECTED='${{ steps.version.outputs.version }}'
+          for pkg_file in .artifacts/npm/*.tgz; do
+            pkg_version="$(tar -xOzf "$pkg_file" package/package.json | node -e "process.stdout.write(JSON.parse(require('fs').readFileSync(0,'utf8')).version)")"
+            if [ "$pkg_version" != "$EXPECTED" ]; then
+              echo "❌ Package $pkg_file version ${pkg_version} != expected ${EXPECTED}"
+              exit 1
+            fi
+          done
+          echo "✅ All package versions match ${EXPECTED}"
+
+      # ── Preflight: check npm registry for existing versions ──
+      - name: 'Preflight: check npm registry'
+        run: |
+          npm_cli=(npx --yes "npm@${NPM_VERSION}")
+          any_missing=false
+          for pkg_file in ./.artifacts/npm/*.tgz; do
+            pkg_json="$(tar -xOzf "$pkg_file" package/package.json)"
+            pkg_name="$(node -e "const p=JSON.parse(require('fs').readFileSync(0,'utf8'));process.stdout.write(p.name);" <<< "$pkg_json")"
+            pkg_version="$(node -e "const p=JSON.parse(require('fs').readFileSync(0,'utf8'));process.stdout.write(p.version);" <<< "$pkg_json")"
+            if "${npm_cli[@]}" view "${pkg_name}@${pkg_version}" version --silent >/dev/null 2>&1; then
+              echo "⚠  ${pkg_name}@${pkg_version} already exists on npm — will skip"
+            else
+              echo "✅ ${pkg_name}@${pkg_version} not found on npm — ready to publish"
+              any_missing=true
+            fi
+          done
+          if ! $any_missing; then
+            echo "❌ All versions already exist on npm — nothing to publish"
+            exit 1
+          fi
+
       - name: Smoke install tarballs
         run: |
           tmp="$(mktemp -d)"
@@ -65,8 +149,10 @@ jobs:
           npm install -- "${GITHUB_WORKSPACE}"/.artifacts/npm/*.tgz
           node -e "console.log('smoke install ok')"
           popd
+
       - name: Validate release artifacts
         run: pnpm run release:validate
+
       - name: Attest release artifacts
         uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
         with:
@@ -74,29 +160,37 @@ jobs:
             .artifacts/npm/*.tgz
             .artifacts/npm/SHA256SUMS
             .artifacts/sbom/a2a-warp.cdx.json
-      - name: Publish packages with provenance
+
+      # ── Publish with OIDC/provenance ──
+      - name: Publish packages to npm
         run: |
           npm_cli=(npx --yes "npm@${NPM_VERSION}")
           "${npm_cli[@]}" --version
 
-          unset NODE_AUTH_TOKEN
-
-          if [[ -n "${NPM_CONFIG_USERCONFIG:-}" ]]; then
-            "${npm_cli[@]}" config delete //registry.npmjs.org/:_authToken --userconfig "$NPM_CONFIG_USERCONFIG" || true
-          fi
-
           for package_file in ./.artifacts/npm/*.tgz; do
-            package_json="$(tar -xOzf "$package_file" package/package.json)"
-            package_name="$(node -e "const fs = require('node:fs'); const pkg = JSON.parse(fs.readFileSync(0, 'utf8')); process.stdout.write(pkg.name);" <<< "$package_json")"
-            package_version="$(node -e "const fs = require('node:fs'); const pkg = JSON.parse(fs.readFileSync(0, 'utf8')); process.stdout.write(pkg.version);" <<< "$package_json")"
+            pkg_json="$(tar -xOzf "$package_file" package/package.json)"
+            pkg_name="$(node -e "const p=JSON.parse(require('fs').readFileSync(0,'utf8'));process.stdout.write(p.name);" <<< "$pkg_json")"
+            pkg_version="$(node -e "const p=JSON.parse(require('fs').readFileSync(0,'utf8'));process.stdout.write(p.version);" <<< "$pkg_json")"
 
-            if "${npm_cli[@]}" view "${package_name}@${package_version}" version --silent > /dev/null 2>&1; then
-              echo "Skipping ${package_name}@${package_version}; version already exists on npm."
+            # Skip if version already published
+            if "${npm_cli[@]}" view "${pkg_name}@${pkg_version}" version --silent >/dev/null 2>&1; then
+              echo "⏭  Skipping ${pkg_name}@${pkg_version} (already exists on npm)"
               continue
             fi
 
-            "${npm_cli[@]}" publish "$package_file" --access public
+            # Publish using OIDC/trusted publishing with --provenance
+            # This uses the id-token: write permission from the job context
+            if "${npm_cli[@]}" publish "$package_file" --provenance --access public; then
+              echo "✅ Published ${pkg_name}@${pkg_version} with provenance"
+            else
+              echo "❌ Failed to publish ${pkg_name}@${pkg_version}"
+              echo "   Ensure npm OIDC/trusted publishing is configured for the @oaslananka org."
+              echo "   See: https://docs.npmjs.com/generating-provenance-statements"
+              exit 1
+            fi
           done
+
+      # ── Verify ──
       - name: Verify npm provenance
         run: |
           npm_cli=(npx --yes "npm@${NPM_VERSION}")
@@ -104,12 +198,13 @@ jobs:
           pushd "$verify_dir"
           npm init -y
           for package_file in "${GITHUB_WORKSPACE}"/.artifacts/npm/*.tgz; do
-            package_json="$(tar -xOzf "$package_file" package/package.json)"
-            package_name="$(node -e "const fs = require('node:fs'); const pkg = JSON.parse(fs.readFileSync(0, 'utf8')); process.stdout.write(pkg.name);" <<< "$package_json")"
-            package_version="$(node -e "const fs = require('node:fs'); const pkg = JSON.parse(fs.readFileSync(0, 'utf8')); process.stdout.write(pkg.version);" <<< "$package_json")"
-            "${npm_cli[@]}" install "${package_name}@${package_version}"
+            pkg_json="$(tar -xOzf "$package_file" package/package.json)"
+            pkg_name="$(node -e "const p=JSON.parse(require('fs').readFileSync(0,'utf8'));process.stdout.write(p.name);" <<< "$pkg_json")"
+            pkg_version="$(node -e "const p=JSON.parse(require('fs').readFileSync(0,'utf8'));process.stdout.write(p.version);" <<< "$pkg_json")"
+            "${npm_cli[@]}" install "${pkg_name}@${pkg_version}"
           done
           "${npm_cli[@]}" audit signatures
           popd
+
       - name: Verify package registry parity
         run: pnpm run release:parity
