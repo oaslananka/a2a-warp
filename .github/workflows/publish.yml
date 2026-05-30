@@ -182,6 +182,14 @@ jobs:
 
           npm_cli=(npx --yes "npm@${NPM_VERSION}")
           "${npm_cli[@]}" --version
+          echo "--- npm whoami ---"
+          "${npm_cli[@]}" whoami 2>&1 || echo "whoami failed (non-fatal)"
+          echo "--- npm config get registry ---"
+          "${npm_cli[@]}" config get registry 2>&1 || true
+          echo "--- npm config get userconfig ---"
+          "${npm_cli[@]}" config get userconfig 2>&1 || true
+          echo "--- check .npmrc ---"
+          head -5 "${npmrc_path}" 2>&1 || echo "cannot read ${npmrc_path}"
 
           for package_file in ./.artifacts/npm/*.tgz; do
             pkg_json="$(tar -xOzf "$package_file" package/package.json)"
