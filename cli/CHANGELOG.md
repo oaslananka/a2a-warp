@@ -1,5 +1,38 @@
 # Changelog
 
+## [1.19.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-cli-v1.18.0...@oaslananka/a2a-warp-cli-v1.19.0) (2026-05-30)
+
+
+### Features
+
+* **cli:** add conformance report command ([0759b40](https://github.com/oaslananka/a2a-warp/commit/0759b40355cce7d0ca2c0969aa7d50b1e3420a1c))
+* **cli:** add shared network options ([35a3ce8](https://github.com/oaslananka/a2a-warp/commit/35a3ce8c2dbec44ebd3839f3097e6cc92118339f))
+* **cli:** generate command docs from definitions ([1cfdb74](https://github.com/oaslananka/a2a-warp/commit/1cfdb74895e5c1be2245d34f72a5c448e11b31e6))
+* **registry:** add export import commands ([7084e53](https://github.com/oaslananka/a2a-warp/commit/7084e538750062cb20bfcf7ef9da9b745af20f99))
+
+
+### Bug Fixes
+
+* **build:** centralize runtime version pins ([98f9fd7](https://github.com/oaslananka/a2a-warp/commit/98f9fd7e80e745f7d73fc677bb8d91f7066787a3))
+* **cli:** derive scaffold versions from manifests ([3fdd70a](https://github.com/oaslananka/a2a-warp/commit/3fdd70a3fab8d4b59dc8e1af69cd0ec5165f5f6e))
+* **cli:** derive version from package metadata ([71321b0](https://github.com/oaslananka/a2a-warp/commit/71321b0d0ea84a522554a2987d8e084d542cc194))
+* **cli:** regenerate scaffold template to match anthropic sdk v0.99.0 ([4ac607d](https://github.com/oaslananka/a2a-warp/commit/4ac607d3124ed51ce976239fdc35d3730825019c))
+* **cli:** regenerate version and scaffold template for v1.6.0 release ([e6261bd](https://github.com/oaslananka/a2a-warp/commit/e6261bdaf45ac70432a94565892de2881526f986))
+* **cli:** regenerate version.ts and scaffold-template.ts for v1.3.0 release ([0d52565](https://github.com/oaslananka/a2a-warp/commit/0d5256589cca5669e78bfc02a0cec0d143eb77ed))
+* **cli:** smoke packed start script ([4bafffa](https://github.com/oaslananka/a2a-warp/commit/4bafffaa2296dbda907189960335aedae36b5489))
+* **packaging:** consolidate client, testing, and codex-bridge into core subpath exports ([#125](https://github.com/oaslananka/a2a-warp/issues/125)) ([76ea7dd](https://github.com/oaslananka/a2a-warp/commit/76ea7dd28bdec8c91567c18b2e1fa367d44633e4))
+* protect main, fix Docker/version issues, sync runtime ([#59](https://github.com/oaslananka/a2a-warp/issues/59), [#63](https://github.com/oaslananka/a2a-warp/issues/63), [#91](https://github.com/oaslananka/a2a-warp/issues/91), [#103](https://github.com/oaslananka/a2a-warp/issues/103)) ([#110](https://github.com/oaslananka/a2a-warp/issues/110)) ([a1d74e0](https://github.com/oaslananka/a2a-warp/commit/a1d74e033dbd1f1b4c957334c3333647a8fba567))
+* **protocol:** default to official A2A 1.0 ([#100](https://github.com/oaslananka/a2a-warp/issues/100)) ([e74f42b](https://github.com/oaslananka/a2a-warp/commit/e74f42bed04091e7af5bf3f4f60c98f12b68ca86))
+* update CLI generated files and compatibility docs to v1.5.0 ([9b7c388](https://github.com/oaslananka/a2a-warp/commit/9b7c3882db48ba813d01a3c5077a4d42e57262c4))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp bumped to 1.19.0
+    * @oaslananka/a2a-warp-registry bumped to 1.19.0
+
 ## [1.18.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-cli-v1.17.0...@oaslananka/a2a-warp-cli-v1.18.0) (2026-05-30)
 
 
