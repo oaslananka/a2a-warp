@@ -41,6 +41,7 @@ jobs:
         run: node scripts/check-release-config.mjs
       - name: Create or update release pull request
         uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        id: release
         with:
           token: ${{ github.token }}
           repo-url: ${{ github.repository }}
@@ -49,3 +50,118 @@ jobs:
           include-component-in-tag: true
           skip-github-release: false
           skip-labeling: true
+
+  release:
+    name: Release Please / create-release
+    if: github.event_name == 'push'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Check for release commit
+        id: detect
+        run: |
+          commit_msg="$(git log -1 --format=%s)"
+          if [[ "$commit_msg" =~ ^chore:\ release\ main ]]; then
+            echo "is_release=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_release=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Create release tags and GitHub Release
+        if: steps.detect.outputs.is_release == 'true'
+        run: |
+          set -euo pipefail
+          VERSION="$(jq -r '."packages/core"' .release-please-manifest.json)"
+          COMPONENTS="$(
+            jq -r '
+              .packages | to_entries[] |
+              "\(.value.component)@\(.key)"
+            ' release-please-config.json
+          )"
+
+          echo "=== Creating tags for v${VERSION} ==="
+          while IFS='@' read -r component path; do
+            tag="${component}-v${VERSION}"
+            # Skip if tag already exists
+            if git ls-remote --tags origin "refs/tags/${tag}" 2>/dev/null | grep -q .; then
+              echo "Tag ${tag} already exists on remote, skipping"
+              continue
+            fi
+            echo "Creating local tag: ${tag}"
+            git tag "${tag}" "${{ github.sha }}"
+            echo "Pushing tag: ${tag}"
+            git push origin "${tag}"
+          done <<< "$COMPONENTS"
+
+          echo "=== Creating GitHub Release for v${VERSION} ==="
+          if gh release view "@oaslananka/a2a-warp-v${VERSION}" --repo "${{ github.repository }}" &>/dev/null; then
+            echo "Release @oaslananka/a2a-warp-v${VERSION} already exists, skipping"
+          else
+            gh release create "@oaslananka/a2a-warp-v${VERSION}" \
+              --repo "${{ github.repository }}" \
+              --title "v${VERSION}" \
+              --notes "Release v${VERSION}" \
+              --target "${{ github.sha }}"
+            echo "Created release v${VERSION}"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+  sync:
+    name: Release Please / sync-generated-files
+    if: github.event_name == 'push'
+    needs: [release]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: ./.github/actions/setup-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Detect release commit
+        id: detect
+        run: |
+          commit_msg="$(git log -1 --format=%s)"
+          if [[ "$commit_msg" =~ ^chore:\ release\ main ]]; then
+            echo "is_release=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_release=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Regenerate compatibility docs
+        if: steps.detect.outputs.is_release == 'true'
+        run: |
+          set -euo pipefail
+          VERSION="$(jq -r '."packages/core"' .release-please-manifest.json)"
+          echo "=== Syncing compatibility docs to ${VERSION} ==="
+          # Update version in all package rows of the version matrix
+          for f in docs/compatibility.md docs-site/guide/compatibility.md; do
+            if [ -f "$f" ]; then
+              sed -i -E \
+                "/\`@oaslananka\/a2a-warp|\`create-a2a-warp\`/ s/\`[0-9]+\.[0-9]+\.[0-9]+\`/\`${VERSION}\`/" \
+                "$f"
+              echo "Updated $f"
+            fi
+          done
+      - name: Commit and push generated file changes
+        if: steps.detect.outputs.is_release == 'true'
+        run: |
+          set -euo pipefail
+          if ! git diff --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add docs/compatibility.md docs-site/guide/compatibility.md
+            git commit -m "fix: sync compatibility docs for release"
+            git push
+          else
+            echo "No generated file changes to commit"
+          fi
