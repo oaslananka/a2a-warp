@@ -32,14 +32,7 @@ env:
 jobs:
   publish:
     name: Publish / npm
-    if: |
-      ${{
-        github.repository == 'oaslananka/a2a-warp' &&
-        (
-          github.event_name == 'push' ||
-          inputs.confirm_publish == 'A2A-WARP-PUBLISH'
-        )
-      }}
+    if: ${{ github.repository == 'oaslananka/a2a-warp' && (github.event_name == 'push' || inputs.confirm_publish == 'A2A-WARP-PUBLISH') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     environment: npm-publish
