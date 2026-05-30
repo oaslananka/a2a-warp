@@ -17,6 +17,7 @@ const forbidden = [
 ];
 const allow = [
   /^docs\/migrating\/a2a-mesh-to-a2a-warp\.md$/,
+  /^docs\/migrating\/package-renames\.md$/,
   /^CHANGELOG\.md$/,
   /^scripts\/check-.*\.mjs$/,
   // Historical changelogs may reference deprecated standalone package names

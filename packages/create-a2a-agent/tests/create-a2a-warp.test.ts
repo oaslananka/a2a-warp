@@ -37,7 +37,15 @@ interface LocalPackageOverride {
 
 const localPackageDirs = [
   ['@oaslananka/a2a-warp', 'packages/core'],
+  ['@oaslananka/a2a-warp-core', 'packages/core-types'],
+  ['@oaslananka/a2a-warp-adapter-base', 'packages/adapter-base'],
   ['@oaslananka/a2a-warp-adapters', 'packages/adapters'],
+  ['@oaslananka/a2a-warp-adapter-openai', 'packages/adapter-openai'],
+  ['@oaslananka/a2a-warp-adapter-anthropic', 'packages/adapter-anthropic'],
+  ['@oaslananka/a2a-warp-adapter-langchain', 'packages/adapter-langchain'],
+  ['@oaslananka/a2a-warp-adapter-google-adk', 'packages/adapter-google-adk'],
+  ['@oaslananka/a2a-warp-adapter-llamaindex', 'packages/adapter-llamaindex'],
+  ['@oaslananka/a2a-warp-adapter-crewai', 'packages/adapter-crewai'],
   ['@oaslananka/a2a-warp-registry', 'packages/registry'],
 ] as const;
 
@@ -226,7 +234,7 @@ describe('create-a2a-warp binary scaffolds typechecked templates', () => {
       const indexSource = await readProjectFile(projectDir, 'src/index.ts');
 
       expect(packageJson).toContain(`"${template.packageDependency}"`);
-      expect(packageJson).toContain('"packageManager": "pnpm@11.3.0"');
+      expect(packageJson).toContain('"packageManager": "pnpm@11.4.0"');
       expect(tsconfigJson).toContain('"module": "NodeNext"');
       expect(readme).toContain(`- Adapter: \`${template.adapter}\``);
       expect(agentSource).toContain(template.sourceMarker);
