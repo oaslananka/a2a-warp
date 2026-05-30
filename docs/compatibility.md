@@ -79,14 +79,14 @@ security documentation for its auth, origin, TLS, or callback behavior.
 Provider and framework SDKs stay peer dependencies where possible so default
 installs do not pull every integration stack.
 
-| Package                         | Peer dependency      | Supported range                     |
-| ------------------------------- | -------------------- | ----------------------------------- |
-| `@oaslananka/a2a-warp`          | `@opentelemetry/api` | `^1.9.1`                            |
-| `@oaslananka/a2a-warp-adapters` | `@anthropic-ai/sdk`  | `^0.39.0 \|\| ^0.95.0 \|\| ^0.96.0` |
-| `@oaslananka/a2a-warp-adapters` | `langchain`          | `^0.3.37 \|\| ^1.0.0`               |
-| `@oaslananka/a2a-warp-adapters` | `llamaindex`         | `^0.9.11 \|\| ^0.12.0`              |
-| `@oaslananka/a2a-warp-adapters` | `openai`             | `^4.20.0 \|\| ^6.0.0`               |
-| `@oaslananka/a2a-warp-ws`       | `ws`                 | `^8.18.0`                           |
+| Package                         | Peer dependency      | Supported range                                  |
+| ------------------------------- | -------------------- | ------------------------------------------------ |
+| `@oaslananka/a2a-warp`          | `@opentelemetry/api` | `^1.9.1`                                         |
+| `@oaslananka/a2a-warp-adapters` | `@anthropic-ai/sdk`  | `^0.39.0 \|\| ^0.95.0 \|\| ^0.96.0 \|\| ^0.99.0` |
+| `@oaslananka/a2a-warp-adapters` | `langchain`          | `^0.3.37 \|\| ^1.0.0`                            |
+| `@oaslananka/a2a-warp-adapters` | `llamaindex`         | `^0.9.11 \|\| ^0.12.0`                           |
+| `@oaslananka/a2a-warp-adapters` | `openai`             | `^4.20.0 \|\| ^6.0.0`                            |
+| `@oaslananka/a2a-warp-ws`       | `ws`                 | `^8.18.0`                                        |
 
 Adapter tests use fake provider objects by default. Live provider behavior must
 remain opt-in and cannot be required by the default local verification gate.
