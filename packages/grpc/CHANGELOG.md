@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.16.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-grpc-v1.15.0...@oaslananka/a2a-warp-grpc-v1.16.0) (2026-05-30)
+
+
+### Bug Fixes
+
+* protect main, fix Docker/version issues, sync runtime ([#59](https://github.com/oaslananka/a2a-warp/issues/59), [#63](https://github.com/oaslananka/a2a-warp/issues/63), [#91](https://github.com/oaslananka/a2a-warp/issues/91), [#103](https://github.com/oaslananka/a2a-warp/issues/103)) ([#110](https://github.com/oaslananka/a2a-warp/issues/110)) ([a1d74e0](https://github.com/oaslananka/a2a-warp/commit/a1d74e033dbd1f1b4c957334c3333647a8fba567))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp bumped to 1.16.0
+
 ## [1.15.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-grpc-v1.14.0...@oaslananka/a2a-warp-grpc-v1.15.0) (2026-05-30)
 
 
