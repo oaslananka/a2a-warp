@@ -1,6 +1,6 @@
 {
   "name": "@oaslananka/a2a-warp-cli",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "description": "Command-line tools for validating, discovering, sending, monitoring, and testing A2A agents.",
   "keywords": [
     "a2a",

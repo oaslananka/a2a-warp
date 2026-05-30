@@ -1,6 +1,6 @@
 {
   "name": "@oaslananka/a2a-warp-schemas",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "description": "JSON Schema files for the A2A protocol — agent card, message, task, artifact, JSON-RPC, and registry payloads.",
   "keywords": [
     "a2a",
