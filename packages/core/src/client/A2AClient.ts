@@ -22,6 +22,7 @@ import type {
 } from '../types/task.js';
 import type { AfterArgs, CallInterceptor, ClientCallOptions } from './interceptors.js';
 import { verifyAgentCard, type VerificationKey } from '../security/AgentCardSigner.js';
+import { createEventSourceReader } from './eventSourceReader.js';
 
 export interface A2AClientOptions {
   fetchImplementation?: typeof fetch;
@@ -251,11 +252,16 @@ export class A2AClient {
     return (await response.json()) as A2AHealthResponse;
   }
 
-  private async rpc<T, TParams extends object>(method: string, params: TParams): Promise<T> {
+  private async executeRpcRequest<TParams extends object>(
+    method: string,
+    params: TParams,
+    streamMode: boolean,
+  ): Promise<[Response, string]> {
     const options: ClientCallOptions = { headers: { ...this.headers } };
+    const id = this.createRequestId();
     const payload = {
       jsonrpc: '2.0' as const,
-      id: this.createRequestId(),
+      id,
       method,
       params,
     };
@@ -265,6 +271,7 @@ export class A2AClient {
     }
 
     const headers = this.injectTraceHeaders({
+      ...(streamMode ? { Accept: 'text/event-stream' } : {}),
       'Content-Type': 'application/json',
       ...(options.headers ?? {}),
       ...(options.serviceParameters ?? {}),
@@ -277,11 +284,10 @@ export class A2AClient {
       body: JSON.stringify(payload),
     });
 
-    if (!response.ok) {
-      throw new Error(`RPC request failed with status ${response.status}`);
-    }
+    return [response, id];
+  }
 
-    const json = (await response.json()) as JsonRpcResponse<T>;
+  private async handleRpcResponse<T>(json: JsonRpcResponse<T>, method: string): Promise<T> {
     if ('error' in json) {
       const failure = json as JsonRpcFailureResponse;
       throw new Error(`${failure.error.message} (${failure.error.code})`);
@@ -294,35 +300,22 @@ export class A2AClient {
     return success.result;
   }
 
+  private async rpc<T, TParams extends object>(method: string, params: TParams): Promise<T> {
+    const [response] = await this.executeRpcRequest(method, params, false);
+
+    if (!response.ok) {
+      throw new Error(`RPC request failed with status ${response.status}`);
+    }
+
+    const json = (await response.json()) as JsonRpcResponse<T>;
+    return this.handleRpcResponse(json, method);
+  }
+
   private async *streamRpc<T, TParams extends object>(
     method: string,
     params: TParams,
   ): AsyncGenerator<T> {
-    const options: ClientCallOptions = { headers: { ...this.headers } };
-    const payload = {
-      jsonrpc: '2.0' as const,
-      id: this.createRequestId(),
-      method,
-      params,
-    };
-
-    for (const interceptor of this.interceptors) {
-      await interceptor.before({ method, body: payload, options });
-    }
-
-    const headers = this.injectTraceHeaders({
-      Accept: 'text/event-stream',
-      'Content-Type': 'application/json',
-      ...(options.headers ?? {}),
-      ...(options.serviceParameters ?? {}),
-    });
-
-    const response = await this.fetchWithRetry(new URL(this.rpcPath, this.baseUrl), {
-      method: 'POST',
-      headers,
-      ...(options.signal ? { signal: options.signal } : {}),
-      body: JSON.stringify(payload),
-    });
+    const [response] = await this.executeRpcRequest(method, params, true);
 
     if (!response.ok) {
       throw new Error(`RPC stream failed with status ${response.status}`);
@@ -388,19 +381,8 @@ export class A2AClient {
         cause: error,
       });
     }
-    if ('error' in json) {
-      const failure = json as JsonRpcFailureResponse;
-      throw new Error(`${failure.error.message} (${failure.error.code})`);
-    }
 
-    const success = json as JsonRpcSuccessResponse<T>;
-    for (const interceptor of this.interceptors) {
-      await interceptor.after?.({
-        method,
-        response: success.result,
-      } satisfies AfterArgs<T>);
-    }
-    return success.result;
+    return this.handleRpcResponse(json, method);
   }
 
   private normalizeParams(params: Message | MessageSendParams): MessageSendParams {
@@ -415,23 +397,13 @@ export class A2AClient {
     const streamUrl = new URL(this.streamPath, this.baseUrl);
     streamUrl.searchParams.set('taskId', taskId);
 
-    const queue: unknown[] = [];
-    let resolveNext: (() => void) | undefined;
-    let closed = false;
-
     const source = new this.eventSourceImplementation(
       streamUrl.toString(),
       this.createEventSourceInit() as EventSourceInit,
     );
 
-    const push = (data: unknown): void => {
-      queue.push(data);
-      resolveNext?.();
-    };
-
-    source.addEventListener('task_updated', (event) => {
-      const data = 'data' in event ? JSON.parse(String(event.data)) : null;
-      push(data);
+    for await (const data of createEventSourceReader<unknown>(source, 'task_updated')) {
+      yield data;
       if (
         data &&
         typeof data === 'object' &&
@@ -443,34 +415,8 @@ export class A2AClient {
           String(data.status.state),
         )
       ) {
-        closed = true;
-        source.close();
-        resolveNext?.();
+        break;
       }
-    });
-
-    source.onerror = () => {
-      closed = true;
-      source.close();
-      resolveNext?.();
-    };
-
-    try {
-      while (!closed || queue.length > 0) {
-        if (queue.length === 0) {
-          await new Promise<void>((resolve) => {
-            resolveNext = resolve;
-          });
-          resolveNext = undefined;
-        }
-
-        const next = queue.shift();
-        if (next !== undefined) {
-          yield next;
-        }
-      }
-    } finally {
-      source.close();
     }
   }
 
