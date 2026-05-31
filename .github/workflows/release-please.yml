@@ -63,17 +63,7 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: true
-      - name: Check for release commit
-        id: detect
-        run: |
-          commit_msg="$(git log -1 --format=%B)"
-          if [[ "$commit_msg" =~ chore:\ release\ main ]]; then
-            echo "is_release=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "is_release=false" >> "$GITHUB_OUTPUT"
-          fi
       - name: Create release tags and GitHub Release
-        if: steps.detect.outputs.is_release == 'true'
         run: |
           set -euo pipefail
           VERSION="$(jq -r '."packages/core"' .release-please-manifest.json)"
@@ -128,17 +118,7 @@ jobs:
       - uses: ./.github/actions/setup-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - name: Detect release commit
-        id: detect
-        run: |
-          commit_msg="$(git log -1 --format=%B)"
-          if [[ "$commit_msg" =~ chore:\ release\ main ]]; then
-            echo "is_release=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "is_release=false" >> "$GITHUB_OUTPUT"
-          fi
       - name: Regenerate generated files
-        if: steps.detect.outputs.is_release == 'true'
         run: |
           set -euo pipefail
           VERSION="$(jq -r '."packages/core"' .release-please-manifest.json)"
@@ -159,7 +139,6 @@ jobs:
             sed -i "s/\(${esc_pkg}\)': '^[0-9]*\.[0-9]*\.[0-9]*'/\\1': '^${VERSION}'/" cli/src/generated/scaffold-template.ts
           done
       - name: Commit and push generated file changes
-        if: steps.detect.outputs.is_release == 'true'
         run: |
           set -euo pipefail
           if ! git diff --quiet; then
