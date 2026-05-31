@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.0.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-registry-v1.25.0...@oaslananka/a2a-warp-registry-v2.0.0) (2026-05-31)
+
+
+### Miscellaneous Chores
+
+* **@oaslananka/a2a-warp-registry:** Synchronize A2A Warp packages versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp bumped to 2.0.0
+
 ## [1.25.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-registry-v1.24.0...@oaslananka/a2a-warp-registry-v1.25.0) (2026-05-30)
 
 

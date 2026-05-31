@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.0.0](https://github.com/oaslananka/a2a-warp/compare/create-a2a-warp-v1.25.0...create-a2a-warp-v2.0.0) (2026-05-31)
+
+
+### Bug Fixes
+
+* update pnpm to 11.4.0 in runtime-versions and scaffold template; fix CI identity check; add adapter packages to scaffolder test ([20caf43](https://github.com/oaslananka/a2a-warp/commit/20caf43a98bb38f583616363fb5da09cae57cccf))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp-cli bumped to 2.0.0
+
 ## [1.25.0](https://github.com/oaslananka/a2a-warp/compare/create-a2a-warp-v1.24.0...create-a2a-warp-v1.25.0) (2026-05-30)
 
 
