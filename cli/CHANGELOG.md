@@ -1,5 +1,26 @@
 # Changelog
 
+## [2.0.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-cli-v1.25.0...@oaslananka/a2a-warp-cli-v2.0.0) (2026-05-31)
+
+
+### Features
+
+* **core:** introduce @oaslananka/a2a-warp-core as standalone types package ([#171](https://github.com/oaslananka/a2a-warp/issues/171)) ([ede05fb](https://github.com/oaslananka/a2a-warp/commit/ede05fb1deba7874b5358f7d6133bd8246c8394b))
+
+
+### Bug Fixes
+
+* **ci:** sync generated files after v1.25.0 release ([dd468e6](https://github.com/oaslananka/a2a-warp/commit/dd468e6cd22626b6e5d5610e6ef5db4a1c513580))
+* update pnpm to 11.4.0 in runtime-versions and scaffold template; fix CI identity check; add adapter packages to scaffolder test ([20caf43](https://github.com/oaslananka/a2a-warp/commit/20caf43a98bb38f583616363fb5da09cae57cccf))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp bumped to 2.0.0
+    * @oaslananka/a2a-warp-registry bumped to 2.0.0
+
 ## [1.25.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-cli-v1.24.0...@oaslananka/a2a-warp-cli-v1.25.0) (2026-05-30)
 
 
