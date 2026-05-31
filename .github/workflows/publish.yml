@@ -116,9 +116,9 @@ jobs:
           echo "$(pwd)/package/bin" >> "$GITHUB_PATH"
 
       # ── Build and test ──
+      - run: pnpm run build
       - run: pnpm run typecheck
       - run: pnpm run test
-      - run: pnpm run build
       - run: pnpm run pack:dry-run
 
       - name: Generate release artifacts
