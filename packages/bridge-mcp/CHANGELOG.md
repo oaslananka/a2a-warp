@@ -1,5 +1,19 @@
 # Changelog
 
+## [4.0.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-bridge-mcp-v3.0.0...@oaslananka/a2a-warp-bridge-mcp-v4.0.0) (2026-05-31)
+
+
+### Miscellaneous Chores
+
+* **@oaslananka/a2a-warp-bridge-mcp:** Synchronize A2A Warp packages versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp bumped to 4.0.0
+
 ## [3.0.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-bridge-mcp-v2.0.0...@oaslananka/a2a-warp-bridge-mcp-v3.0.0) (2026-05-31)
 
 
