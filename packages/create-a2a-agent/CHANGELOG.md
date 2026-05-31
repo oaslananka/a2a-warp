@@ -1,5 +1,19 @@
 # Changelog
 
+## [4.1.0](https://github.com/oaslananka/a2a-warp/compare/create-a2a-warp-v4.0.0...create-a2a-warp-v4.1.0) (2026-05-31)
+
+
+### Bug Fixes
+
+* add build prerequisite to test:conformance and test:integration scripts ([c0317f2](https://github.com/oaslananka/a2a-warp/commit/c0317f25775920c6ccb3afc6d823c16f04d00e02))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp-cli bumped to 4.1.0
+
 ## [4.0.0](https://github.com/oaslananka/a2a-warp/compare/create-a2a-warp-v3.0.0...create-a2a-warp-v4.0.0) (2026-05-31)
 
 
