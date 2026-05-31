@@ -30,30 +30,28 @@ range and is already EOL in the Node.js project schedule checked for this policy
 
 ## Package Version Matrix
 
-All public packages in the 3.0.x line share the same Node engine range:
+All public packages in the 4.0.x line share the same Node engine range:
 `>=22.22.1 <25`.
 
 | Package                                   | Current version | Node range      | Compatibility notes                                                                                              |
 | ----------------------------------------- | --------------- | --------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `@oaslananka/a2a-warp`                    | `3.0.0`         | `>=22.22.1 <25` | Core runtime, client APIs, storage, testing helpers, and Codex-style tools — re-exports auth and telemetry APIs. |
-| `@oaslananka/a2a-warp-adapter-anthropic`  | `3.0.0`         | `>=22.22.1 <25` | Anthropic Claude Messages API adapter.                                                                           |
-| `@oaslananka/a2a-warp-adapter-base`       | `3.0.0`         | `>=22.22.1 <25` | Abstract base adapter and contract helpers.                                                                      |
-| `@oaslananka/a2a-warp-adapter-crewai`     | `3.0.0`         | `>=22.22.1 <25` | CrewAI HTTP bridge adapter.                                                                                      |
-| `@oaslananka/a2a-warp-adapter-google-adk` | `3.0.0`         | `>=22.22.1 <25` | Google Agent Development Kit HTTP adapter.                                                                       |
-| `@oaslananka/a2a-warp-adapter-langchain`  | `3.0.0`         | `>=22.22.1 <25` | LangChain / LangGraph runnable adapter.                                                                          |
-| `@oaslananka/a2a-warp-adapter-llamaindex` | `3.0.0`         | `>=22.22.1 <25` | LlamaIndex query/chat engine adapter.                                                                            |
-| `@oaslananka/a2a-warp-adapter-openai`     | `3.0.0`         | `>=22.22.1 <25` | OpenAI Chat API adapter.                                                                                         |
-| `@oaslananka/a2a-warp-adapters`           | `3.0.0`         | `>=22.22.1 <25` | **Deprecated** — use individual `@oaslananka/a2a-warp-adapter-*` packages instead.                               |
-| `@oaslananka/a2a-warp-core`               | `3.0.0`         | `>=22.22.1 <25` | Protocol types, interfaces, constants, and validators. Zero runtime dependencies.                                |
-| `@oaslananka/a2a-warp-auth`               | `1.0.0`         | `>=22.22.1 <25` | Authentication and authorization middleware, helpers, and JWT/JWKS utilities.                                    |
-| `@oaslananka/a2a-warp-telemetry`          | `1.0.0`         | `>=22.22.1 <25` | OpenTelemetry integration, trace context propagation, and W3C TraceContext helpers.                              |
-| `@oaslananka/a2a-warp-registry`           | `3.0.0`         | `>=22.22.1 <25` | Registry server, discovery, health, and storage helpers.                                                         |
-| `@oaslananka/a2a-warp-cli`                | `3.0.0`         | `>=22.22.1 <25` | Published `a2a-warp` command-line interface.                                                                     |
-| `create-a2a-warp`                         | `3.0.0`         | `>=22.22.1 <25` | Project scaffolder.                                                                                              |
-| `@oaslananka/a2a-warp-bridge-mcp`         | `3.0.0`         | `>=22.22.1 <25` | A2A and MCP mapping helpers.                                                                                     |
-| `@oaslananka/a2a-warp-transport-ws`       | `3.0.0`         | `>=22.22.1 <25` | WebSocket transport helpers.                                                                                     |
-| `@oaslananka/a2a-warp-transport-grpc`     | `3.0.0`         | `>=22.22.1 <25` | gRPC transport helpers.                                                                                          |
-| `@oaslananka/a2a-warp-schemas`            | `3.0.0`         | `>=22.22.1 <25` | Standalone JSON Schema files for editor and CI validation.                                                       |
+| `@oaslananka/a2a-warp`                    | `4.0.0`         | `>=22.22.1 <25` | Core runtime, client APIs, storage, testing helpers, and Codex-style tools — re-exports auth and telemetry APIs. |
+| `@oaslananka/a2a-warp-adapter-anthropic`  | `4.0.0`         | `>=22.22.1 <25` | Anthropic Claude Messages API adapter.                                                                           |
+| `@oaslananka/a2a-warp-adapter-base`       | `4.0.0`         | `>=22.22.1 <25` | Abstract base adapter and contract helpers.                                                                      |
+| `@oaslananka/a2a-warp-adapter-crewai`     | `4.0.0`         | `>=22.22.1 <25` | CrewAI HTTP bridge adapter.                                                                                      |
+| `@oaslananka/a2a-warp-adapter-google-adk` | `4.0.0`         | `>=22.22.1 <25` | Google Agent Development Kit HTTP adapter.                                                                       |
+| `@oaslananka/a2a-warp-adapter-langchain`  | `4.0.0`         | `>=22.22.1 <25` | LangChain / LangGraph runnable adapter.                                                                          |
+| `@oaslananka/a2a-warp-adapter-llamaindex` | `4.0.0`         | `>=22.22.1 <25` | LlamaIndex query/chat engine adapter.                                                                            |
+| `@oaslananka/a2a-warp-adapter-openai`     | `4.0.0`         | `>=22.22.1 <25` | OpenAI Chat API adapter.                                                                                         |
+| `@oaslananka/a2a-warp-adapters`           | `4.0.0`         | `>=22.22.1 <25` | **Deprecated** — use individual `@oaslananka/a2a-warp-adapter-*` packages instead.                               |
+| `@oaslananka/a2a-warp-core`               | `4.0.0`         | `>=22.22.1 <25` | Protocol types, interfaces, constants, and validators. Zero runtime dependencies.                                |
+| `@oaslananka/a2a-warp-registry`           | `4.0.0`         | `>=22.22.1 <25` | Registry server, discovery, health, and storage helpers.                                                         |
+| `@oaslananka/a2a-warp-cli`                | `4.0.0`         | `>=22.22.1 <25` | Published `a2a-warp` command-line interface.                                                                     |
+| `create-a2a-warp`                         | `4.0.0`         | `>=22.22.1 <25` | Project scaffolder.                                                                                              |
+| `@oaslananka/a2a-warp-bridge-mcp`         | `4.0.0`         | `>=22.22.1 <25` | A2A and MCP mapping helpers.                                                                                     |
+| `@oaslananka/a2a-warp-transport-ws`       | `4.0.0`         | `>=22.22.1 <25` | WebSocket transport helpers.                                                                                     |
+| `@oaslananka/a2a-warp-transport-grpc`     | `4.0.0`         | `>=22.22.1 <25` | gRPC transport helpers.                                                                                          |
+| `@oaslananka/a2a-warp-schemas`            | `4.0.0`         | `>=22.22.1 <25` | Standalone JSON Schema files for editor and CI validation.                                                       |
 
 Patch releases may add compatible bug fixes, tests, and docs. New public package
 surfaces must update `public-surface.json`, package docs, and this matrix before
@@ -89,18 +87,24 @@ security documentation for its auth, origin, TLS, or callback behavior.
 Provider and framework SDKs stay peer dependencies where possible so default
 installs do not pull every integration stack.
 
-| Package                                   | Peer dependency      | Supported range                                  |
-| ----------------------------------------- | -------------------- | ------------------------------------------------ |
-| `@oaslananka/a2a-warp`                    | `@opentelemetry/api` | `^1.9.1`                                         |
-| `@oaslananka/a2a-warp-adapter-anthropic`  | `@anthropic-ai/sdk`  | `^0.39.0 \|\| ^0.95.0 \|\| ^0.96.0 \|\| ^0.99.0` |
-| `@oaslananka/a2a-warp-adapter-langchain`  | `langchain`          | `^0.3.37 \|\| ^1.0.0`                            |
-| `@oaslananka/a2a-warp-adapter-llamaindex` | `llamaindex`         | `^0.9.11 \|\| ^0.12.0`                           |
-| `@oaslananka/a2a-warp-adapter-openai`     | `openai`             | `^4.20.0 \|\| ^6.0.0`                            |
-| `@oaslananka/a2a-warp-adapters`           | `@anthropic-ai/sdk`  | `^0.39.0 \|\| ^0.95.0 \|\| ^0.96.0 \|\| ^0.99.0` |
-| `@oaslananka/a2a-warp-adapters`           | `langchain`          | `^0.3.37 \|\| ^1.0.0`                            |
-| `@oaslananka/a2a-warp-adapters`           | `llamaindex`         | `^0.9.11 \|\| ^0.12.0`                           |
-| `@oaslananka/a2a-warp-adapters`           | `openai`             | `^4.20.0 \|\| ^6.0.0`                            |
-| `@oaslananka/a2a-warp-transport-ws`       | `ws`                 | `^8.18.0`                                        |
+| Package                                   | Peer dependency                             | Supported range                                  |
+| ----------------------------------------- | ------------------------------------------- | ------------------------------------------------ |
+| `@oaslananka/a2a-warp`                    | `@opentelemetry/api`                        | `^1.9.1`                                         |
+| `@oaslananka/a2a-warp-adapter-anthropic`  | `@anthropic-ai/sdk`                         | `^0.39.0 \|\| ^0.95.0 \|\| ^0.96.0 \|\| ^0.99.0` |
+| `@oaslananka/a2a-warp-adapter-langchain`  | `langchain`                                 | `^0.3.37 \|\| ^1.0.0`                            |
+| `@oaslananka/a2a-warp-adapter-llamaindex` | `llamaindex`                                | `^0.9.11 \|\| ^0.12.0`                           |
+| `@oaslananka/a2a-warp-adapter-openai`     | `openai`                                    | `^4.20.0 \|\| ^6.0.0`                            |
+| `@oaslananka/a2a-warp-adapters`           | `@anthropic-ai/sdk`                         | `^0.39.0 \|\| ^0.95.0 \|\| ^0.96.0 \|\| ^0.99.0` |
+| `@oaslananka/a2a-warp-adapters`           | `langchain`                                 | `^0.3.37 \|\| ^1.0.0`                            |
+| `@oaslananka/a2a-warp-adapters`           | `llamaindex`                                | `^0.9.11 \|\| ^0.12.0`                           |
+| `@oaslananka/a2a-warp-adapters`           | `openai`                                    | `^4.20.0 \|\| ^6.0.0`                            |
+| `@oaslananka/a2a-warp-transport-ws`       | `ws`                                        | `^8.18.0`                                        |
+| `@oaslananka/a2a-warp-telemetry`          | `@opentelemetry/api`                        | `^1.9.1`                                         |
+| `@oaslananka/a2a-warp-telemetry`          | `@opentelemetry/exporter-metrics-otlp-http` | `^0.218.0`                                       |
+| `@oaslananka/a2a-warp-telemetry`          | `@opentelemetry/exporter-trace-otlp-http`   | `^0.218.0`                                       |
+| `@oaslananka/a2a-warp-telemetry`          | `@opentelemetry/resources`                  | `^2.7.1`                                         |
+| `@oaslananka/a2a-warp-telemetry`          | `@opentelemetry/sdk-metrics`                | `^2.7.1`                                         |
+| `@oaslananka/a2a-warp-telemetry`          | `@opentelemetry/sdk-node`                   | `^0.218.0`                                       |
 
 Adapter tests use fake provider objects by default. Live provider behavior must
 remain opt-in and cannot be required by the default local verification gate.
