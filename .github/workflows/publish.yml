@@ -145,13 +145,12 @@ jobs:
       # ── Preflight: check npm registry for existing versions ──
       - name: 'Preflight: check npm registry'
         run: |
-          npm_cli=(npm)
           any_missing=false
           for pkg_file in ./.artifacts/npm/*.tgz; do
             pkg_json="$(tar -xOzf "$pkg_file" package/package.json)"
             pkg_name="$(node -e "const p=JSON.parse(require('fs').readFileSync(0,'utf8'));process.stdout.write(p.name);" <<< "$pkg_json")"
             pkg_version="$(node -e "const p=JSON.parse(require('fs').readFileSync(0,'utf8'));process.stdout.write(p.version);" <<< "$pkg_json")"
-            if "${npm_cli[@]}" view "${pkg_name}@${pkg_version}" version --silent >/dev/null 2>&1; then
+            if pnpm view "${pkg_name}@${pkg_version}" version --silent >/dev/null 2>&1; then
               echo "⚠  ${pkg_name}@${pkg_version} already exists on npm — will skip"
             else
               echo "✅ ${pkg_name}@${pkg_version} not found on npm — ready to publish"
@@ -174,20 +173,16 @@ jobs:
             .artifacts/npm/SHA256SUMS
             .artifacts/sbom/a2a-warp.cdx.json
 
-      # ── Publish with npm token auth ──
+      # ── Publish with pnpm (compatible with Node 24; pinned npm 11.15.0 has prefix bug) ──
       - name: Publish packages to npm
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          # npm 11+ auto-detects OIDC tokens in GH Actions and uses them for
-          # auth/provenance, overriding NODE_AUTH_TOKEN. Explicitly write the
-          # .npmrc (to the userconfig path that setup-node configured) and
-          # pass --no-provenance so token-based auth is used.
+          # Write .npmrc for token-based auth (pnpm reads the same config)
           npmrc_path="${NPM_CONFIG_USERCONFIG:-${HOME}/.npmrc}"
           echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > "${npmrc_path}"
 
-          npm_cli=(npm)
-          "${npm_cli[@]}" --version
+          pnpm --version
 
           for package_file in ./.artifacts/npm/*.tgz; do
             pkg_json="$(tar -xOzf "$package_file" package/package.json)"
@@ -195,13 +190,13 @@ jobs:
             pkg_version="$(node -e "const p=JSON.parse(require('fs').readFileSync(0,'utf8'));process.stdout.write(p.version);" <<< "$pkg_json")"
 
             # Skip if version already published
-            if "${npm_cli[@]}" view "${pkg_name}@${pkg_version}" version --silent >/dev/null 2>&1; then
+            if pnpm view "${pkg_name}@${pkg_version}" version --silent >/dev/null 2>&1; then
               echo "⏭  Skipping ${pkg_name}@${pkg_version} (already exists on npm)"
               continue
             fi
 
-            # Publish with token-based auth (no-provenance prevents OIDC override)
-            if "${npm_cli[@]}" publish "$package_file" --access public --no-provenance; then
+            # Publish with token-based auth
+            if pnpm publish "$package_file" --access public --no-git-checks; then
               echo "✅ Published ${pkg_name}@${pkg_version}"
             else
               echo "❌ Failed to publish ${pkg_name}@${pkg_version}"
@@ -209,27 +204,20 @@ jobs:
             fi
           done
 
-      # ── Verify ──
-      - name: Verify npm provenance
+            # ── Verify npm registry ──
+      - name: Verify npm registry
         run: |
-          npm_cli=(npm)
-          # If packages were published with --no-provenance (token auth),
-          # there is no provenance to audit. Check and skip gracefully.
-          if ! "${npm_cli[@]}" audit signatures --silent 2>/dev/null; then
-            echo "⏭  Skipping provenance verification (published with --no-provenance)"
-            exit 0
-          fi
-          verify_dir="$(mktemp -d)"
-          pushd "$verify_dir"
-          echo '{}' > package.json
           for package_file in "${GITHUB_WORKSPACE}"/.artifacts/npm/*.tgz; do
             pkg_json="$(tar -xOzf "$package_file" package/package.json)"
             pkg_name="$(node -e "const p=JSON.parse(require('fs').readFileSync(0,'utf8'));process.stdout.write(p.name);" <<< "$pkg_json")"
             pkg_version="$(node -e "const p=JSON.parse(require('fs').readFileSync(0,'utf8'));process.stdout.write(p.version);" <<< "$pkg_json")"
-            "${npm_cli[@]}" install "${pkg_name}@${pkg_version}"
+            if pnpm view "${pkg_name}@${pkg_version}" version --silent >/dev/null 2>&1; then
+              echo "✅ ${pkg_name}@${pkg_version} confirmed on npm"
+            else
+              echo "❌ ${pkg_name}@${pkg_version} not found on npm after publish"
+              exit 1
+            fi
           done
-          "${npm_cli[@]}" audit signatures
-          popd
 
       - name: Verify package registry parity
         run: pnpm run release:parity
