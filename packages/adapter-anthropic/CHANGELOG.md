@@ -1,5 +1,20 @@
 # Changelog
 
+## [5.0.1](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-adapter-anthropic-v5.0.0...@oaslananka/a2a-warp-adapter-anthropic-v5.0.1) (2026-05-31)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @anthropic-ai/sdk to v0.100.0 ([#186](https://github.com/oaslananka/a2a-warp/issues/186)) ([3ab8df7](https://github.com/oaslananka/a2a-warp/commit/3ab8df7f5cb1cdef26283995fc7736ea359dc097))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp bumped to 5.0.1
+    * @oaslananka/a2a-warp-adapter-base bumped to 5.0.1
+
 ## [5.0.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-adapter-anthropic-v4.1.1...@oaslananka/a2a-warp-adapter-anthropic-v5.0.0) (2026-05-31)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "@oaslananka/a2a-warp-registry",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "description": "Agent registry, discovery API, health polling, and storage backends for A2A Warp.",
   "keywords": [
     "a2a",
