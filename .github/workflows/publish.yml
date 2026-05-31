@@ -204,19 +204,26 @@ jobs:
             fi
           done
 
-            # ── Verify npm registry ──
+            # ── Verify npm registry (with retry for propagation delay) ──
       - name: Verify npm registry
         run: |
           for package_file in "${GITHUB_WORKSPACE}"/.artifacts/npm/*.tgz; do
             pkg_json="$(tar -xOzf "$package_file" package/package.json)"
             pkg_name="$(node -e "const p=JSON.parse(require('fs').readFileSync(0,'utf8'));process.stdout.write(p.name);" <<< "$pkg_json")"
             pkg_version="$(node -e "const p=JSON.parse(require('fs').readFileSync(0,'utf8'));process.stdout.write(p.version);" <<< "$pkg_json")"
-            if pnpm view "${pkg_name}@${pkg_version}" version --silent >/dev/null 2>&1; then
-              echo "✅ ${pkg_name}@${pkg_version} confirmed on npm"
-            else
-              echo "❌ ${pkg_name}@${pkg_version} not found on npm after publish"
-              exit 1
-            fi
+            for i in 1 2 3 4 5; do
+              if pnpm view "${pkg_name}@${pkg_version}" version --silent >/dev/null 2>&1; then
+                echo "✅ ${pkg_name}@${pkg_version} confirmed on npm"
+                break
+              fi
+              if [ "$i" -lt 5 ]; then
+                echo "⏳ ${pkg_name}@${pkg_version} not yet visible (attempt $i/5) — waiting 10s..."
+                sleep 10
+              else
+                echo "❌ ${pkg_name}@${pkg_version} not found on npm after 5 retries"
+                exit 1
+              fi
+            done
           done
 
       - name: Verify package registry parity
