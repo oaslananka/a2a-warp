@@ -11,7 +11,7 @@ import {
   type IdempotencyStoredResult,
   type IdempotencyStore,
 } from '../IdempotencyStore.js';
-import { attachRequestContext } from '../../auth/requestContext.js';
+import { attachRequestContext } from '../../auth/index.js';
 
 export interface IdempotencyResolution {
   scope: string;

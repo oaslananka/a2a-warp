@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { A2AServer } from '../src/server/A2AServer.js';
-import { getRequestContext } from '../src/auth/requestContext.js';
+import { getRequestContext } from '@oaslananka/a2a-warp-auth';
 import { ErrorCodes, JsonRpcError, type JsonRpcRequest } from '../src/types/jsonrpc.js';
 import type { A2AServerOptions } from '../src/server/A2AServer.js';
 import type { AgentCard } from '../src/types/agent-card.js';

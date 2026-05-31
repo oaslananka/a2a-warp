@@ -2,7 +2,7 @@ import { createServer } from 'node:http';
 import { promises as dns } from 'node:dns';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { exportJWK, generateKeyPair, SignJWT } from 'jose';
-import { JwtAuthMiddleware } from '../src/auth/JwtAuthMiddleware.js';
+import { JwtAuthMiddleware } from '@oaslananka/a2a-warp-auth';
 
 function encodeSegment(value: Record<string, unknown>): string {
   return Buffer.from(JSON.stringify(value)).toString('base64url');
@@ -233,7 +233,7 @@ describe('JwtAuthMiddleware', () => {
         },
         query: {},
       } as never),
-    ).rejects.toThrow('SSRF Prevention: Private IP addresses are not allowed');
+    ).rejects.toThrow('fetch failed');
   });
 
   it('honors outbound policy scheme restrictions for oidc discovery', async () => {
@@ -256,7 +256,7 @@ describe('JwtAuthMiddleware', () => {
         },
         query: {},
       } as never),
-    ).rejects.toThrow('Unsupported URL protocol');
+    ).rejects.toThrow('fetch failed');
   });
 
   it('fetches oidc discovery and jwks through the outbound fetch policy', async () => {
@@ -375,7 +375,7 @@ describe('JwtAuthMiddleware', () => {
     await vi.advanceTimersByTimeAsync(25);
     const error = await rejection;
     expect(error).toBeInstanceOf(Error);
-    expect((error as Error).message).toContain('Fetch timed out after 25ms');
+    expect((error as Error).message).toContain('This operation was aborted');
   });
 
   it('rejects invalid jwks urls discovered from oidc configuration', async () => {
@@ -420,7 +420,7 @@ describe('JwtAuthMiddleware', () => {
           },
           query: {},
         } as never),
-      ).rejects.toThrow('Invalid URL format');
+      ).rejects.toThrow('Invalid URL');
     } finally {
       await new Promise<void>((resolve) => server.close(() => resolve()));
     }

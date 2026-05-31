@@ -31,8 +31,8 @@ export type {
   RateLimitStore,
   RedisRateLimitClient,
 } from './middleware/rateLimiter.js';
-export * from './telemetry/index.js';
-export * from './auth/index.js';
+export * from '@oaslananka/a2a-warp-telemetry';
+export * from '@oaslananka/a2a-warp-auth';
 export * from './security/url.js';
 export * from './security/AgentCardSigner.js';
 export * from './net/OutboundPolicy.js';

@@ -58,7 +58,12 @@ const hypePhrases = [
   'Co-authored-by: Codex',
 ];
 const exactAllowed = 'It is not an official Google, Linux Foundation, or a2aproject package.';
-const ignored = [/^scripts\/check-.*\.mjs$/, /^pnpm-lock\.yaml$/, /(^|\/)LICENSE$/];
+const ignored = [
+  /^scripts\/check-.*\.mjs$/,
+  /^pnpm-lock\.yaml$/,
+  /(^|\/)LICENSE$/,
+  /(^|\/)LICENSES\//,
+];
 const platformTermExceptions = {
   '.github/workflows/publish.yml': ['NPM_TOKEN', 'FALLBACK_NODE_AUTH_TOKEN'],
 };

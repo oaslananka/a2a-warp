@@ -1,7 +1,7 @@
 import type { Express, Response } from 'express';
 import type { AgentCard } from '../../types/agent-card.js';
 import type { A2AHealthResponse, TaskCounts } from '../../types/task.js';
-import type { RuntimeMetrics } from '../../telemetry/RuntimeMetrics.js';
+import type { RuntimeMetrics } from '../../telemetry/index.js';
 
 export interface HealthResponseInput {
   agentCard: AgentCard;

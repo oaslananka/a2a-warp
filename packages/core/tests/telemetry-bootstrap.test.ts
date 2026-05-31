@@ -3,7 +3,7 @@ import {
   bootstrapTelemetry,
   resolveTelemetryConfigFromEnv,
   type TelemetryModuleFactory,
-} from '../src/telemetry/bootstrap.js';
+} from '@oaslananka/a2a-warp-telemetry';
 
 describe('telemetry bootstrap', () => {
   it('resolves env-driven telemetry defaults safely', () => {

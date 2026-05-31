@@ -15,7 +15,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { A2AClient } from '../src/client/A2AClient.js';
 import { fetchWithPolicy } from '../src/net/fetchWithPolicy.js';
 import { A2AServer, type A2AServerOptions } from '../src/server/A2AServer.js';
-import { RuntimeMetrics } from '../src/telemetry/RuntimeMetrics.js';
+import { RuntimeMetrics } from '@oaslananka/a2a-warp-telemetry';
 import type { AgentCard } from '../src/types/agent-card.js';
 import type { Artifact, Message, Task, TaskState } from '../src/types/task.js';
 

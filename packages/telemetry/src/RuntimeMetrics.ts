@@ -1,3 +1,6 @@
+/**
+ * Note: @opentelemetry/api is imported at module level but is optional at runtime.
+ */
 import {
   metrics,
   type Attributes,
@@ -5,7 +8,7 @@ import {
   type Histogram,
   type UpDownCounter,
 } from '@opentelemetry/api';
-import type { Task, TaskCounts, TaskState } from '../types/task.js';
+import type { Task, TaskCounts, TaskState } from '@oaslananka/a2a-warp-core';
 
 export interface RuntimeMetricsOptions {
   serviceName: string;

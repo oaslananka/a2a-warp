@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { Request } from 'express';
-import type { AuthValidationResult, RequestContext } from '../types/auth.js';
+import type { AuthValidationResult, RequestContext } from '@oaslananka/a2a-warp-core';
 
 export interface RequestWithContext extends Request {
   requestId?: string;

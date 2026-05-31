@@ -13,8 +13,10 @@ and the tests and ADRs that protect those decisions.
 types/schemas -> core runtime -> transports -> client/registry -> adapters/bridges -> CLI/apps
 ```
 
-`packages/core` owns protocol types, schemas, runtime, client primitives, auth, storage,
-telemetry, and outbound network policy. Transports, registry, adapters, bridges, CLI, apps,
+`packages/core` owns protocol types, schemas, runtime, client primitives, storage,
+and outbound network policy. Auth and telemetry live in separate packages
+(`packages/auth`, `packages/telemetry`) and are re-exported through `packages/core`.
+Transports, registry, adapters, bridges, CLI, apps,
 docs-site, and examples consume public package APIs above that layer.
 
 ## Workspace graph

@@ -1,12 +1,3 @@
 {
-  "exports": [
-    ".",
-    "./auth",
-    "./middleware",
-    "./schemas",
-    "./telemetry",
-    "./client",
-    "./testing",
-    "./codex-bridge"
-  ]
+  "exports": [".", "./middleware", "./schemas", "./client", "./testing", "./codex-bridge"]
 }

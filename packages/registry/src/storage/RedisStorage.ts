@@ -5,6 +5,8 @@ import {
   type AgentListResult,
   type AgentStorageSummary,
   termMatchesQuery,
+  matchesVisibility,
+  applyUpdateStatus,
 } from './indexing.js';
 
 export interface RegistryRedisClient {
@@ -98,7 +100,7 @@ export class RedisStorage implements IAgentStorage {
   async list(query: AgentListQuery = {}): Promise<AgentListResult> {
     const candidateIds = await this.findCandidateIds(query);
     const agents = await this.loadAgents(candidateIds);
-    const filtered = agents.filter((agent) => this.matchesVisibility(agent, query));
+    const filtered = agents.filter((agent) => matchesVisibility(agent, query));
     filtered.sort((left, right) => Date.parse(right.registeredAt) - Date.parse(left.registeredAt));
 
     const offset = parseCursor(query.cursor);
@@ -154,14 +156,7 @@ export class RedisStorage implements IAgentStorage {
       return;
     }
 
-    await this.upsert({
-      ...current,
-      status,
-      ...(meta?.consecutiveFailures !== undefined
-        ? { consecutiveFailures: meta.consecutiveFailures }
-        : {}),
-      ...(meta?.lastSuccessAt !== undefined ? { lastSuccessAt: meta.lastSuccessAt } : {}),
-    });
+    await this.upsert(applyUpdateStatus(current, status, meta));
   }
 
   async findBySkill(skill: string): Promise<RegisteredAgent[]> {
@@ -237,22 +232,6 @@ export class RedisStorage implements IAgentStorage {
 
     const agents = await Promise.all(ids.map((id) => this.get(id)));
     return agents.filter((agent): agent is RegisteredAgent => agent !== null);
-  }
-
-  private matchesVisibility(
-    agent: RegisteredAgent,
-    query: Pick<AgentListQuery, 'tenantId' | 'includePublic' | 'isPublic'>,
-  ): boolean {
-    if (query.isPublic === true) {
-      return agent.isPublic === true;
-    }
-    if (query.tenantId && query.includePublic) {
-      return agent.tenantId === query.tenantId || agent.isPublic === true;
-    }
-    if (query.tenantId) {
-      return agent.tenantId === query.tenantId;
-    }
-    return true;
   }
 
   private async addSetIndexes(agent: RegisteredAgent, batch: RedisMutationBatch): Promise<void> {

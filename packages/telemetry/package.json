@@ -1,0 +1,92 @@
+{
+  "name": "@oaslananka/a2a-warp-telemetry",
+  "version": "1.0.0",
+  "description": "Agent2Agent protocol telemetry helpers.",
+  "keywords": [
+    "a2a",
+    "agent2agent",
+    "telemetry",
+    "opentelemetry"
+  ],
+  "author": "oaslananka",
+  "license": "Apache-2.0",
+  "homepage": "https://oaslananka.github.io/a2a-warp/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oaslananka/a2a-warp.git",
+    "directory": "packages/telemetry"
+  },
+  "bugs": {
+    "url": "https://github.com/oaslananka/a2a-warp/issues"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "sideEffects": false,
+  "scripts": {
+    "build": "node ../../scripts/build-tsc-package.mjs",
+    "typecheck": "tsc -b",
+    "test": "echo 'No runtime tests for telemetry; tested through package consumers' && exit 0"
+  },
+  "dependencies": {
+    "@oaslananka/a2a-warp-core": "workspace:^"
+  },
+  "devDependencies": {
+    "@opentelemetry/api": "^1.9.1",
+    "@opentelemetry/exporter-metrics-otlp-http": "^0.218.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.218.0",
+    "@opentelemetry/resources": "^2.7.1",
+    "@opentelemetry/sdk-metrics": "^2.7.1",
+    "@opentelemetry/sdk-node": "^0.218.0",
+    "typescript": "6.0.3"
+  },
+  "peerDependencies": {
+    "@opentelemetry/api": "^1.9.1",
+    "@opentelemetry/exporter-metrics-otlp-http": "^0.218.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.218.0",
+    "@opentelemetry/resources": "^2.7.1",
+    "@opentelemetry/sdk-metrics": "^2.7.1",
+    "@opentelemetry/sdk-node": "^0.218.0"
+  },
+  "peerDependenciesMeta": {
+    "@opentelemetry/api": {
+      "optional": true
+    },
+    "@opentelemetry/exporter-metrics-otlp-http": {
+      "optional": true
+    },
+    "@opentelemetry/exporter-trace-otlp-http": {
+      "optional": true
+    },
+    "@opentelemetry/resources": {
+      "optional": true
+    },
+    "@opentelemetry/sdk-metrics": {
+      "optional": true
+    },
+    "@opentelemetry/sdk-node": {
+      "optional": true
+    }
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=22.22.1 <25"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "package.json"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

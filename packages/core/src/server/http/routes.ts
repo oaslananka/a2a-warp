@@ -1,7 +1,6 @@
 import type { Express, Request, Response } from 'express';
-import type { JwtAuthMiddleware } from '../../auth/JwtAuthMiddleware.js';
-import { getRequestContext } from '../../auth/requestContext.js';
-import type { RuntimeMetrics } from '../../telemetry/RuntimeMetrics.js';
+import type { JwtAuthMiddleware } from '../../auth/index.js';
+import type { RuntimeMetrics } from '../../telemetry/index.js';
 import type { AgentCard } from '../../types/agent-card.js';
 import type { RequestContext } from '../../types/auth.js';
 import type { Task } from '../../types/task.js';
@@ -15,7 +14,7 @@ import {
   type HandleStreamingRpc,
 } from './jsonRpcHandler.js';
 import { registerMetricsRoutes } from './metricsRoutes.js';
-import { registerStreamRoutes } from './streamRoutes.js';
+import { registerStreamRoutes, authenticateRequestOrSend401 } from './streamRoutes.js';
 
 export const AGENT_CARD_PATHS = [
   '/.well-known/agent-card.json',
@@ -99,15 +98,14 @@ async function handleTasksRoute(
     'authMiddleware' | 'runtimeMetrics' | 'taskManager' | 'filterTasksByContext'
   >,
 ): Promise<void> {
-  let requestContext = getRequestContext(req);
-  if (deps.authMiddleware) {
-    try {
-      requestContext = await deps.authMiddleware.authenticateRequestContext(req);
-    } catch {
-      deps.runtimeMetrics.recordAuthReject();
-      res.status(401).send('Unauthorized');
-      return;
-    }
+  const requestContext = await authenticateRequestOrSend401(
+    req,
+    res,
+    deps.authMiddleware,
+    deps.runtimeMetrics,
+  );
+  if (!requestContext) {
+    return;
   }
 
   const tasks = deps.filterTasksByContext(deps.taskManager.getAllTasks(), requestContext);

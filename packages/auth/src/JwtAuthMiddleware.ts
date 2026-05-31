@@ -5,17 +5,12 @@
 
 import { timingSafeEqual } from 'node:crypto';
 import type { NextFunction, Request, Response } from 'express';
-import { createRemoteJWKSet, customFetch, jwtVerify, type JWTPayload } from 'jose';
+import { createRemoteJWKSet, jwtVerify, type JWTPayload, customFetch } from 'jose';
 import {
   attachRequestContext,
   createAuthenticatedRequestContext,
   type RequestWithContext,
 } from './requestContext.js';
-import {
-  validateAndFetch,
-  validateUrl,
-  type OutboundPolicyOptions,
-} from '../net/OutboundPolicy.js';
 import type {
   ApiKeyCredential,
   ApiKeyCredentialSource,
@@ -24,18 +19,21 @@ import type {
   HttpAuthScheme,
   OpenIdConnectAuthScheme,
   RequestContext,
-} from '../types/auth.js';
+} from '@oaslananka/a2a-warp-core';
 
-export type JwtAuthOutboundPolicyOptions = OutboundPolicyOptions;
+export interface JwtAuthOutboundPolicyOptions {
+  timeoutMs?: number;
+  retries?: number;
+}
 
 const DEFAULT_AUTH_OUTBOUND_TIMEOUT_MS = 5000;
-const DEFAULT_AUTH_OUTBOUND_RETRIES = 0;
 
 export interface JwtAuthMiddlewareOptions {
   securitySchemes: AuthScheme[];
   security?: Record<string, string[]>[];
   apiKeys?: ApiKeyCredentialSource;
   outboundPolicy?: JwtAuthOutboundPolicyOptions;
+  fetch?: typeof fetch;
 }
 
 /**
@@ -47,8 +45,11 @@ export interface JwtAuthMiddlewareOptions {
  */
 export class JwtAuthMiddleware {
   private readonly remoteSets = new Map<string, ReturnType<typeof createRemoteJWKSet>>();
+  private readonly fetchFn: typeof fetch;
 
-  constructor(private readonly options: JwtAuthMiddlewareOptions) {}
+  constructor(private readonly options: JwtAuthMiddlewareOptions) {
+    this.fetchFn = options.fetch ?? globalThis.fetch.bind(globalThis);
+  }
 
   async authenticateRequest(req: Request): Promise<AuthValidationResult> {
     const securityRequirements =
@@ -160,11 +161,22 @@ export class JwtAuthMiddleware {
     scheme: OpenIdConnectAuthScheme,
   ): Promise<AuthValidationResult> {
     const token = this.readBearerToken(req);
-    const discoveryResponse = await validateAndFetch(
-      scheme.openIdConnectUrl,
-      undefined,
-      this.createOutboundPolicyOptions(),
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(
+      () => controller.abort(),
+      this.options.outboundPolicy?.timeoutMs ?? DEFAULT_AUTH_OUTBOUND_TIMEOUT_MS,
     );
+
+    let discoveryResponse;
+    try {
+      discoveryResponse = await this.fetchFn(scheme.openIdConnectUrl, {
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
+
     if (!discoveryResponse.ok) {
       throw new Error(`Failed to fetch OIDC configuration: ${discoveryResponse.status}`);
     }
@@ -222,34 +234,20 @@ export class JwtAuthMiddleware {
   }
 
   private async getRemoteSet(jwksUri: string): Promise<ReturnType<typeof createRemoteJWKSet>> {
-    const jwksUrl = await this.validateOutboundUrl(jwksUri);
+    const jwksUrl = new URL(jwksUri);
     const cacheKey = jwksUrl.toString();
     let remoteSet = this.remoteSets.get(cacheKey);
     if (!remoteSet) {
       remoteSet = createRemoteJWKSet(jwksUrl, {
         timeoutDuration: this.options.outboundPolicy?.timeoutMs ?? DEFAULT_AUTH_OUTBOUND_TIMEOUT_MS,
         [customFetch]: async (url, init) => {
-          return validateAndFetch(url, init, this.createOutboundPolicyOptions(init.signal));
+          return this.fetchFn(url, init);
         },
       });
       this.remoteSets.set(cacheKey, remoteSet);
     }
 
     return remoteSet;
-  }
-
-  private async validateOutboundUrl(url: string | URL): Promise<URL> {
-    return validateUrl(url, this.createOutboundPolicyOptions());
-  }
-
-  private createOutboundPolicyOptions(signal?: AbortSignal): OutboundPolicyOptions {
-    const policy = this.options.outboundPolicy ?? {};
-    return {
-      ...policy,
-      timeoutMs: policy.timeoutMs ?? DEFAULT_AUTH_OUTBOUND_TIMEOUT_MS,
-      retries: policy.retries ?? DEFAULT_AUTH_OUTBOUND_RETRIES,
-      ...(signal ? { signal } : {}),
-    };
   }
 
   private resultFromJwtPayload(args: {

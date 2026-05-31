@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { RuntimeMetrics } from '../src/telemetry/RuntimeMetrics.js';
+import { RuntimeMetrics } from '@oaslananka/a2a-warp-telemetry';
 import type { Task, TaskState } from '../src/types/task.js';
 
 function task(state: TaskState, durationMs?: number | string): Task {

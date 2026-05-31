@@ -1,6 +1,6 @@
 # Core Package
 
-`@oaslananka/a2a-warp` exports the runtime, client, auth, storage, telemetry, security, and public protocol types.
+`@oaslananka/a2a-warp` exports the runtime, client, storage, security, and public protocol types. Auth and telemetry APIs are published as separate packages (`@oaslananka/a2a-warp-auth`, `@oaslananka/a2a-warp-telemetry`), re-exported from the main barrel.
 
 `TaskManager` keeps the existing synchronous `ITaskStorage` API for in-process stores and current server integrations. `AsyncTaskManager` uses `AsyncTaskStorage` for durable backends that expose promise-based operations.
 

@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { context, propagation } from '@opentelemetry/api';
 import type { ErrorRequestHandler, Request, RequestHandler } from 'express';
-import { attachRequestContext, createAnonymousRequestContext } from '../../auth/requestContext.js';
+import { attachRequestContext, createAnonymousRequestContext } from '../../auth/index.js';
 import { ErrorCodes, type JsonRpcResponse } from '../../types/jsonrpc.js';
 import { makeErrorInfo } from '../../utils/errors.js';
 import { logger } from '../../utils/logger.js';

@@ -1,10 +1,10 @@
 import type { Request, RequestHandler, Response } from 'express';
-import type { JwtAuthMiddleware } from '../../auth/JwtAuthMiddleware.js';
-import { getRequestContext } from '../../auth/requestContext.js';
-import { getDocsUrl } from '../../config/docs.js';
-import type { RuntimeMetrics } from '../../telemetry/RuntimeMetrics.js';
-import { a2aWarpTracer, SpanStatusCode } from '../../telemetry/tracer.js';
+import type { JwtAuthMiddleware } from '../../auth/index.js';
+import { getRequestContext } from '../../auth/index.js';
+import { a2aWarpTracer, SpanStatusCode } from '../../telemetry/index.js';
+import type { RuntimeMetrics } from '../../telemetry/index.js';
 import type { AgentCard } from '../../types/agent-card.js';
+import { getDocsUrl } from '../../config/docs.js';
 import type { RequestContext } from '../../types/auth.js';
 import type { A2AExtension } from '../../types/extensions.js';
 import {
@@ -216,6 +216,25 @@ async function writeJsonRpcErrorResponse(
   );
 }
 
+export function getTaskOrThrow(
+  taskId: unknown,
+  taskManager: TaskManager,
+  requestContext: RequestContext,
+  canAccessTaskFn: (task: Task, context: RequestContext) => boolean,
+): Task {
+  if (typeof taskId !== 'string') {
+    throw new JsonRpcError(ErrorCodes.InvalidParams, 'Missing taskId');
+  }
+  const task = taskManager.getTask(taskId);
+  if (!task) {
+    throw new JsonRpcError(ErrorCodes.TaskNotFound, 'Task not found');
+  }
+  if (!canAccessTaskFn(task, requestContext)) {
+    throw new JsonRpcError(ErrorCodes.Unauthorized, 'Unauthorized task access');
+  }
+  return task;
+}
+
 export async function handleRpcRequest(
   req: JsonRpcRequest,
   context: RpcContext,
@@ -251,33 +270,22 @@ export async function handleRpcRequest(
         );
 
       case 'tasks/get': {
-        const taskId = params['taskId'];
-        if (typeof taskId !== 'string') {
-          throw new JsonRpcError(ErrorCodes.InvalidParams, 'Missing taskId');
-        }
-        const task = deps.taskManager.getTask(taskId);
-        if (!task) {
-          throw new JsonRpcError(ErrorCodes.TaskNotFound, 'Task not found');
-        }
-        if (!canAccessTask(task, context.requestContext, deps.authMiddleware)) {
-          throw new JsonRpcError(ErrorCodes.Unauthorized, 'Unauthorized task access');
-        }
-        return task;
+        return getTaskOrThrow(
+          params['taskId'],
+          deps.taskManager,
+          context.requestContext,
+          (t, ctx) => canAccessTask(t, ctx, deps.authMiddleware),
+        );
       }
 
       case 'tasks/cancel': {
-        const taskId = params['taskId'];
-        if (typeof taskId !== 'string') {
-          throw new JsonRpcError(ErrorCodes.InvalidParams, 'Missing taskId');
-        }
-        const existingTask = deps.taskManager.getTask(taskId);
-        if (!existingTask) {
-          throw new JsonRpcError(ErrorCodes.TaskNotFound, 'Task not found');
-        }
-        if (!canAccessTask(existingTask, context.requestContext, deps.authMiddleware)) {
-          throw new JsonRpcError(ErrorCodes.Unauthorized, 'Unauthorized task access');
-        }
-        const task = deps.taskManager.cancelTask(taskId);
+        const existingTask = getTaskOrThrow(
+          params['taskId'],
+          deps.taskManager,
+          context.requestContext,
+          (t, ctx) => canAccessTask(t, ctx, deps.authMiddleware),
+        );
+        const task = deps.taskManager.cancelTask(existingTask.id);
         if (!task) {
           throw new JsonRpcError(ErrorCodes.TaskNotFound, 'Task not found');
         }
@@ -285,47 +293,36 @@ export async function handleRpcRequest(
       }
 
       case 'tasks/pushNotification/set': {
-        const taskId = params['taskId'];
         const rawPushNotificationConfig = params['pushNotificationConfig'];
-        if (
-          typeof taskId !== 'string' ||
-          !rawPushNotificationConfig ||
-          typeof rawPushNotificationConfig !== 'object'
-        ) {
+        if (!rawPushNotificationConfig || typeof rawPushNotificationConfig !== 'object') {
           throw new JsonRpcError(
             ErrorCodes.InvalidParams,
             'Missing taskId or pushNotificationConfig',
           );
         }
-        const task = deps.taskManager.getTask(taskId);
-        if (!task) {
-          throw new JsonRpcError(ErrorCodes.TaskNotFound, 'Task not found');
-        }
-        if (!canAccessTask(task, context.requestContext, deps.authMiddleware)) {
-          throw new JsonRpcError(ErrorCodes.Unauthorized, 'Unauthorized task access');
-        }
+        const task = getTaskOrThrow(
+          params['taskId'],
+          deps.taskManager,
+          context.requestContext,
+          (t, ctx) => canAccessTask(t, ctx, deps.authMiddleware),
+        );
         const pushNotificationConfig = validateRequest(
           PushNotificationConfigSchema,
           rawPushNotificationConfig,
         ) as PushNotificationConfig;
         const normalizedPushNotificationConfig =
           await deps.normalizePushNotificationConfig(pushNotificationConfig);
-        return deps.taskManager.setPushNotification(taskId, normalizedPushNotificationConfig);
+        return deps.taskManager.setPushNotification(task.id, normalizedPushNotificationConfig);
       }
 
       case 'tasks/pushNotification/get': {
-        const taskId = params['taskId'];
-        if (typeof taskId !== 'string') {
-          throw new JsonRpcError(ErrorCodes.InvalidParams, 'Missing taskId');
-        }
-        const task = deps.taskManager.getTask(taskId);
-        if (!task) {
-          throw new JsonRpcError(ErrorCodes.TaskNotFound, 'Task not found');
-        }
-        if (!canAccessTask(task, context.requestContext, deps.authMiddleware)) {
-          throw new JsonRpcError(ErrorCodes.Unauthorized, 'Unauthorized task access');
-        }
-        return deps.taskManager.getPushNotification(taskId) ?? null;
+        const task = getTaskOrThrow(
+          params['taskId'],
+          deps.taskManager,
+          context.requestContext,
+          (t, ctx) => canAccessTask(t, ctx, deps.authMiddleware),
+        );
+        return deps.taskManager.getPushNotification(task.id) ?? null;
       }
 
       case 'tasks/list': {

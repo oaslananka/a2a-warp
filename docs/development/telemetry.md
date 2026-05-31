@@ -56,7 +56,7 @@ context.with(ctx, () => {
 Extracts trace context and baggage from incoming headers (e.g., HTTP `IncomingHttpHeaders`):
 
 ```typescript
-import { extractA2AContext } from '@oaslananka/a2a-warp/telemetry';
+import { extractA2AContext } from '@oaslananka/a2a-warp';
 
 const ctx = extractA2AContext(req.headers);
 ```

@@ -1,5 +1,5 @@
 import { logger } from '../utils/logger.js';
-import { a2aWarpTracer, SpanStatusCode } from '../telemetry/tracer.js';
+import { a2aWarpTracer, SpanStatusCode } from '@oaslananka/a2a-warp-telemetry';
 
 export type FetchTelemetryLabels = Record<string, string | number | boolean>;
 

@@ -11,6 +11,7 @@ import { createExportCardCommand } from './commands/export-card.js';
 import { createHealthCommand } from './commands/health.js';
 import { createMonitorCommand } from './commands/monitor.js';
 import { createRegistryCommand } from './commands/registry.js';
+import { createReleaseCheckCommand } from './commands/release-check.js';
 import { createScaffoldCommand } from './commands/scaffold.js';
 import { createSendCommand } from './commands/send.js';
 import { createTaskCommand } from './commands/task.js';
@@ -41,6 +42,7 @@ export function createProgram(): Command {
   program.addCommand(createBenchmarkCommand(getOptions));
   program.addCommand(createConformanceCommand(getOptions));
   program.addCommand(createDoctorCommand(getOptions));
+  program.addCommand(createReleaseCheckCommand(getOptions));
   program.addCommand(createExportCardCommand(getOptions));
 
   return program;

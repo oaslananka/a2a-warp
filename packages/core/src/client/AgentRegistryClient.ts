@@ -6,6 +6,7 @@
 import { EventSource, type EventSourceInit } from 'eventsource';
 import type { RegistryExportDocument } from '../schemas/public.js';
 import type { AgentCard } from '../types/agent-card.js';
+import { createEventSourceReader } from './eventSourceReader.js';
 
 export interface RegisteredAgent {
   id: string;
@@ -144,37 +145,8 @@ export class AgentRegistryClient {
       new URL('/events', this.baseUrl).toString(),
       this.createEventSourceInit(),
     );
-    const queue: unknown[] = [];
-    let resolveNext: (() => void) | undefined;
-    let closed = false;
 
-    source.addEventListener('registry_update', (event) => {
-      const data = 'data' in event ? JSON.parse(String(event.data)) : null;
-      queue.push(data);
-      resolveNext?.();
-    });
-    source.onerror = () => {
-      closed = true;
-      source.close();
-      resolveNext?.();
-    };
-
-    try {
-      while (!closed || queue.length > 0) {
-        if (queue.length === 0) {
-          await new Promise<void>((resolve) => {
-            resolveNext = resolve;
-          });
-          resolveNext = undefined;
-        }
-        const next = queue.shift();
-        if (next !== undefined) {
-          yield next;
-        }
-      }
-    } finally {
-      source.close();
-    }
+    yield* createEventSourceReader<unknown>(source, 'registry_update');
   }
 
   private createEventSourceInit(): EventSourceInit | undefined {

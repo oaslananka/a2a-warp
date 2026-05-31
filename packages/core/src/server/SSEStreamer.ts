@@ -4,7 +4,7 @@
  */
 
 import type { Task } from '../types/task.js';
-import { a2aWarpTracer, SpanStatusCode } from '../telemetry/tracer.js';
+import { a2aWarpTracer, SpanStatusCode } from '@oaslananka/a2a-warp-telemetry';
 
 type SSETransportResponse = {
   write(chunk: string): boolean;

@@ -1,3 +1,5 @@
-export * from './tracer.js';
-export * from './RuntimeMetrics.js';
-export * from './bootstrap.js';
+/**
+ * @file index.ts
+ * Re-export barrel for extracted telemetry package.
+ */
+export * from '@oaslananka/a2a-warp-telemetry';

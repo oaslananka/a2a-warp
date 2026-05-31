@@ -1,6 +1,7 @@
 /**
  * @file tracer.ts
  * OpenTelemetry helpers for the A2A runtime.
+ * Note: @opentelemetry/api is imported at module level but is optional at runtime.
  */
 
 import {

@@ -1,7 +1,7 @@
 import { validateUrl, type OutboundPolicyOptions } from '../../net/OutboundPolicy.js';
 import { ErrorCodes, JsonRpcError } from '../../types/jsonrpc.js';
 import type { MessageSendParams, Task } from '../../types/task.js';
-import type { RuntimeMetrics } from '../../telemetry/RuntimeMetrics.js';
+import type { RuntimeMetrics } from '../../telemetry/index.js';
 import { logger } from '../../utils/logger.js';
 import type { PushNotificationService } from '../PushNotificationService.js';
 import type { SSEStreamer } from '../SSEStreamer.js';

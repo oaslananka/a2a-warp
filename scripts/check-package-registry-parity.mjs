@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
+
+const REGISTRY = 'https://registry.npmjs.org';
 
 const config = JSON.parse(readFileSync('release-please-config.json', 'utf8'));
 const manifest = JSON.parse(readFileSync('.release-please-manifest.json', 'utf8'));
@@ -15,24 +16,23 @@ const publishable = Object.entries(config.packages ?? {})
   }))
   .filter(
     (p) =>
-      !p.packageJson.private &&
-      p.packageJson.name &&
-      !p.packageJson.name.startsWith('a2a-warp-'),
+      !p.packageJson.private && p.packageJson.name && !p.packageJson.name.startsWith('a2a-warp-'),
   );
 
 const failures = [];
 const missing = [];
 
+async function fetchRegistry(packageName) {
+  const encoded = encodeURIComponent(packageName).replace(/^%40/, '@');
+  const url = `${REGISTRY}/${encoded}`;
+  const res = await fetch(url);
+  if (!res.ok) return null;
+  return res.json();
+}
+
 for (const pkg of publishable) {
-  let registry;
-  try {
-    const raw = execFileSync('npm', ['view', pkg.packageName, '--json'], {
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'ignore'],
-      timeout: 15000,
-    });
-    registry = JSON.parse(raw);
-  } catch {
+  const registry = await fetchRegistry(pkg.packageName);
+  if (!registry) {
     missing.push(pkg.packageName);
     continue;
   }
@@ -49,23 +49,29 @@ for (const pkg of publishable) {
     );
   }
 
+  const latestVersion = registry.versions?.[latestTag];
+  if (!latestVersion) {
+    failures.push(`${pkg.packageName}: no data for latest version ${latestTag}`);
+    continue;
+  }
+
   const expectedHomepage = pkg.packageJson.homepage;
-  if (expectedHomepage && registry.homepage !== expectedHomepage) {
+  if (expectedHomepage && latestVersion.homepage !== expectedHomepage) {
     failures.push(
-      `${pkg.packageName}: npm homepage "${registry.homepage}" !== package.json "${expectedHomepage}"`,
+      `${pkg.packageName}: npm homepage "${latestVersion.homepage}" !== package.json "${expectedHomepage}"`,
     );
   }
 
   const expectedLicense = pkg.packageJson.license;
-  if (expectedLicense && registry.license !== expectedLicense) {
+  if (expectedLicense && latestVersion.license !== expectedLicense) {
     failures.push(
-      `${pkg.packageName}: npm license "${registry.license}" !== package.json "${expectedLicense}"`,
+      `${pkg.packageName}: npm license "${latestVersion.license}" !== package.json "${expectedLicense}"`,
     );
   }
 
   const expectedRepo = pkg.packageJson.repository;
   if (expectedRepo) {
-    const regRepo = registry.repository;
+    const regRepo = latestVersion.repository;
     if (regRepo?.url !== expectedRepo.url) {
       failures.push(
         `${pkg.packageName}: npm repository.url "${regRepo?.url}" !== package.json "${expectedRepo.url}"`,
@@ -78,10 +84,28 @@ for (const pkg of publishable) {
     }
   }
 
-  if (registry.name !== pkg.packageName) {
+  if (latestVersion.name !== pkg.packageName) {
     failures.push(
-      `${pkg.packageName}: npm name "${registry.name}" !== expected "${pkg.packageName}"`,
+      `${pkg.packageName}: npm name "${latestVersion.name}" !== expected "${pkg.packageName}"`,
     );
+  }
+
+  // Check exports parity: compare npm-published exports against local public-surface.json
+  try {
+    const surfacePath = `${pkg.path}/public-surface.json`;
+    const surface = JSON.parse(readFileSync(surfacePath, 'utf8'));
+    const localExports = [...surface.exports].sort();
+    const regExports = latestVersion.exports;
+    if (regExports) {
+      const npmExportKeys = Object.keys(regExports).sort();
+      if (JSON.stringify(localExports) !== JSON.stringify(npmExportKeys)) {
+        failures.push(
+          `${pkg.packageName}: npm exports ${JSON.stringify(npmExportKeys)} !== public-surface.json ${JSON.stringify(localExports)}`,
+        );
+      }
+    }
+  } catch {
+    // No public-surface.json for this package — skip exports check
   }
 }
 
@@ -102,4 +126,6 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-console.log(`Package registry parity: ${summary.verified}/${summary.checked} verified, 0 failures.`);
+console.log(
+  `Package registry parity: ${summary.verified}/${summary.checked} verified, 0 failures.`,
+);

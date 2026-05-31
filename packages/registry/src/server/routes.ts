@@ -65,36 +65,17 @@ export function registerRegistryRoutes(
   });
 
   app.get('/events', async (req: Request, res: Response) => {
-    if (await auth.rejectUnauthenticatedControlPlane(req, res)) {
-      return;
-    }
-    sse.configure(res);
-    const listener = (payload: unknown) => {
+    await handleSseStream(req, res, auth, sse, context.events, 'registry_update', (payload) => {
       sse.writeData(res, payload, 'registry_update');
-    };
-    context.events.on('registry_update', listener);
-    res.on('close', () => {
-      context.events.off('registry_update', listener);
     });
   });
 
   app.get('/agents/stream', async (req: Request, res: Response) => {
-    if (await auth.rejectUnauthenticatedControlPlane(req, res)) {
-      return;
-    }
-    sse.configure(res);
-
-    const listener = (payload: unknown) => {
+    await handleSseStream(req, res, auth, sse, context.events, 'registry_update', (payload) => {
       const normalized = sse.normalizeAgentStreamPayload(payload);
-      if (!normalized) {
-        return;
+      if (normalized) {
+        sse.writeData(res, normalized);
       }
-      sse.writeData(res, normalized);
-    };
-
-    context.events.on('registry_update', listener);
-    res.on('close', () => {
-      context.events.off('registry_update', listener);
     });
   });
 
@@ -116,16 +97,7 @@ export function registerRegistryRoutes(
       return;
     }
 
-    try {
-      await validateUrl(
-        agentUrl,
-        createRegistryOutboundPolicy(context, {
-          telemetryLabels: { 'a2a.registry.operation': 'registration' },
-        }),
-      );
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error);
-      res.status(400).json({ error: `Invalid agentUrl: ${message}` });
+    if (!(await validateAgentUrl(agentUrl, 'registration', context, res))) {
       return;
     }
 
@@ -159,41 +131,17 @@ export function registerRegistryRoutes(
       return;
     }
 
-    const requestContext = await auth.authenticateControlPlane(req, res);
-    if (!requestContext) {
-      return;
+    const agents = await getAuthorizedAgents(req, res, context, auth);
+    if (agents) {
+      res.json(agents);
     }
-
-    const result = await context.store.list({
-      ...(requestContext.tenantId
-        ? { tenantId: requestContext.tenantId, includePublic: true }
-        : {}),
-      limit: Number.MAX_SAFE_INTEGER,
-    });
-    res.json(
-      auth.shouldEnforceTenantIsolation(requestContext)
-        ? auth.filterAgentsByContext(result.items, requestContext)
-        : result.items,
-    );
   });
 
   app.get('/admin/agents/export', async (req, res) => {
-    const requestContext = await auth.authenticateControlPlane(req, res);
-    if (!requestContext) {
-      return;
+    const agents = await getAuthorizedAgents(req, res, context, auth);
+    if (agents) {
+      res.json(createRegistryExportDocument(agents));
     }
-
-    const result = await context.store.list({
-      ...(requestContext.tenantId
-        ? { tenantId: requestContext.tenantId, includePublic: true }
-        : {}),
-      limit: Number.MAX_SAFE_INTEGER,
-    });
-    const agents = auth.shouldEnforceTenantIsolation(requestContext)
-      ? auth.filterAgentsByContext(result.items, requestContext)
-      : result.items;
-
-    res.json(createRegistryExportDocument(agents));
   });
 
   app.post('/admin/agents/import', async (req, res) => {
@@ -215,16 +163,7 @@ export function registerRegistryRoutes(
     }
 
     for (const agent of parsed.data.agents) {
-      try {
-        await validateUrl(
-          agent.url,
-          createRegistryOutboundPolicy(context, {
-            telemetryLabels: { 'a2a.registry.operation': 'import' },
-          }),
-        );
-      } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : String(error);
-        res.status(400).json({ error: `Invalid agentUrl: ${message}` });
+      if (!(await validateAgentUrl(agent.url, 'import', context, res))) {
         return;
       }
     }
@@ -250,23 +189,22 @@ export function registerRegistryRoutes(
   });
 
   app.get('/tasks/stream', async (req, res) => {
-    if (await auth.rejectUnauthenticatedControlPlane(req, res)) {
-      return;
-    }
-    sse.configure(res);
-
-    for (const taskEvent of taskProjection.getRecentTasks(10)) {
-      sse.writeData(res, taskEvent);
-    }
-
-    const listener = (payload: unknown) => {
-      sse.writeData(res, payload);
-    };
-
-    context.taskEvents.on('task_updated', listener);
-    res.on('close', () => {
-      context.taskEvents.off('task_updated', listener);
-    });
+    await handleSseStream(
+      req,
+      res,
+      auth,
+      sse,
+      context.taskEvents,
+      'task_updated',
+      (payload) => {
+        sse.writeData(res, payload);
+      },
+      () => {
+        for (const taskEvent of taskProjection.getRecentTasks(10)) {
+          sse.writeData(res, taskEvent);
+        }
+      },
+    );
   });
 
   app.get('/agents/search', async (req, res) => {
@@ -306,22 +244,10 @@ export function registerRegistryRoutes(
       return;
     }
 
-    const requestContext = await auth.authenticateControlPlane(req, res);
-    if (!requestContext) {
-      return;
+    const agents = await getAuthorizedAgents(req, res, context, auth, query);
+    if (agents) {
+      res.json(agents);
     }
-
-    const matches = await context.store.list({
-      ...query,
-      ...(requestContext.tenantId
-        ? { tenantId: requestContext.tenantId, includePublic: true }
-        : {}),
-    });
-    res.json(
-      auth.shouldEnforceTenantIsolation(requestContext)
-        ? auth.filterAgentsByContext(matches.items, requestContext)
-        : matches.items,
-    );
   });
 
   app.get('/agents/:id', async (req, res) => {
@@ -350,76 +276,40 @@ export function registerRegistryRoutes(
   });
 
   const heartbeatAgent = async (req: Request, res: Response) => {
-    const agentId = routeParam(req.params['id']);
-    if (!agentId) {
-      res.status(400).json({ error: 'Missing agent id' });
-      return;
-    }
-
-    const requestContext = await auth.authenticateControlPlane(req, res);
-    if (!requestContext) {
-      return;
-    }
-    const agent = await context.store.get(agentId);
-    if (!agent) {
-      res.status(404).json({ error: 'Agent not found' });
-      return;
-    }
-    if (!auth.canAccessAgent(agent, requestContext)) {
-      res.status(403).json({ error: 'Forbidden' });
-      return;
-    }
-
-    const updated: RegisteredAgent = {
-      ...agent,
-      status: 'healthy',
-      lastHeartbeatAt: new Date().toISOString(),
-      consecutiveFailures: 0,
-      lastSuccessAt: new Date().toISOString(),
-    };
-    await context.store.upsert(updated);
-    context.nextHealthCheckAt.set(
-      updated.id,
-      Date.now() + (context.options.healthyRecheckIntervalMs ?? 30_000),
-    );
-    context.state.metrics.heartbeats += 1;
-    emitRegistryEvent(context, { type: 'heartbeat', agent: updated });
-    res.json(updated);
+    await handleAuthorizedAgentRequest(req, res, context, auth, async (agent) => {
+      const updated: RegisteredAgent = {
+        ...agent,
+        status: 'healthy',
+        lastHeartbeatAt: new Date().toISOString(),
+        consecutiveFailures: 0,
+        lastSuccessAt: new Date().toISOString(),
+      };
+      await context.store.upsert(updated);
+      context.nextHealthCheckAt.set(
+        updated.id,
+        Date.now() + (context.options.healthyRecheckIntervalMs ?? 30_000),
+      );
+      context.state.metrics.heartbeats += 1;
+      emitRegistryEvent(context, { type: 'heartbeat', agent: updated });
+      res.json(updated);
+    });
   };
   app.post('/agents/:id/heartbeat', heartbeatAgent);
   app.post('/admin/agents/:id/heartbeat', heartbeatAgent);
 
   const deleteAgent = async (req: Request, res: Response) => {
-    const agentId = routeParam(req.params['id']);
-    if (!agentId) {
-      res.status(400).json({ error: 'Missing agent id' });
-      return;
-    }
-
-    const requestContext = await auth.authenticateControlPlane(req, res);
-    if (!requestContext) {
-      return;
-    }
-
-    const agent = await context.store.get(agentId);
-    if (!agent) {
-      res.status(404).json({ error: 'Agent not found' });
-      return;
-    }
-    if (!auth.canAccessAgent(agent, requestContext)) {
-      res.status(403).json({ error: 'Forbidden' });
-      return;
-    }
-    const deleted = await context.store.delete(agentId);
-    if (!deleted) {
-      res.status(404).json({ error: 'Agent not found' });
-      return;
-    }
-    const tenantId = requestContext.tenantId;
-    logger.audit('delete_agent', tenantId, `agent:${agentId}`, 'success');
-    taskProjection.purgeAgentTaskState(agentId);
-    emitRegistryEvent(context, { type: 'deleted', id: agentId });
-    res.status(204).send();
+    await handleAuthorizedAgentRequest(req, res, context, auth, async (agent, requestContext) => {
+      const deleted = await context.store.delete(agent.id);
+      if (!deleted) {
+        res.status(404).json({ error: 'Agent not found' });
+        return;
+      }
+      const tenantId = requestContext.tenantId;
+      logger.audit('delete_agent', tenantId, `agent:${agent.id}`, 'success');
+      taskProjection.purgeAgentTaskState(agent.id);
+      emitRegistryEvent(context, { type: 'deleted', id: agent.id });
+      res.status(204).send();
+    });
   };
   app.delete('/agents/:id', deleteAgent);
   app.delete('/admin/agents/:id', deleteAgent);
@@ -562,4 +452,112 @@ function toRegisteredAgent(
     ...(tenantId ? { tenantId } : {}),
     ...(typeof isPublic === 'boolean' ? { isPublic } : {}),
   };
+}
+
+async function validateAgentUrl(
+  url: string,
+  operation: 'registration' | 'import',
+  context: RegistryServerContext,
+  res: Response,
+): Promise<boolean> {
+  try {
+    await validateUrl(
+      url,
+      createRegistryOutboundPolicy(context, {
+        telemetryLabels: { 'a2a.registry.operation': operation },
+      }),
+    );
+    return true;
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    res.status(400).json({ error: `Invalid agentUrl: ${message}` });
+    return false;
+  }
+}
+
+async function handleAuthorizedAgentRequest(
+  req: Request,
+  res: Response,
+  context: RegistryServerContext,
+  auth: RegistryAuthController,
+  handler: (agent: RegisteredAgent, requestContext: RequestContext) => Promise<void>,
+) {
+  const agentId = routeParam(req.params['id']);
+  if (!agentId) {
+    res.status(400).json({ error: 'Missing agent id' });
+    return;
+  }
+
+  const requestContext = await auth.authenticateControlPlane(req, res);
+  if (!requestContext) {
+    return;
+  }
+
+  const agent = await context.store.get(agentId);
+  if (!agent) {
+    res.status(404).json({ error: 'Agent not found' });
+    return;
+  }
+  if (!auth.canAccessAgent(agent, requestContext)) {
+    res.status(403).json({ error: 'Forbidden' });
+    return;
+  }
+
+  await handler(agent, requestContext);
+}
+
+function setupSseListener(
+  res: Response,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  emitter: any,
+  event: string,
+  listener: (payload: unknown) => void,
+) {
+  emitter.on(event, listener);
+  res.on('close', () => {
+    emitter.off(event, listener);
+  });
+}
+
+async function handleSseStream(
+  req: Request,
+  res: Response,
+  auth: RegistryAuthController,
+  sse: RegistrySseController,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  emitter: any,
+  event: string,
+  listener: (payload: unknown) => void,
+  onConfigure?: () => void,
+) {
+  if (await auth.rejectUnauthenticatedControlPlane(req, res)) {
+    return;
+  }
+  sse.configure(res);
+  if (onConfigure) {
+    onConfigure();
+  }
+  setupSseListener(res, emitter, event, listener);
+}
+
+async function getAuthorizedAgents(
+  req: Request,
+  res: Response,
+  context: RegistryServerContext,
+  auth: RegistryAuthController,
+  query: Record<string, unknown> = { limit: Number.MAX_SAFE_INTEGER },
+): Promise<RegisteredAgent[] | undefined> {
+  const requestContext = await auth.authenticateControlPlane(req, res);
+  if (!requestContext) {
+    return undefined;
+  }
+
+  const result = await context.store.list({
+    ...query,
+    ...(requestContext.tenantId ? { tenantId: requestContext.tenantId, includePublic: true } : {}),
+  });
+
+  return auth.shouldEnforceTenantIsolation(requestContext)
+    ? auth.filterAgentsByContext(result.items, requestContext)
+    : result.items;
 }

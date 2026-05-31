@@ -5,6 +5,8 @@ import {
   type AgentListResult,
   type AgentStorageSummary,
   termMatchesQuery,
+  matchesVisibility,
+  applyUpdateStatus,
 } from './indexing.js';
 
 export class InMemoryStorage implements IAgentStorage {
@@ -68,7 +70,7 @@ export class InMemoryStorage implements IAgentStorage {
     const agents = Array.from(filteredIds)
       .map((id) => this.agents.get(id))
       .filter((agent): agent is RegisteredAgent => agent !== undefined)
-      .filter((agent) => this.matchesVisibility(agent, query));
+      .filter((agent) => matchesVisibility(agent, query));
 
     return {
       agentCount: agents.length,
@@ -100,14 +102,7 @@ export class InMemoryStorage implements IAgentStorage {
       return;
     }
 
-    await this.upsert({
-      ...current,
-      status,
-      ...(meta?.consecutiveFailures !== undefined
-        ? { consecutiveFailures: meta.consecutiveFailures }
-        : {}),
-      ...(meta?.lastSuccessAt !== undefined ? { lastSuccessAt: meta.lastSuccessAt } : {}),
-    });
+    await this.upsert(applyUpdateStatus(current, status, meta));
   }
 
   async findBySkill(skill: string): Promise<RegisteredAgent[]> {
@@ -205,23 +200,7 @@ export class InMemoryStorage implements IAgentStorage {
   }
 
   private matchesAgent(agent: RegisteredAgent, query: AgentListQuery): boolean {
-    return this.matchesVisibility(agent, query);
-  }
-
-  private matchesVisibility(
-    agent: RegisteredAgent,
-    query: Pick<AgentListQuery, 'tenantId' | 'includePublic' | 'isPublic'>,
-  ): boolean {
-    if (query.isPublic === true) {
-      return agent.isPublic === true;
-    }
-    if (query.tenantId && query.includePublic) {
-      return agent.tenantId === query.tenantId || agent.isPublic === true;
-    }
-    if (query.tenantId) {
-      return agent.tenantId === query.tenantId;
-    }
-    return true;
+    return matchesVisibility(agent, query);
   }
 
   private addIndexValue(index: Map<string, Set<string>>, key: string, id: string): void {

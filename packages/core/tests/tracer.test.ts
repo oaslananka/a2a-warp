@@ -84,7 +84,7 @@ vi.mock('@opentelemetry/api', () => {
 });
 
 import { baggageEntryMetadataFromString, propagation, trace } from '@opentelemetry/api';
-import { SpanStatusCode, a2aWarpTracer, withA2ABaggage } from '../src/telemetry/tracer.js';
+import { SpanStatusCode, a2aWarpTracer, withA2ABaggage } from '@oaslananka/a2a-warp-telemetry';
 
 describe('tracer helpers', () => {
   beforeEach(() => {

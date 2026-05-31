@@ -1,13 +1,8 @@
 import type { Express, Request, Response } from 'express';
-import type { JwtAuthMiddleware } from '../../auth/JwtAuthMiddleware.js';
-import { getRequestContext } from '../../auth/requestContext.js';
-import type { RuntimeMetrics } from '../../telemetry/RuntimeMetrics.js';
-import {
-  ErrorCodes,
-  JsonRpcError,
-  type JsonRpcRequest,
-  type JsonRpcResponse,
-} from '../../types/jsonrpc.js';
+import type { JwtAuthMiddleware } from '../../auth/index.js';
+import { getRequestContext } from '../../auth/index.js';
+import type { RuntimeMetrics } from '../../telemetry/index.js';
+import { type JsonRpcRequest, type JsonRpcResponse } from '../../types/jsonrpc.js';
 import type { RequestContext } from '../../types/auth.js';
 import type { MessageSendParams, Task } from '../../types/task.js';
 import { logger } from '../../utils/logger.js';
@@ -16,6 +11,7 @@ import type { IdempotencyStoredResult, IdempotencyStore } from '../IdempotencySt
 import type { SSEStreamer } from '../SSEStreamer.js';
 import type { TaskManager, TaskUpdatedEvent } from '../TaskManager.js';
 import { decorateIdempotentResult, type IdempotencyResolution } from './idempotency.js';
+import { getTaskOrThrow } from './jsonRpcHandler.js';
 import { isTerminalTaskState } from './lifecycleErrors.js';
 
 export const STREAM_PATHS = ['/stream', '/a2a/stream'] as const;
@@ -55,6 +51,25 @@ export function isStreamingRpcMethod(method: string): boolean {
   return method === 'message/stream' || method === 'tasks/resubscribe';
 }
 
+export async function authenticateRequestOrSend401(
+  req: Request,
+  res: Response,
+  authMiddleware: JwtAuthMiddleware | undefined,
+  runtimeMetrics: RuntimeMetrics,
+): Promise<RequestContext | null> {
+  let requestContext = getRequestContext(req);
+  if (authMiddleware) {
+    try {
+      requestContext = await authMiddleware.authenticateRequestContext(req);
+    } catch {
+      runtimeMetrics.recordAuthReject();
+      res.status(401).send('Unauthorized');
+      return null;
+    }
+  }
+  return requestContext;
+}
+
 export function registerStreamRoutes(app: Express, deps: StreamSubscriptionDependencies): void {
   const handler = async (req: Request, res: Response) => handleStreamRequest(req, res, deps);
   for (const path of STREAM_PATHS) {
@@ -67,15 +82,14 @@ async function handleStreamRequest(
   res: Response,
   deps: StreamSubscriptionDependencies,
 ): Promise<void> {
-  let requestContext = getRequestContext(req);
-  if (deps.authMiddleware) {
-    try {
-      requestContext = await deps.authMiddleware.authenticateRequestContext(req);
-    } catch {
-      deps.runtimeMetrics.recordAuthReject();
-      res.status(401).send('Unauthorized');
-      return;
-    }
+  const requestContext = await authenticateRequestOrSend401(
+    req,
+    res,
+    deps.authMiddleware,
+    deps.runtimeMetrics,
+  );
+  if (!requestContext) {
+    return;
   }
 
   const taskId = req.query['taskId'];
@@ -100,6 +114,15 @@ async function handleStreamRequest(
     deps.runtimeMetrics.recordSseConnectionClosed();
   });
   deps.streamer.sendTaskUpdate(taskId, task);
+}
+
+export function initSseResponse(req: Request, res: Response, runtimeMetrics: RuntimeMetrics): void {
+  runtimeMetrics.recordSseConnectionOpened(Boolean(req.header('last-event-id')));
+  res.status(200);
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders?.();
 }
 
 export async function handleStreamingRpc(
@@ -141,26 +164,15 @@ export async function handleStreamingRpc(
     }
   } else {
     const params = (rpcReq.params ?? {}) as Record<string, unknown>;
-    const taskId = params['taskId'];
-    if (typeof taskId !== 'string') {
-      throw new JsonRpcError(ErrorCodes.InvalidParams, 'Missing taskId');
-    }
-    const existingTask = deps.taskManager.getTask(taskId);
-    if (!existingTask) {
-      throw new JsonRpcError(ErrorCodes.TaskNotFound, 'Task not found');
-    }
-    if (!deps.canAccessTask(existingTask, context.requestContext)) {
-      throw new JsonRpcError(ErrorCodes.Unauthorized, 'Unauthorized task access');
-    }
-    task = existingTask;
+    task = getTaskOrThrow(
+      params['taskId'],
+      deps.taskManager,
+      context.requestContext,
+      deps.canAccessTask,
+    );
   }
 
-  deps.runtimeMetrics.recordSseConnectionOpened(Boolean(context.req.header('last-event-id')));
-  res.status(200);
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache, no-transform');
-  res.setHeader('Connection', 'keep-alive');
-  res.flushHeaders?.();
+  initSseResponse(context.req, res, deps.runtimeMetrics);
 
   let closed = false;
   const close = () => {
@@ -211,12 +223,7 @@ function writeStreamingReplay(
   idempotency: IdempotencyResolution & { replay: IdempotencyStoredResult },
   runtimeMetrics: RuntimeMetrics,
 ): void {
-  runtimeMetrics.recordSseConnectionOpened(Boolean(context.req.header('last-event-id')));
-  res.status(200);
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache, no-transform');
-  res.setHeader('Connection', 'keep-alive');
-  res.flushHeaders?.();
+  initSseResponse(context.req, res, runtimeMetrics);
 
   const response: JsonRpcResponse =
     idempotency.replay.kind === 'error'

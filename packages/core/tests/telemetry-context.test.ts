@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createTelemetryContextMiddleware } from '../src/server/http/middleware.js';
-import { extractA2AContext } from '../src/telemetry/tracer.js';
+import { extractA2AContext } from '@oaslananka/a2a-warp-telemetry';
 
 describe('telemetry context propagation', () => {
   it('extractA2AContext returns a context object from headers', () => {
