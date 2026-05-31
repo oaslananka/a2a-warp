@@ -104,6 +104,9 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: https://registry.npmjs.org
 
+      # ── Identity checks before npm install (prevents npm's own docs from causing false positives) ──
+      - run: pnpm run lint:identity
+
       # ── Install pinned npm with sha256 verification ──
       - name: Install pinned npm
         run: |
@@ -113,7 +116,6 @@ jobs:
           echo "$(pwd)/package/bin" >> "$GITHUB_PATH"
 
       # ── Build and test ──
-      - run: pnpm run lint:identity
       - run: pnpm run typecheck
       - run: pnpm run test
       - run: pnpm run build
