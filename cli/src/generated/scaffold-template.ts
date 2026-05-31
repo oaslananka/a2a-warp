@@ -1,12 +1,12 @@
 // This file is written by scripts/build-tsc-package.mjs from workspace manifests and tools/runtime-versions.json.
 export const scaffoldTemplateConfig = {
   dependencies: {
-    '@oaslananka/a2a-warp': '^5.0.0',
-    '@oaslananka/a2a-warp-adapters': '^5.0.0',
-    '@oaslananka/a2a-warp-registry': '^5.0.0',
+    '@oaslananka/a2a-warp': '^5.0.1',
+    '@oaslananka/a2a-warp-adapters': '^5.0.1',
+    '@oaslananka/a2a-warp-registry': '^5.0.1',
     '@anthropic-ai/sdk': '^0.100.0',
     langchain: '^0.3.37 || ^1.0.0',
-    openai: '6.39.0',
+    openai: '6.39.1',
     zod: '^4.4.3',
   },
   devDependencies: {
