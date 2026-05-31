@@ -92,10 +92,9 @@ jobs:
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "✅ Tag validated: ${TAG} → version ${VERSION}"
 
-      # ── Checkout the exact tag ──
+      # ── Checkout main for scripts ──
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
-          ref: ${{ steps.tag.outputs.tag }}
           fetch-depth: 0
           persist-credentials: false
 
