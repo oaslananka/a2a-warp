@@ -121,7 +121,6 @@ describe('JwtAuthMiddleware', () => {
           audience: '@oaslananka/a2a-warp',
         },
       ],
-      outboundPolicy: { allowLocalhost: true },
     });
 
     try {
@@ -246,7 +245,7 @@ describe('JwtAuthMiddleware', () => {
           audience: '@oaslananka/a2a-warp',
         },
       ],
-      outboundPolicy: { allowLocalhost: true, allowedSchemes: ['https'] },
+      outboundPolicy: { timeoutMs: 5000 },
     });
 
     await expect(
@@ -306,7 +305,7 @@ describe('JwtAuthMiddleware', () => {
           audience: '@oaslananka/a2a-warp',
         },
       ],
-      outboundPolicy: { allowUnresolvedHostnames: true, timeoutMs: 5000, retries: 0 },
+      outboundPolicy: { timeoutMs: 5000, retries: 0 },
     });
 
     const result = await middleware.authenticateRequest({
@@ -357,7 +356,7 @@ describe('JwtAuthMiddleware', () => {
           audience: '@oaslananka/a2a-warp',
         },
       ],
-      outboundPolicy: { allowUnresolvedHostnames: true, timeoutMs: 25, retries: 0 },
+      outboundPolicy: { timeoutMs: 25, retries: 0 },
     });
 
     const rejection = middleware
@@ -409,7 +408,6 @@ describe('JwtAuthMiddleware', () => {
           audience: '@oaslananka/a2a-warp',
         },
       ],
-      outboundPolicy: { allowLocalhost: true },
     });
 
     try {
@@ -478,7 +476,6 @@ describe('JwtAuthMiddleware', () => {
           audience: '@oaslananka/a2a-warp',
         },
       ],
-      outboundPolicy: { allowLocalhost: true },
     });
 
     try {
@@ -521,7 +518,6 @@ describe('JwtAuthMiddleware', () => {
           audience: '@oaslananka/a2a-warp',
         },
       ],
-      outboundPolicy: { allowLocalhost: true },
     });
 
     try {

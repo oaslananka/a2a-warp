@@ -28,26 +28,28 @@ Commands:
   benchmark [options] <url>        Run request benchmarks against an A2A endpoint.
   conformance [options] <url>      Run the A2A conformance fixture suite.
   doctor                           Print local CLI diagnostics.
+  release-check                    Check release readiness.
   export-card [options] <url>      Export an endpoint Agent Card to JSON.
   help [command]                   display help for command
 ```
 
 ## Commands
 
-| Command                | Summary                                            |
-| ---------------------- | -------------------------------------------------- |
-| `a2a-warp benchmark`   | Run request benchmarks against an A2A endpoint.    |
-| `a2a-warp conformance` | Run the A2A conformance fixture suite.             |
-| `a2a-warp discover`    | Resolve and print an endpoint Agent Card.          |
-| `a2a-warp doctor`      | Print local CLI diagnostics.                       |
-| `a2a-warp export-card` | Export an endpoint Agent Card to JSON.             |
-| `a2a-warp health`      | Check an A2A endpoint health route.                |
-| `a2a-warp monitor`     | Poll task status snapshots.                        |
-| `a2a-warp registry`    | Start, inspect, export, and import registry state. |
-| `a2a-warp scaffold`    | Create an A2A agent project scaffold.              |
-| `a2a-warp send`        | Send a text message to an A2A endpoint.            |
-| `a2a-warp task`        | Run task lifecycle operations.                     |
-| `a2a-warp validate`    | Validate an Agent Card file or endpoint.           |
+| Command                  | Summary                                            |
+| ------------------------ | -------------------------------------------------- |
+| `a2a-warp benchmark`     | Run request benchmarks against an A2A endpoint.    |
+| `a2a-warp conformance`   | Run the A2A conformance fixture suite.             |
+| `a2a-warp discover`      | Resolve and print an endpoint Agent Card.          |
+| `a2a-warp doctor`        | Print local CLI diagnostics.                       |
+| `a2a-warp export-card`   | Export an endpoint Agent Card to JSON.             |
+| `a2a-warp health`        | Check an A2A endpoint health route.                |
+| `a2a-warp monitor`       | Poll task status snapshots.                        |
+| `a2a-warp registry`      | Start, inspect, export, and import registry state. |
+| `a2a-warp release-check` | Check release readiness.                           |
+| `a2a-warp scaffold`      | Create an A2A agent project scaffold.              |
+| `a2a-warp send`          | Send a text message to an A2A endpoint.            |
+| `a2a-warp task`          | Run task lifecycle operations.                     |
+| `a2a-warp validate`      | Validate an Agent Card file or endpoint.           |
 
 ## Shared Network Options
 
