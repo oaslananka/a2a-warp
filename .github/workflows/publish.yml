@@ -104,6 +104,14 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: https://registry.npmjs.org
 
+      # ── Install pinned npm with sha256 verification ──
+      - name: Install pinned npm
+        run: |
+          curl -sL "https://registry.npmjs.org/npm/-/npm-${NPM_VERSION}.tgz" -o npm.tgz
+          echo "c15ed81d98f5f4c45e30f71e5dcf83ae24e9af5beb5db8b1d58becea97ba38cc  npm.tgz" | sha256sum -c -
+          tar -xzf npm.tgz
+          echo "$(pwd)/package/bin" >> "$GITHUB_PATH"
+
       # ── Build and test ──
       - run: pnpm run lint:identity
       - run: pnpm run typecheck
@@ -130,7 +138,7 @@ jobs:
       # ── Preflight: check npm registry for existing versions ──
       - name: 'Preflight: check npm registry'
         run: |
-          npm_cli=(npx --yes "npm@${NPM_VERSION}")
+          npm_cli=(npm)
           any_missing=false
           for pkg_file in ./.artifacts/npm/*.tgz; do
             pkg_json="$(tar -xOzf "$pkg_file" package/package.json)"
@@ -180,7 +188,7 @@ jobs:
           npmrc_path="${NPM_CONFIG_USERCONFIG:-${HOME}/.npmrc}"
           echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > "${npmrc_path}"
 
-          npm_cli=(npx --yes "npm@${NPM_VERSION}")
+          npm_cli=(npm)
           "${npm_cli[@]}" --version
 
           for package_file in ./.artifacts/npm/*.tgz; do
@@ -206,7 +214,7 @@ jobs:
       # ── Verify ──
       - name: Verify npm provenance
         run: |
-          npm_cli=(npx --yes "npm@${NPM_VERSION}")
+          npm_cli=(npm)
           # If packages were published with --no-provenance (token auth),
           # there is no provenance to audit. Check and skip gracefully.
           if ! "${npm_cli[@]}" audit signatures --silent 2>/dev/null; then
