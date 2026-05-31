@@ -160,8 +160,8 @@ jobs:
         run: |
           tmp="$(mktemp -d)"
           pushd "$tmp"
-          npm init -y
-          npm install -- "${GITHUB_WORKSPACE}"/.artifacts/npm/*.tgz
+          echo '{}' > package.json
+          node "${GITHUB_WORKSPACE}/package/bin/npm-cli.js" install -- "${GITHUB_WORKSPACE}"/.artifacts/npm/*.tgz
           node -e "console.log('smoke install ok')"
           popd
 
@@ -223,7 +223,7 @@ jobs:
           fi
           verify_dir="$(mktemp -d)"
           pushd "$verify_dir"
-          npm init -y
+          echo '{}' > package.json
           for package_file in "${GITHUB_WORKSPACE}"/.artifacts/npm/*.tgz; do
             pkg_json="$(tar -xOzf "$package_file" package/package.json)"
             pkg_name="$(node -e "const p=JSON.parse(require('fs').readFileSync(0,'utf8'));process.stdout.write(p.name);" <<< "$pkg_json")"
