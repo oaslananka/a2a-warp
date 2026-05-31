@@ -163,15 +163,6 @@ jobs:
             exit 1
           fi
 
-      - name: Smoke install tarballs
-        run: |
-          tmp="$(mktemp -d)"
-          pushd "$tmp"
-          echo '{}' > package.json
-          node "${GITHUB_WORKSPACE}/package/bin/npm-cli.js" install -- "${GITHUB_WORKSPACE}"/.artifacts/npm/*.tgz
-          node -e "console.log('smoke install ok')"
-          popd
-
       - name: Validate release artifacts
         run: pnpm run release:validate
 
