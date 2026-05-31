@@ -1,5 +1,20 @@
 # Changelog
 
+## [5.1.2](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-cli-v5.1.1...@oaslananka/a2a-warp-cli-v5.1.2) (2026-05-31)
+
+
+### Bug Fixes
+
+* sync generated files and compatibility docs to v5.1.1 ([#194](https://github.com/oaslananka/a2a-warp/issues/194)) ([da6462d](https://github.com/oaslananka/a2a-warp/commit/da6462d11f80e70a789f8b90d2b7797ea1e6bc5e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp bumped to 5.1.2
+    * @oaslananka/a2a-warp-registry bumped to 5.1.2
+
 ## [5.1.1](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-cli-v5.1.0...@oaslananka/a2a-warp-cli-v5.1.1) (2026-05-31)
 
 

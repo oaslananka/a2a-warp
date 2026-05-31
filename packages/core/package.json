@@ -1,6 +1,6 @@
 {
   "name": "@oaslananka/a2a-warp",
-  "version": "5.1.1",
+  "version": "5.1.2",
   "description": "Agent2Agent protocol runtime, client, auth, telemetry, storage, and middleware for TypeScript.",
   "keywords": [
     "a2a",
