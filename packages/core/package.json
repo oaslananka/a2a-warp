@@ -41,7 +41,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@opentelemetry/sdk-node": "^0.218.0",
+    "@opentelemetry/sdk-node": "0.218.0",
     "@types/express": "5.0.6",
     "typescript": "6.0.3"
   },
