@@ -45,6 +45,8 @@ All public packages in the 4.0.x line share the same Node engine range:
 | `@oaslananka/a2a-warp-adapter-openai`     | `4.0.0`         | `>=22.22.1 <25` | OpenAI Chat API adapter.                                                                                         |
 | `@oaslananka/a2a-warp-adapters`           | `4.0.0`         | `>=22.22.1 <25` | **Deprecated** — use individual `@oaslananka/a2a-warp-adapter-*` packages instead.                               |
 | `@oaslananka/a2a-warp-core`               | `4.0.0`         | `>=22.22.1 <25` | Protocol types, interfaces, constants, and validators. Zero runtime dependencies.                                |
+| `@oaslananka/a2a-warp-auth`               | `1.0.0`         | `>=22.22.1 <25` | Authentication and authorization middleware, helpers, and JWT/JWKS utilities.                                    |
+| `@oaslananka/a2a-warp-telemetry`          | `1.0.0`         | `>=22.22.1 <25` | OpenTelemetry integration, trace context propagation, and W3C TraceContext helpers.                              |
 | `@oaslananka/a2a-warp-registry`           | `4.0.0`         | `>=22.22.1 <25` | Registry server, discovery, health, and storage helpers.                                                         |
 | `@oaslananka/a2a-warp-cli`                | `4.0.0`         | `>=22.22.1 <25` | Published `a2a-warp` command-line interface.                                                                     |
 | `create-a2a-warp`                         | `4.0.0`         | `>=22.22.1 <25` | Project scaffolder.                                                                                              |
@@ -90,6 +92,12 @@ installs do not pull every integration stack.
 | Package                                   | Peer dependency                             | Supported range                                  |
 | ----------------------------------------- | ------------------------------------------- | ------------------------------------------------ |
 | `@oaslananka/a2a-warp`                    | `@opentelemetry/api`                        | `^1.9.1`                                         |
+| `@oaslananka/a2a-warp-telemetry`          | `@opentelemetry/api`                        | `^1.9.1`                                         |
+| `@oaslananka/a2a-warp-telemetry`          | `@opentelemetry/exporter-metrics-otlp-http` | `^0.218.0`                                       |
+| `@oaslananka/a2a-warp-telemetry`          | `@opentelemetry/exporter-trace-otlp-http`   | `^0.218.0`                                       |
+| `@oaslananka/a2a-warp-telemetry`          | `@opentelemetry/resources`                  | `^2.7.1`                                         |
+| `@oaslananka/a2a-warp-telemetry`          | `@opentelemetry/sdk-metrics`                | `^2.7.1`                                         |
+| `@oaslananka/a2a-warp-telemetry`          | `@opentelemetry/sdk-node`                   | `^0.218.0`                                       |
 | `@oaslananka/a2a-warp-adapter-anthropic`  | `@anthropic-ai/sdk`                         | `^0.39.0 \|\| ^0.95.0 \|\| ^0.96.0 \|\| ^0.99.0` |
 | `@oaslananka/a2a-warp-adapter-langchain`  | `langchain`                                 | `^0.3.37 \|\| ^1.0.0`                            |
 | `@oaslananka/a2a-warp-adapter-llamaindex` | `llamaindex`                                | `^0.9.11 \|\| ^0.12.0`                           |
@@ -99,12 +107,6 @@ installs do not pull every integration stack.
 | `@oaslananka/a2a-warp-adapters`           | `llamaindex`                                | `^0.9.11 \|\| ^0.12.0`                           |
 | `@oaslananka/a2a-warp-adapters`           | `openai`                                    | `^4.20.0 \|\| ^6.0.0`                            |
 | `@oaslananka/a2a-warp-transport-ws`       | `ws`                                        | `^8.18.0`                                        |
-| `@oaslananka/a2a-warp-telemetry`          | `@opentelemetry/api`                        | `^1.9.1`                                         |
-| `@oaslananka/a2a-warp-telemetry`          | `@opentelemetry/exporter-metrics-otlp-http` | `^0.218.0`                                       |
-| `@oaslananka/a2a-warp-telemetry`          | `@opentelemetry/exporter-trace-otlp-http`   | `^0.218.0`                                       |
-| `@oaslananka/a2a-warp-telemetry`          | `@opentelemetry/resources`                  | `^2.7.1`                                         |
-| `@oaslananka/a2a-warp-telemetry`          | `@opentelemetry/sdk-metrics`                | `^2.7.1`                                         |
-| `@oaslananka/a2a-warp-telemetry`          | `@opentelemetry/sdk-node`                   | `^0.218.0`                                       |
 
 Adapter tests use fake provider objects by default. Live provider behavior must
 remain opt-in and cannot be required by the default local verification gate.
