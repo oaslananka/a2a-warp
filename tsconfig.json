@@ -14,6 +14,12 @@
       "path": "./packages/transport-ws"
     },
     {
+      "path": "./packages/auth"
+    },
+    {
+      "path": "./packages/telemetry"
+    },
+    {
       "path": "./packages/create-a2a-agent"
     },
     {
