@@ -1,5 +1,20 @@
 # Changelog
 
+## [4.1.1](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-adapter-google-adk-v4.1.0...@oaslananka/a2a-warp-adapter-google-adk-v4.1.1) (2026-05-31)
+
+
+### Miscellaneous Chores
+
+* **@oaslananka/a2a-warp-adapter-google-adk:** Synchronize A2A Warp packages versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp bumped to 4.1.1
+    * @oaslananka/a2a-warp-adapter-base bumped to 4.1.1
+
 ## [4.1.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-adapter-google-adk-v4.0.0...@oaslananka/a2a-warp-adapter-google-adk-v4.1.0) (2026-05-31)
 
 
