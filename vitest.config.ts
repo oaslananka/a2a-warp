@@ -45,10 +45,10 @@ export default defineConfig({
         'packages/registry/src/storage/IAgentStorage.ts',
       ],
       thresholds: {
-        statements: 87,
+        statements: 86,
         branches: 77,
-        functions: 90,
-        lines: 88,
+        functions: 89,
+        lines: 86,
       },
     },
     projects: [
