@@ -1,5 +1,20 @@
 # Changelog
 
+## [4.1.1](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-cli-v4.1.0...@oaslananka/a2a-warp-cli-v4.1.1) (2026-05-31)
+
+
+### Bug Fixes
+
+* sync stale generated versions and docs compatibility matrix to v4.1.0 ([77ff7dc](https://github.com/oaslananka/a2a-warp/commit/77ff7dcd5fb7a3d1d4580f7921d1c45b70be843c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp bumped to 4.1.1
+    * @oaslananka/a2a-warp-registry bumped to 4.1.1
+
 ## [4.1.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-cli-v4.0.0...@oaslananka/a2a-warp-cli-v4.1.0) (2026-05-31)
 
 
