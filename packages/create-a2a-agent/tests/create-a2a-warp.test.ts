@@ -47,6 +47,8 @@ const localPackageDirs = [
   ['@oaslananka/a2a-warp-adapter-llamaindex', 'packages/adapter-llamaindex'],
   ['@oaslananka/a2a-warp-adapter-crewai', 'packages/adapter-crewai'],
   ['@oaslananka/a2a-warp-registry', 'packages/registry'],
+  ['@oaslananka/a2a-warp-auth', 'packages/auth'],
+  ['@oaslananka/a2a-warp-telemetry', 'packages/telemetry'],
 ] as const;
 
 const templates: TemplateExpectation[] = [
