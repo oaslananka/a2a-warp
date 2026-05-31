@@ -1,6 +1,6 @@
 {
   "name": "@oaslananka/a2a-warp-adapter-anthropic",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "Anthropic Claude adapter for the Agent2Agent protocol.",
   "keywords": [
     "a2a",
