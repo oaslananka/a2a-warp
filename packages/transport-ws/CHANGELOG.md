@@ -1,5 +1,26 @@
 # Changelog
 
+## [5.0.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-transport-ws-v4.1.1...@oaslananka/a2a-warp-transport-ws-v5.0.0) (2026-05-31)
+
+
+### ⚠ BREAKING CHANGES
+
+* **packaging:** Package names changed:
+    - @oaslananka/a2a-warp-ws → @oaslananka/a2a-warp-transport-ws
+    - @oaslananka/a2a-warp-grpc → @oaslananka/a2a-warp-transport-grpc
+    - @oaslananka/a2a-warp-mcp-bridge → @oaslananka/a2a-warp-bridge-mcp
+
+### Features
+
+* **packaging:** rename transport and bridge packages to category-prefix pattern ([7f85d71](https://github.com/oaslananka/a2a-warp/commit/7f85d71b0f2fbf2cdac7a7fd7cac43da9e701c67))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp bumped to 5.0.0
+
 ## [4.1.1](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-transport-ws-v4.1.0...@oaslananka/a2a-warp-transport-ws-v4.1.1) (2026-05-31)
 
 

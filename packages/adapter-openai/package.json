@@ -1,6 +1,6 @@
 {
   "name": "@oaslananka/a2a-warp-adapter-openai",
-  "version": "4.1.1",
+  "version": "5.0.0",
   "description": "OpenAI adapter for the Agent2Agent protocol.",
   "keywords": [
     "a2a",
