@@ -1,5 +1,19 @@
 # Changelog
 
+## [4.1.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-registry-v4.0.0...@oaslananka/a2a-warp-registry-v4.1.0) (2026-05-31)
+
+
+### Features
+
+* extract auth and telemetry into separate packages, update docs ([6a3137d](https://github.com/oaslananka/a2a-warp/commit/6a3137d6d69e60861361967cbf4372c3d4b02cd1))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp bumped to 4.1.0
+
 ## [4.0.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-registry-v3.0.0...@oaslananka/a2a-warp-registry-v4.0.0) (2026-05-31)
 
 

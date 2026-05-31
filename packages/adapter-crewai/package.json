@@ -1,6 +1,6 @@
 {
   "name": "@oaslananka/a2a-warp-adapter-crewai",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "description": "CrewAI HTTP bridge adapter for the Agent2Agent protocol.",
   "keywords": [
     "a2a",
