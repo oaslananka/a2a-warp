@@ -1,5 +1,26 @@
 # Changelog
 
+## [6.0.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-adapters-v5.1.2...@oaslananka/a2a-warp-adapters-v6.0.0) (2026-05-31)
+
+
+### Miscellaneous Chores
+
+* **@oaslananka/a2a-warp-adapters:** Synchronize A2A Warp packages versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp bumped to 6.0.0
+    * @oaslananka/a2a-warp-adapter-base bumped to 6.0.0
+    * @oaslananka/a2a-warp-adapter-openai bumped to 6.0.0
+    * @oaslananka/a2a-warp-adapter-anthropic bumped to 6.0.0
+    * @oaslananka/a2a-warp-adapter-langchain bumped to 6.0.0
+    * @oaslananka/a2a-warp-adapter-google-adk bumped to 6.0.0
+    * @oaslananka/a2a-warp-adapter-llamaindex bumped to 6.0.0
+    * @oaslananka/a2a-warp-adapter-crewai bumped to 6.0.0
+
 ## [5.1.2](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-adapters-v5.1.1...@oaslananka/a2a-warp-adapters-v5.1.2) (2026-05-31)
 
 
