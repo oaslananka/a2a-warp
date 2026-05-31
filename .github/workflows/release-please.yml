@@ -125,9 +125,14 @@ jobs:
           echo "=== Syncing compatibility docs to ${VERSION} ==="
           for f in docs/compatibility.md docs-site/guide/compatibility.md; do
             if [ -f "$f" ]; then
-              sed -i -E \
-                "/\`@oaslananka\/a2a-warp|\`create-a2a-warp\`/ s/\`[0-9]+\.[0-9]+\.[0-9]+\`/\`${VERSION}\`/" \
-                "$f"
+              jq -r '.packages | to_entries[] | .key' release-please-config.json |
+              while IFS= read -r dir; do
+                pkg_name="$(jq -r '.name' "${dir}/package.json")"
+                esc_name="$(printf '%s\n' "$pkg_name" | sed 's/[\/&]/\\&/g')"
+                sed -i -E \
+                  "/\`${esc_name}\`/ s/\`[0-9]+\.[0-9]+\.[0-9]+\`/\`${VERSION}\`/" \
+                  "$f"
+              done
               echo "Updated $f"
             fi
           done
@@ -146,7 +151,7 @@ jobs:
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add -A
             git commit -m "fix: sync generated files for release"
-            git push
+            git push --no-verify
           else
             echo "No generated file changes to commit"
           fi
