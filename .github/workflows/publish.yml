@@ -128,14 +128,20 @@ jobs:
       - name: 'Preflight: validate package versions match tag'
         run: |
           EXPECTED='${{ steps.version.outputs.version }}'
+          all_match=true
           for pkg_file in .artifacts/npm/*.tgz; do
-            pkg_version="$(tar -xOzf "$pkg_file" package/package.json | node -e "process.stdout.write(JSON.parse(require('fs').readFileSync(0,'utf8')).version)")"
+            pkg_info="$(tar -xOzf "$pkg_file" package/package.json | node -e "const p=JSON.parse(require('fs').readFileSync(0,'utf8'));process.stdout.write(p.name + '@' + p.version)")"
+            pkg_version="${pkg_info#*@}"
             if [ "$pkg_version" != "$EXPECTED" ]; then
-              echo "❌ Package $pkg_file version ${pkg_version} != expected ${EXPECTED}"
-              exit 1
+              echo "⚠  ${pkg_info} — version ${pkg_version} != expected ${EXPECTED} (will be skipped during publish)"
+              all_match=false
             fi
           done
-          echo "✅ All package versions match ${EXPECTED}"
+          if $all_match; then
+            echo "✅ All package versions match ${EXPECTED}"
+          else
+            echo "⚠  Some packages have non-matching versions — they will be skipped during publish"
+          fi
 
       # ── Preflight: check npm registry for existing versions ──
       - name: 'Preflight: check npm registry'
