@@ -110,6 +110,7 @@ jobs:
     timeout-minutes: 15
     permissions:
       contents: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
@@ -118,7 +119,17 @@ jobs:
       - uses: ./.github/actions/setup-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
+      - name: Detect release commit
+        id: detect
+        run: |
+          commit_msg="$(git log -1 --format=%B)"
+          if [[ "$commit_msg" =~ chore:\ release\ main ]]; then
+            echo "is_release=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_release=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Regenerate generated files
+        if: steps.detect.outputs.is_release == 'true'
         run: |
           set -euo pipefail
           VERSION="$(jq -r '."packages/core"' .release-please-manifest.json)"
@@ -143,15 +154,42 @@ jobs:
             esc_pkg="${pkg//\//\\/}"
             sed -i "s/\(${esc_pkg}\)': '^[0-9]*\.[0-9]*\.[0-9]*'/\\1': '^${VERSION}'/" cli/src/generated/scaffold-template.ts
           done
-      - name: Commit and push generated file changes
+      - name: Create branch, PR, and auto-merge for generated file changes
+        if: steps.detect.outputs.is_release == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          if ! git diff --quiet; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add -A
-            git commit -m "fix: sync generated files for release"
-            git push --no-verify
-          else
+          if git diff --quiet; then
             echo "No generated file changes to commit"
+            exit 0
           fi
+
+          VERSION="$(jq -r '."packages/core"' .release-please-manifest.json)"
+          BRANCH="chore/sync-generated-files-v${VERSION}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git checkout -b "$BRANCH"
+          git add -A
+          git commit -m "fix: sync generated files for v${VERSION}"
+
+          # Push to the branch - branches are not subject to main rulesets
+          git push origin "$BRANCH"
+
+          # Check if PR already exists for this branch
+          EXISTING_PR="$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')"
+          if [ -n "$EXISTING_PR" ]; then
+            echo "PR #${EXISTING_PR} already exists, updating"
+          else
+            gh pr create \
+              --title "chore: sync generated files for v${VERSION}" \
+              --body "Automated sync of version numbers and generated files after v${VERSION} release." \
+              --base main \
+              --head "$BRANCH"
+          fi
+
+          # Enable auto-merge (squash) - CI will run on the PR naturally
+          gh pr merge "$BRANCH" --auto --squash
+          echo "Auto-merge enabled for ${BRANCH}"
