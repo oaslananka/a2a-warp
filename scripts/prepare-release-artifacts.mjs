@@ -29,6 +29,39 @@ async function listTarballs(dir) {
   return entries.filter((entry) => entry.endsWith('.tgz')).sort();
 }
 
+async function readTarballVersion(tarballPath) {
+  // Extract version via tar pipe to node — avoids temp file
+  const { execFileSync } = await import('node:child_process');
+  const pkgJson = JSON.parse(
+    execFileSync('tar', ['-xOzf', tarballPath, 'package/package.json'], {
+      encoding: 'utf-8',
+      maxBuffer: 64 * 1024,
+      stdio: ['pipe', 'pipe', 'ignore'],
+    }),
+  );
+  return pkgJson.version;
+}
+
+async function pruneNonMatchingPackages(dir, expectedVersion) {
+  const tarballs = await listTarballs(dir);
+  let kept = 0;
+  let pruned = 0;
+  for (const tarball of tarballs) {
+    const tarballPath = join(dir, tarball);
+    const version = await readTarballVersion(tarballPath);
+    if (version !== expectedVersion) {
+      await rm(tarballPath);
+      console.warn(
+        `[prune] removed ${tarball} (version ${version} !== expected ${expectedVersion})`,
+      );
+      pruned++;
+    } else {
+      kept++;
+    }
+  }
+  console.log(`[prune] kept ${kept} package(s), removed ${pruned} mismatched package(s)`);
+}
+
 async function writeChecksums(dir) {
   const tarballs = await listTarballs(dir);
   if (tarballs.length === 0) {
@@ -56,5 +89,14 @@ await runPnpm([
   '--pack-destination',
   npmArtifactDir,
 ]);
+// Prune package tarballs whose version does not match the core release version.
+// Individually-versioned packages (auth, telemetry, etc.) are excluded so the
+// preflight validation in publish.yml does not reject them.
+const corePkg = JSON.parse(
+  await readFile(join(import.meta.dirname, '..', 'packages', 'core', 'package.json'), 'utf-8'),
+);
+await pruneNonMatchingPackages(npmArtifactDir, corePkg.version);
+
+// Checksums must be written after pruning so they reflect only the release set.
 await writeChecksums(npmArtifactDir);
 await generateSbom();
