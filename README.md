@@ -56,6 +56,7 @@ a2a-warp registry import --url http://127.0.0.1:3099 --input ./registry-export.j
 a2a-warp export-card http://127.0.0.1:3000 --output ./agent-card.json
 a2a-warp monitor http://127.0.0.1:3000 --cycles 3
 a2a-warp benchmark http://127.0.0.1:3000 --requests 25 --concurrency 5
+a2a-warp release-check
 a2a-warp doctor --json
 ```
 
@@ -74,6 +75,7 @@ a2a-warp registry import --url http://127.0.0.1:3099 --input .\registry-export.j
 a2a-warp export-card http://127.0.0.1:3000 --output .\agent-card.json
 a2a-warp monitor http://127.0.0.1:3000 --cycles 3
 a2a-warp benchmark http://127.0.0.1:3000 --requests 25 --concurrency 5
+a2a-warp release-check
 a2a-warp doctor --json
 ```
 
