@@ -1,6 +1,6 @@
 {
   "name": "@oaslananka/a2a-warp-core",
-  "version": "4.1.1",
+  "version": "5.0.0",
   "description": "Agent2Agent protocol TypeScript types, interfaces, constants, and validators.",
   "keywords": [
     "a2a",
