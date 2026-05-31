@@ -80,7 +80,7 @@
     "release:ready": "a2a-warp release-check",
     "check:name-collisions": "node scripts/check-name-collisions.mjs",
     "check:bundle-sizes": "node scripts/check-bundle-sizes.mjs",
-    "check:pre-push": "pnpm run verify",
+    "check:pre-push": "pnpm run lint && pnpm run build && pnpm run typecheck && pnpm run test:coverage && pnpm run test:integration && pnpm run pack:dry-run && pnpm run schemas:check && pnpm run docs:build && pnpm run docs:check && pnpm run security && pnpm run verify:structure && pnpm run gc",
     "check:packages": "publint && attw --pack .",
     "commitlint": "commitlint --from HEAD~1 --to HEAD",
     "lint:staged": "lint-staged",
