@@ -1,5 +1,21 @@
 # Changelog
 
+## [5.1.1](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-cli-v5.1.0...@oaslananka/a2a-warp-cli-v5.1.1) (2026-05-31)
+
+
+### Bug Fixes
+
+* remove commit-message guard from Release Please tag/release/sync jobs ([e5f9061](https://github.com/oaslananka/a2a-warp/commit/e5f9061b9d25606638fac8f00cf43303a67016ad))
+* sync scaffold template and compatibility docs to v5.1.0 for PR [#190](https://github.com/oaslananka/a2a-warp/issues/190) ([0bfa5d9](https://github.com/oaslananka/a2a-warp/commit/0bfa5d9ff326aed64f028f8a251b738a79d433f6))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp bumped to 5.1.1
+    * @oaslananka/a2a-warp-registry bumped to 5.1.1
+
 ## [5.1.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-cli-v5.0.1...@oaslananka/a2a-warp-cli-v5.1.0) (2026-05-31)
 
 
