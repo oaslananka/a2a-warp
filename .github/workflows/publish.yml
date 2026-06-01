@@ -121,10 +121,11 @@ jobs:
           EXPECTED='${{ steps.version.outputs.version }}'
           all_match=true
           for pkg_file in .artifacts/npm/*.tgz; do
-            pkg_info="$(tar -xOzf "$pkg_file" package/package.json | node -e "const p=JSON.parse(require('fs').readFileSync(0,'utf8'));process.stdout.write(p.name + '@' + p.version)")"
-            pkg_version="${pkg_info#*@}"
+            pkg_json="$(tar -xOzf "$pkg_file" package/package.json)"
+            pkg_name="$(node -e "const p=JSON.parse(require('fs').readFileSync(0,'utf8'));process.stdout.write(p.name);" <<< "$pkg_json")"
+            pkg_version="$(node -e "const p=JSON.parse(require('fs').readFileSync(0,'utf8'));process.stdout.write(p.version);" <<< "$pkg_json")"
             if [ "$pkg_version" != "$EXPECTED" ]; then
-              echo "⚠  ${pkg_info} — version ${pkg_version} != expected ${EXPECTED} (will be skipped during publish)"
+              echo "⚠  ${pkg_name}@${pkg_version} — version ${pkg_version} != expected ${EXPECTED} (will be skipped during publish)"
               all_match=false
             fi
           done
@@ -150,8 +151,8 @@ jobs:
             fi
           done
           if ! $any_missing; then
-            echo "❌ All versions already exist on npm — nothing to publish"
-            exit 1
+            echo "ℹ  All versions already exist on npm — nothing to publish"
+            exit 0
           fi
 
       - name: Validate release artifacts
@@ -228,6 +229,32 @@ jobs:
               fi
             done
           done
+
+      # ── Reconcile latest dist-tag when re-running for existing versions ──
+      - name: Reconcile latest dist-tag
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          npmrc_path="${NPM_CONFIG_USERCONFIG:-${HOME}/.npmrc}"
+          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > "${npmrc_path}"
+          cleanup() { rm -f "${npmrc_path}"; }
+          trap cleanup EXIT
+
+          rc=0
+          for package_file in "${GITHUB_WORKSPACE}"/.artifacts/npm/*.tgz; do
+            pkg_json="$(tar -xOzf "$package_file" package/package.json)"
+            pkg_name="$(node -e "const p=JSON.parse(require('fs').readFileSync(0,'utf8'));process.stdout.write(p.name);" <<< "$pkg_json")"
+
+            current_latest="$(npm view "${pkg_name}" dist-tags.latest 2>/dev/null || echo 'unknown')"
+            if [ "${current_latest}" != "${VERSION}" ]; then
+              echo "⇢  ${pkg_name}: updating latest dist-tag ${current_latest} → ${VERSION}"
+              npm dist-tag add "${pkg_name}@${VERSION}" latest || { echo "⚠  Failed to update dist-tag for ${pkg_name}"; rc=1; }
+            else
+              echo "✓  ${pkg_name}: latest dist-tag already at ${VERSION}"
+            fi
+          done
+          exit $rc
 
       - name: Verify package registry parity
         run: pnpm run release:parity
