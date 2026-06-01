@@ -11,9 +11,6 @@ name: Publish
       tag:
         description: 'Release tag to publish (e.g., @oaslananka/a2a-warp-v1.25.0)'
         required: true
-      confirm_publish:
-        description: Type A2A-WARP-PUBLISH to publish
-        required: true
 
 permissions:
   contents: read
@@ -33,14 +30,7 @@ env:
 jobs:
   publish:
     name: Publish / npm
-    if: >-
-      ${{
-        github.repository == 'oaslananka/a2a-warp' && (
-          github.event_name == 'release' ||
-          github.event_name == 'push' ||
-          inputs.confirm_publish == 'A2A-WARP-PUBLISH'
-        )
-      }}
+    if: github.repository == 'oaslananka/a2a-warp'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     environment: npm-publish
@@ -92,9 +82,11 @@ jobs:
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "✅ Tag validated: ${TAG} → version ${VERSION}"
 
-      # ── Checkout main for scripts ──
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      # ── Checkout the exact tag ref so published code matches the release ──
+      - name: Checkout tag ref
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
+          ref: ${{ steps.tag.outputs.tag }}
           fetch-depth: 0
           persist-credentials: false
 
@@ -103,7 +95,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: https://registry.npmjs.org
 
-      # ── Identity checks before npm install (prevents npm's own docs from causing false positives) ──
+      # ── Identity checks ──
       - run: pnpm run lint:identity
 
       # ── Install pinned npm with sha256 verification ──
@@ -173,38 +165,49 @@ jobs:
             .artifacts/npm/SHA256SUMS
             .artifacts/sbom/a2a-warp.cdx.json
 
-      # ── Publish with pnpm (compatible with Node 24; pinned npm 11.15.0 has prefix bug) ──
+      # ── Publish with pinned npm (uses NPM_TOKEN; --provenance where OIDC trusted publisher is configured) ──
       - name: Publish packages to npm
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          # Write .npmrc for token-based auth (pnpm reads the same config)
+          # Write .npmrc for token-based auth; clean up on script exit (success or failure)
           npmrc_path="${NPM_CONFIG_USERCONFIG:-${HOME}/.npmrc}"
           echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > "${npmrc_path}"
+          cleanup() { rm -f "${npmrc_path}"; }
+          trap cleanup EXIT
 
-          pnpm --version
+          npm --version
 
+          publish_failed=false
           for package_file in ./.artifacts/npm/*.tgz; do
             pkg_json="$(tar -xOzf "$package_file" package/package.json)"
             pkg_name="$(node -e "const p=JSON.parse(require('fs').readFileSync(0,'utf8'));process.stdout.write(p.name);" <<< "$pkg_json")"
             pkg_version="$(node -e "const p=JSON.parse(require('fs').readFileSync(0,'utf8'));process.stdout.write(p.version);" <<< "$pkg_json")"
 
             # Skip if version already published
-            if pnpm view "${pkg_name}@${pkg_version}" version --silent >/dev/null 2>&1; then
+            if npm view "${pkg_name}@${pkg_version}" version --silent >/dev/null 2>&1; then
               echo "⏭  Skipping ${pkg_name}@${pkg_version} (already exists on npm)"
               continue
             fi
 
-            # Publish with token-based auth
-            if pnpm publish "$package_file" --access public --no-git-checks; then
-              echo "✅ Published ${pkg_name}@${pkg_version}"
+            # Publish with --provenance where OIDC trusted publisher is configured;
+            # fall back to token-only auth if provenance is unsupported
+            if npm publish "$package_file" --access public --provenance 2>/dev/null; then
+              echo "✅ Published ${pkg_name}@${pkg_version} with provenance"
+            elif npm publish "$package_file" --access public; then
+              echo "✅ Published ${pkg_name}@${pkg_version} (without provenance)"
             else
               echo "❌ Failed to publish ${pkg_name}@${pkg_version}"
-              exit 1
+              publish_failed=true
+              break
             fi
           done
 
-            # ── Verify npm registry (with retry for propagation delay) ──
+          if $publish_failed; then
+            exit 1
+          fi
+
+      # ── Verify npm registry (with retry for propagation delay) ──
       - name: Verify npm registry
         run: |
           for package_file in "${GITHUB_WORKSPACE}"/.artifacts/npm/*.tgz; do
