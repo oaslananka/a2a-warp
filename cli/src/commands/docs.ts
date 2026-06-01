@@ -1,4 +1,5 @@
 import { benchmarkCommandDoc } from './benchmark.js';
+import { conformanceBadgeCommandDoc } from './conformance-badge.js';
 import { conformanceCommandDoc } from './conformance.js';
 import { discoverCommandDoc } from './discover.js';
 import { doctorCommandDoc } from './doctor.js';
@@ -17,6 +18,7 @@ export { commandDocKey, type CliCommandDoc } from './doc-metadata.js';
 
 export const cliCommandDocs = [
   benchmarkCommandDoc,
+  conformanceBadgeCommandDoc,
   conformanceCommandDoc,
   discoverCommandDoc,
   doctorCommandDoc,
