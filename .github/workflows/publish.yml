@@ -257,5 +257,9 @@ jobs:
           done
           exit $rc
 
+      - name: Wait for npm registry propagation
+        shell: bash
+        run: sleep 20
+
       - name: Verify package registry parity
         run: pnpm run release:parity
