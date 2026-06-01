@@ -1,6 +1,6 @@
 {
   "name": "@oaslananka/a2a-warp-adapters",
-  "version": "6.1.0",
+  "version": "7.0.0",
   "description": "Deprecated — use individual @oaslananka/a2a-warp-adapter-* packages instead.",
   "deprecated": "This package is deprecated. Install individual adapters: @oaslananka/a2a-warp-adapter-openai, @oaslananka/a2a-warp-adapter-anthropic, @oaslananka/a2a-warp-adapter-langchain, @oaslananka/a2a-warp-adapter-google-adk, @oaslananka/a2a-warp-adapter-llamaindex, @oaslananka/a2a-warp-adapter-crewai",
   "keywords": [
