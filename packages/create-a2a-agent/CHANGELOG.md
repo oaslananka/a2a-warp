@@ -1,5 +1,24 @@
 # Changelog
 
+## [7.0.0](https://github.com/oaslananka/a2a-warp/compare/create-a2a-warp-v6.1.0...create-a2a-warp-v7.0.0) (2026-06-01)
+
+
+### Bug Fixes
+
+* add build prerequisite to test:conformance and test:integration scripts ([c0317f2](https://github.com/oaslananka/a2a-warp/commit/c0317f25775920c6ccb3afc6d823c16f04d00e02))
+* **build:** centralize runtime version pins ([98f9fd7](https://github.com/oaslananka/a2a-warp/commit/98f9fd7e80e745f7d73fc677bb8d91f7066787a3))
+* **cli:** derive scaffold versions from manifests ([3fdd70a](https://github.com/oaslananka/a2a-warp/commit/3fdd70a3fab8d4b59dc8e1af69cd0ec5165f5f6e))
+* protect main, fix Docker/version issues, sync runtime ([#59](https://github.com/oaslananka/a2a-warp/issues/59), [#63](https://github.com/oaslananka/a2a-warp/issues/63), [#91](https://github.com/oaslananka/a2a-warp/issues/91), [#103](https://github.com/oaslananka/a2a-warp/issues/103)) ([#110](https://github.com/oaslananka/a2a-warp/issues/110)) ([a1d74e0](https://github.com/oaslananka/a2a-warp/commit/a1d74e033dbd1f1b4c957334c3333647a8fba567))
+* remove commit-message guard from Release Please tag/release/sync jobs ([e5f9061](https://github.com/oaslananka/a2a-warp/commit/e5f9061b9d25606638fac8f00cf43303a67016ad))
+* update pnpm to 11.4.0 in runtime-versions and scaffold template; fix CI identity check; add adapter packages to scaffolder test ([20caf43](https://github.com/oaslananka/a2a-warp/commit/20caf43a98bb38f583616363fb5da09cae57cccf))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp-cli bumped to 7.0.0
+
 ## [6.1.0](https://github.com/oaslananka/a2a-warp/compare/create-a2a-warp-v6.0.0...create-a2a-warp-v6.1.0) (2026-06-01)
 
 
