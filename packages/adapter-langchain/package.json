@@ -1,6 +1,6 @@
 {
   "name": "@oaslananka/a2a-warp-adapter-langchain",
-  "version": "7.1.0",
+  "version": "8.0.0",
   "description": "LangChain adapter for the Agent2Agent protocol.",
   "keywords": [
     "a2a",
