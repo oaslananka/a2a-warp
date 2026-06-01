@@ -29,7 +29,7 @@
     "pnpm": ">=11 <12"
   },
   "scripts": {
-    "setup": "corepack prepare pnpm@11.4.0 --activate && pnpm install --frozen-lockfile",
+    "setup": "corepack prepare pnpm@11.5.0 --activate && pnpm install --frozen-lockfile",
     "clean": "node scripts/clean.mjs",
     "format": "pnpm run format:write",
     "format:write": "prettier --ignore-path .prettierignore --ignore-unknown --write .",
