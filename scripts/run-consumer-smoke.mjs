@@ -5,10 +5,14 @@
  *
  * Builds the monorepo, packs all publishable packages into tarballs,
  * creates a fresh temporary project outside the monorepo, installs
- * from the tarballs, and exercises every consumer surface:
+ * from the tarballs, and exercises every consumer surface.
  *
- *   1. Server     – start A2AServer, send sendTask JSON-RPC, verify response
- *   2. Client     – import & instantiate A2AClient
+ * Uses npm instead of pnpm for the consumer install to avoid pnpm
+ * workspace resolution issues when pnpm-workspace.yaml exists in a
+ * parent directory (pnpm v11 walks up the tree aggressively).
+ *
+ *   1. Server     – start A2AServer, send message/send JSON-RPC, verify response
+ *   2. Client     – import & instantiate A2AClient, call sendMessage
  *   3. Registry   – start registry server, register & query agents
  *   4. CLI        – a2a-warp --version, --help, agent validate --help
  *   5. Scaffolder – create-a2a-warp, verify output structure
@@ -20,7 +24,7 @@
  * Exit code = number of failed surfaces (0 = all pass).
  */
 
-import { mkdtempSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, readFileSync } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import { execFileSync } from 'node:child_process';
@@ -33,7 +37,26 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, '..');
 
 function run(cmd, args, opts = {}) {
+  // On Windows, batch files (.cmd, .bat) and bare commands that resolve to
+  // batch files (pnpm, npm, etc.) must run via cmd /c. Real executables like
+  // process.execPath (node.exe) run fine directly.
+  if (process.platform === 'win32') {
+    return execFileSync('cmd', ['/c', cmd, ...args], {
+      stdio: 'pipe',
+      encoding: 'utf-8',
+      ...opts,
+    });
+  }
   return execFileSync(cmd, args, { stdio: 'pipe', encoding: 'utf-8', ...opts });
+}
+
+function runNode(args, opts = {}) {
+  // process.execPath is always a real .exe — no cmd /c needed
+  return execFileSync(process.execPath, args, { stdio: 'pipe', encoding: 'utf-8', ...opts });
+}
+
+function runPnpm(args, opts = {}) {
+  return run('pnpm', args, opts);
 }
 
 function getFreePort() {
@@ -74,26 +97,26 @@ const PACKAGES = [
 /* ───────── step 1: build monorepo ───────── */
 
 console.log(`[${now()}] === [consumer-smoke] Build monorepo ===`);
-run('pnpm', ['run', 'build'], { cwd: root });
+runPnpm(['run', 'build'], { cwd: root });
 
 /* ───────── step 2: pack all packages ───────── */
 
 console.log(`[${now()}] === [consumer-smoke] Pack packages ===`);
-const tmpPackDir = mkdtempSync(join(tmpdir(), 'a2a-consumer-pack-'));
-const tarballs = {};
+const packDir = mkdtempSync(join(tmpdir(), 'a2a-consumer-pack-'));
 
-for (const pkg of PACKAGES) {
-  const pkgDir = join(root, pkg.dir);
+const tarballs = {};
+for (const { name, dir } of PACKAGES) {
+  const pkgDir = join(root, dir);
+  runPnpm(['pack', '--pack-destination', packDir], { cwd: pkgDir });
   const pkgJson = JSON.parse(readFileSync(join(pkgDir, 'package.json'), 'utf-8'));
   const version = pkgJson.version;
-  run('pnpm', ['pack', '--pack-destination', tmpPackDir], { cwd: pkgDir });
   // pnpm pack produces: <scope-without-@>-<name>-<version>.tgz
-  const fileName = pkg.name.startsWith('@')
-    ? `${pkg.name.slice(1).replace('/', '-')}-${version}.tgz`
-    : `${pkg.name}-${version}.tgz`;
-  const tgz = join(tmpPackDir, fileName);
-  tarballs[pkg.name] = tgz;
-  console.log(`  packed ${pkg.name} → ${fileName}`);
+  const fileName = name.startsWith('@')
+    ? `${name.slice(1).replace('/', '-')}-${version}.tgz`
+    : `${name}-${version}.tgz`;
+  const tgz = join(packDir, fileName);
+  tarballs[name] = tgz;
+  console.log(`  packed ${name} \u2192 ${fileName}`);
 }
 
 /* ───────── step 3: create temp project ───────── */
@@ -101,12 +124,10 @@ for (const pkg of PACKAGES) {
 console.log(`[${now()}] === [consumer-smoke] Create temp project ===`);
 const tempDir = mkdtempSync(join(tmpdir(), 'a2a-consumer-test-'));
 
-// Write .npmrc to auto-install peer deps (ws is a peer of transport-ws)
-writeFileSync(join(tempDir, '.npmrc'), 'auto-install-peers=true\n');
-
 const deps = {};
 for (const [name, tgzPath] of Object.entries(tarballs)) {
-  deps[name] = `file:${tgzPath}`;
+  // Convert backslashes to forward slashes so JSON embedding is safe
+  deps[name] = `file:${tgzPath.replace(/\\/g, '/')}`;
 }
 writeFileSync(
   join(tempDir, 'package.json'),
@@ -124,7 +145,13 @@ writeFileSync(
 );
 
 console.log(`  installing in ${tempDir}`);
-run('pnpm', ['install', '--no-frozen-lockfile'], { cwd: tempDir, timeout: 120000 });
+// Use npm for consumer install — pnpm v11 aggressively resolves workspace
+// membership from file: deps on this machine (C:\Users\Admin\pnpm-workspace.yaml).
+// npm's file: handling is simpler and cross-platform consistent.
+run('npm', ['install', '--ignore-scripts', '--no-package-lock'], {
+  cwd: tempDir,
+  timeout: 120000,
+});
 console.log('  install complete');
 
 /* ───────── step 4: run smoke surfaces ───────── */
@@ -132,6 +159,12 @@ console.log('  install complete');
 const results = [];
 let testIndex = 0;
 
+/**
+ * Run a smoke test surface.
+ *
+ * @param {string} name  Display name for the surface
+ * @param {string} code  Body of the test (no import lines — those are prepended)
+ */
 async function surf(name, code) {
   testIndex++;
   const file = `test-${testIndex}.mjs`;
@@ -144,18 +177,20 @@ async function surf(name, code) {
 
   process.stdout.write(`  [smoke] ${name} ... `);
   try {
-    run(process.execPath, ['--test', file], { cwd: tempDir, timeout: 30000 });
+    runNode(['--test', file], { cwd: tempDir, timeout: 30000 });
     console.log(`${GREEN}PASS${RESET}`);
     results.push({ name, pass: true });
   } catch (err) {
     console.log(`${RED}FAIL${RESET}`);
-    const lines = (err.stderr || err.message || '').split('\n');
+    // node --test writes test output to stdout, not stderr
+    const errorText = err.stderr || err.stdout || err.message || '';
+    const lines = errorText.split('\n');
     const msg =
       lines
         .filter((l) => l.includes('throw') || l.includes('Error:') || l.includes('AssertionError'))
         .slice(-3)
         .join('\n')
-        .trim() || lines.slice(-2).join('\n').trim();
+        .trim() || lines.slice(-3).join('\n').trim();
     console.error(`    ${msg}`);
     results.push({ name, pass: false, error: msg });
   }
@@ -166,17 +201,31 @@ const srvPort = await getFreePort();
 await surf(
   'server / A2AServer JSON-RPC sendTask',
   `
-  const http = await import('node:http');
   const { A2AServer } = await import('@oaslananka/a2a-warp');
+
+  class TestServer extends A2AServer {
+    async handleTask(task, message) {
+      return [{ name: 'artifact', parts: [{ type: 'text', text: 'ack' }] }];
+    }
+  }
+
+  const card = { protocolVersion: '1.0', name: 'smoke', description: 'test', url: 'http://localhost', version: '1.0.0' };
   const host = '127.0.0.1';
-  const server = new A2AServer({});
+  const server = new TestServer(card, { allowLocalhost: true });
   await server.start(${srvPort}, host);
 
   const body = JSON.stringify({
     jsonrpc: '2.0',
     id: 1,
-    method: 'tasks/send',
-    params: { id: 'srv-' + Date.now(), message: { role: 'user', parts: [{ type: 'text', text: 'Hello' }] } },
+    method: 'message/send',
+    params: {
+      message: {
+        role: 'user',
+        parts: [{ type: 'text', text: 'Hello' }],
+        messageId: 'msg-1',
+        timestamp: new Date().toISOString(),
+      },
+    },
   });
   const resp = await fetch('http://' + host + ':' + ${srvPort} + '/', {
     method: 'POST',
@@ -189,32 +238,41 @@ await surf(
   assert.ok(data, 'No JSON-RPC response');
   assert.strictEqual(data.jsonrpc, '2.0', 'Not JSON-RPC 2.0');
   assert.ok(data.result, 'No result');
-  assert.ok(data.result.id, 'No task id');
-  assert.ok(String(data.result.id).startsWith('srv-'), 'Unexpected task id: ' + data.result.id);
+  assert.ok(data.result.id, 'No task id in result');
 `,
 );
 
 // ── Surface 2: Client ────────────────────────────────────────────
 const cliPort = await getFreePort();
 await surf(
-  'client / A2AClient sendTask',
+  'client / A2AClient sendMessage',
   `
-  const http = await import('node:http');
   const { A2AServer, A2AClient } = await import('@oaslananka/a2a-warp');
+
+  class TestServer extends A2AServer {
+    async handleTask(task, message) {
+      return [{ name: 'artifact', parts: [{ type: 'text', text: 'pong' }] }];
+    }
+  }
+
+  const card = { protocolVersion: '1.0', name: 'smoke', description: 'test', url: 'http://localhost', version: '1.0.0' };
   const host = '127.0.0.1';
-  const srv = new A2AServer({});
+  const srv = new TestServer(card, { allowLocalhost: true });
   await srv.start(${cliPort}, host);
 
-  const client = new A2AClient({ baseUrl: 'http://' + host + ':' + ${cliPort} + '/' });
-  const result = await client.sendTask({
-    id: 'cli-' + Date.now(),
-    message: { role: 'user', parts: [{ type: 'text', text: 'ping' }] },
+  const client = new A2AClient('http://' + host + ':' + ${cliPort} + '/');
+  const result = await client.sendMessage({
+    message: {
+      role: 'user',
+      parts: [{ type: 'text', text: 'ping' }],
+      messageId: 'msg-2',
+      timestamp: new Date().toISOString(),
+    },
   });
   await srv.stop();
 
   assert.ok(result, 'No result from client');
-  assert.ok(result.id, 'No task id');
-  assert.ok(String(result.id).startsWith('cli-'), 'Unexpected task id');
+  assert.ok(result.id, 'No task id in result');
 `,
 );
 
@@ -223,20 +281,26 @@ const regPort = await getFreePort();
 await surf(
   'registry / RegistryServer agents API',
   `
-  const http = await import('node:http');
   const { RegistryServer } = await import('@oaslananka/a2a-warp-registry');
-  const srv = new RegistryServer({});
+  const srv = new RegistryServer({ allowLocalhost: true });
   await srv.start(${regPort});
 
-  const agent = { name: 'smoke-test', description: 'test', url: 'http://localhost:9999', capabilities: { skills: ['smoke'] } };
-  const reg = await fetch('http://127.0.0.1:' + ${regPort} + '/agents', {
+  const agentCard = {
+    protocolVersion: '1.0',
+    name: 'smoke-test',
+    description: 'test',
+    url: 'http://localhost:9999',
+    version: '1.0.0',
+    skills: [{ name: 'smoke', tags: ['smoke'] }],
+  };
+  const reg = await fetch('http://127.0.0.1:' + ${regPort} + '/agents/register', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(agent),
+    body: JSON.stringify({ agentUrl: 'http://localhost:9999', agentCard }),
   });
   assert.ok(reg.ok, 'Register failed: ' + reg.status);
 
-  const q = await fetch('http://127.0.0.1:' + ${regPort} + '/agents?capability=smoke');
+  const q = await fetch('http://127.0.0.1:' + ${regPort} + '/agents/search?skill=smoke');
   const list = await q.json();
   assert.ok(Array.isArray(list), 'Agent list not array');
   assert.ok(list.length > 0, 'No agents found');
@@ -257,15 +321,17 @@ await surf(
 
   const root = fileURLToPath(new URL('.', import.meta.url));
   const binDir = join(root, 'node_modules', '.bin');
-  const bin = join(binDir, process.platform === 'win32' ? 'a2a-warp.cmd' : 'a2a-warp');
+  const isWin = process.platform === 'win32';
+  const bin = isWin ? 'cmd' : join(binDir, 'a2a-warp');
+  const binArgv = isWin ? ['/c', join(binDir, 'a2a-warp.cmd')] : [];
 
-  const version = execFileSync(bin, ['--version'], { encoding: 'utf-8' }).trim();
+  const version = execFileSync(bin, [...binArgv, '--version'], { encoding: 'utf-8' }).trim();
   assert.ok(version, 'No version output');
 
-  const help = execFileSync(bin, ['--help'], { encoding: 'utf-8' });
+  const help = execFileSync(bin, [...binArgv, '--help'], { encoding: 'utf-8' });
   assert.ok(help.includes('Usage') || help.includes('Commands'), 'Help missing expected content');
 
-  const validateHelp = execFileSync(bin, ['agent', 'validate', '--help'], { encoding: 'utf-8', timeout: 10000 });
+  const validateHelp = execFileSync(bin, [...binArgv, 'agent', 'validate', '--help'], { encoding: 'utf-8', timeout: 10000 });
   assert.ok(validateHelp, 'agent validate --help produced no output');
 `,
 );
@@ -282,9 +348,11 @@ await surf(
 
   const root = fileURLToPath(new URL('.', import.meta.url));
   const binDir = join(root, 'node_modules', '.bin');
-  const bin = join(binDir, process.platform === 'win32' ? 'create-a2a-warp.cmd' : 'create-a2a-warp');
+  const isWin = process.platform === 'win32';
+  const bin = isWin ? 'cmd' : join(binDir, 'create-a2a-warp');
+  const binArgv = isWin ? ['/c', join(binDir, 'create-a2a-warp.cmd')] : [];
   const outDir = '${scaffDir.replace(/\\/g, '\\\\')}';
-  execFileSync(bin, [outDir], { timeout: 30000 });
+  execFileSync(bin, [...binArgv, outDir], { timeout: 30000 });
 
   assert.ok(existsSync(outDir + '/package.json'), 'package.json not created');
   const pj = JSON.parse(readFileSync(outDir + '/package.json', 'utf-8'));
@@ -318,8 +386,8 @@ await surf(
   'bridge-mcp / module loads and exports',
   `
   const mod = await import('@oaslananka/a2a-warp-bridge-mcp');
-  assert.ok(mod.A2ATool, 'Missing A2ATool export');
-  assert.ok(mod.McpToolSkill, 'Missing McpToolSkill export');
+  assert.ok(mod.createMcpToolFromAgent, 'Missing createMcpToolFromAgent export');
+  assert.ok(mod.createA2ASkillFromMcpTool, 'Missing createA2ASkillFromMcpTool export');
 `,
 );
 
@@ -329,7 +397,7 @@ console.log(`\n[${now()}] === [consumer-smoke] Results ===`);
 let passed = 0;
 let failed = 0;
 for (const r of results) {
-  const icon = r.pass ? `${GREEN}✓${RESET}` : `${RED}✗${RESET}`;
+  const icon = r.pass ? `${GREEN}\u2713${RESET}` : `${RED}\u2717${RESET}`;
   console.log(`  ${icon} ${r.name}`);
   if (r.pass) passed++;
   else failed++;
