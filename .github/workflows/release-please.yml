@@ -157,6 +157,7 @@ jobs:
       - name: Create branch, PR, and auto-merge for generated file changes
         if: steps.detect.outputs.is_release == 'true'
         env:
+          HUSKY: '0'
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
