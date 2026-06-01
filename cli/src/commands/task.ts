@@ -4,6 +4,7 @@ import { createCliMessage } from '../message.js';
 import { addNetworkOptions, createA2AClient, type NetworkCommandOptions } from '../network.js';
 import { applyCommandDoc, type CliCommandDoc } from './doc-metadata.js';
 import { createSendCommand } from './send.js';
+import type { A2AClient } from '@oaslananka/a2a-warp';
 
 export const taskCommandDoc = {
   path: ['task'],
@@ -30,52 +31,64 @@ export const taskCommandDoc = {
   ],
 } satisfies CliCommandDoc;
 
+type TaskAction = (client: A2AClient, arg: string) => Promise<unknown>;
+type TaskActionMeta = {
+  name: string;
+  description: string;
+  spinnerLabel: string;
+  action: TaskAction;
+};
+
+const createTaskSubcommand = (getOptions: RootOptionsProvider, meta: TaskActionMeta): Command => {
+  return addNetworkOptions(
+    new Command(meta.name)
+      .description(meta.description)
+      .argument('<url>')
+      .argument(`<${meta.name === 'stream' ? 'message' : 'taskId'}>`),
+  ).action(async (url: string, arg: string, commandOptions: NetworkCommandOptions) => {
+    const options = getOptions();
+    const client = createA2AClient(url, commandOptions);
+    if (meta.name === 'stream') {
+      const stream = await client.sendMessageStream(createCliMessage(arg));
+      for await (const event of stream) {
+        emitResult(event, options);
+      }
+    } else {
+      const result = await withSpinner(meta.spinnerLabel, options, () => meta.action(client, arg));
+      emitResult(result, options);
+    }
+  });
+};
+
 export function createTaskCommand(getOptions: RootOptionsProvider): Command {
   const taskCommand = applyCommandDoc(new Command('task'), taskCommandDoc);
 
   taskCommand.addCommand(createSendCommand(getOptions));
 
   taskCommand.addCommand(
-    addNetworkOptions(
-      new Command('stream')
-        .description('Stream events for a sent task message.')
-        .argument('<url>')
-        .argument('<message>'),
-    ).action(async (url: string, message: string, commandOptions: NetworkCommandOptions) => {
-      const options = getOptions();
-      const client = createA2AClient(url, commandOptions);
-      const stream = await client.sendMessageStream(createCliMessage(message));
-      for await (const event of stream) {
-        emitResult(event, options);
-      }
+    createTaskSubcommand(getOptions, {
+      name: 'stream',
+      description: 'Stream events for a sent task message.',
+      spinnerLabel: '',
+      action: (_client, _arg) => Promise.resolve(null),
     }),
   );
 
   taskCommand.addCommand(
-    addNetworkOptions(
-      new Command('status')
-        .description('Fetch status for an existing task.')
-        .argument('<url>')
-        .argument('<taskId>'),
-    ).action(async (url: string, taskId: string, commandOptions: NetworkCommandOptions) => {
-      const options = getOptions();
-      const client = createA2AClient(url, commandOptions);
-      const task = await withSpinner('Fetching task status', options, () => client.getTask(taskId));
-      emitResult(task, options);
+    createTaskSubcommand(getOptions, {
+      name: 'status',
+      description: 'Fetch status for an existing task.',
+      spinnerLabel: 'Fetching task status',
+      action: (client, taskId) => client.getTask(taskId),
     }),
   );
 
   taskCommand.addCommand(
-    addNetworkOptions(
-      new Command('cancel')
-        .description('Cancel an existing task.')
-        .argument('<url>')
-        .argument('<taskId>'),
-    ).action(async (url: string, taskId: string, commandOptions: NetworkCommandOptions) => {
-      const options = getOptions();
-      const client = createA2AClient(url, commandOptions);
-      const task = await withSpinner('Canceling task', options, () => client.cancelTask(taskId));
-      emitResult(task, options);
+    createTaskSubcommand(getOptions, {
+      name: 'cancel',
+      description: 'Cancel an existing task.',
+      spinnerLabel: 'Canceling task',
+      action: (client, taskId) => client.cancelTask(taskId),
     }),
   );
 

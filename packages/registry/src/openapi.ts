@@ -51,6 +51,31 @@ const timestampSchema = {
   format: 'date-time',
 };
 
+const routeGroup = (
+  prefix: string,
+  meta: {
+    register: { operationId: string; tags: string[]; summary: string };
+  },
+) => ({
+  [`${prefix}/register`]: {
+    post: {
+      operationId: meta.register.operationId,
+      tags: meta.register.tags,
+      summary: meta.register.summary,
+      security: [{ bearerAuth: [] }],
+      requestBody: {
+        required: true,
+        content: jsonContent(schemaRef('RegisterAgentRequest')),
+      },
+      responses: {
+        '201': jsonResponse('The registered agent record.', schemaRef('RegisteredAgent')),
+        '400': responseRef('BadRequest'),
+        ...authErrorResponses,
+      },
+    },
+  },
+});
+
 const registeredAgentArray = {
   type: 'array',
   items: schemaRef('RegisteredAgent'),
@@ -224,40 +249,20 @@ export const registryOpenApiDocument = {
         },
       },
     },
-    '/agents/register': {
-      post: {
+    ...routeGroup('/agents', {
+      register: {
         operationId: 'registerRegistryAgent',
         tags: ['Agents'],
         summary: 'Register or update an agent in the registry.',
-        security: [{ bearerAuth: [] }],
-        requestBody: {
-          required: true,
-          content: jsonContent(schemaRef('RegisterAgentRequest')),
-        },
-        responses: {
-          '201': jsonResponse('The registered agent record.', schemaRef('RegisteredAgent')),
-          '400': responseRef('BadRequest'),
-          ...authErrorResponses,
-        },
       },
-    },
-    '/admin/agents/register': {
-      post: {
+    }),
+    ...routeGroup('/admin/agents', {
+      register: {
         operationId: 'adminRegisterRegistryAgent',
         tags: ['Admin', 'Agents'],
         summary: 'Register or update an agent through the admin route alias.',
-        security: [{ bearerAuth: [] }],
-        requestBody: {
-          required: true,
-          content: jsonContent(schemaRef('RegisterAgentRequest')),
-        },
-        responses: {
-          '201': jsonResponse('The registered agent record.', schemaRef('RegisteredAgent')),
-          '400': responseRef('BadRequest'),
-          ...authErrorResponses,
-        },
       },
-    },
+    }),
     '/agents/search': {
       get: {
         operationId: 'searchRegistryAgents',
