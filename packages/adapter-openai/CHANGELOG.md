@@ -1,5 +1,20 @@
 # Changelog
 
+## [6.1.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-adapter-openai-v6.0.0...@oaslananka/a2a-warp-adapter-openai-v6.1.0) (2026-06-01)
+
+
+### Miscellaneous Chores
+
+* **@oaslananka/a2a-warp-adapter-openai:** Synchronize A2A Warp packages versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp bumped to 6.1.0
+    * @oaslananka/a2a-warp-adapter-base bumped to 6.1.0
+
 ## [6.0.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-adapter-openai-v5.1.2...@oaslananka/a2a-warp-adapter-openai-v6.0.0) (2026-05-31)
 
 
