@@ -238,8 +238,7 @@ jobs:
         run: |
           npmrc_path="${NPM_CONFIG_USERCONFIG:-${HOME}/.npmrc}"
           echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > "${npmrc_path}"
-          cleanup() { rm -f "${npmrc_path}"; }
-          trap cleanup EXIT
+          trap 'rm -f "${npmrc_path}"' EXIT
 
           rc=0
           for package_file in "${GITHUB_WORKSPACE}"/.artifacts/npm/*.tgz; do
