@@ -236,7 +236,7 @@ describe('create-a2a-warp binary scaffolds typechecked templates', () => {
       const indexSource = await readProjectFile(projectDir, 'src/index.ts');
 
       expect(packageJson).toContain(`"${template.packageDependency}"`);
-      expect(packageJson).toContain('"packageManager": "pnpm@11.4.0"');
+      expect(packageJson).toContain('"packageManager": "pnpm@11.5.0"');
       expect(tsconfigJson).toContain('"module": "NodeNext"');
       expect(readme).toContain(`- Adapter: \`${template.adapter}\``);
       expect(agentSource).toContain(template.sourceMarker);
