@@ -1,6 +1,6 @@
 {
   "name": "@oaslananka/a2a-warp-adapter-google-adk",
-  "version": "7.0.0",
+  "version": "7.1.0",
   "description": "Google ADK (Agent Development Kit) adapter for the Agent2Agent protocol.",
   "keywords": [
     "a2a",

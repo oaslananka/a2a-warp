@@ -1,5 +1,13 @@
 # Changelog
 
+## [7.1.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-schemas-v7.0.0...@oaslananka/a2a-warp-schemas-v7.1.0) (2026-06-01)
+
+
+### Bug Fixes
+
+* **packaging:** consolidate client, testing, and codex-bridge into core subpath exports ([#125](https://github.com/oaslananka/a2a-warp/issues/125)) ([76ea7dd](https://github.com/oaslananka/a2a-warp/commit/76ea7dd28bdec8c91567c18b2e1fa367d44633e4))
+* remove commit-message guard from Release Please tag/release/sync jobs ([e5f9061](https://github.com/oaslananka/a2a-warp/commit/e5f9061b9d25606638fac8f00cf43303a67016ad))
+
 ## [7.0.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-schemas-v6.1.0...@oaslananka/a2a-warp-schemas-v7.0.0) (2026-06-01)
 
 
