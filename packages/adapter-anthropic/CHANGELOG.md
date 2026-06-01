@@ -1,5 +1,26 @@
 # Changelog
 
+## [8.0.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-adapter-anthropic-v7.1.0...@oaslananka/a2a-warp-adapter-anthropic-v8.0.0) (2026-06-01)
+
+
+### Features
+
+* **core:** split adapters into per-provider packages ([#169](https://github.com/oaslananka/a2a-warp/issues/169)) ([35f1c4f](https://github.com/oaslananka/a2a-warp/commit/35f1c4feff8c1b0a06d725053cb7e04bcae36932))
+
+
+### Bug Fixes
+
+* **deps:** update dependency @anthropic-ai/sdk to v0.100.0 ([#186](https://github.com/oaslananka/a2a-warp/issues/186)) ([3ab8df7](https://github.com/oaslananka/a2a-warp/commit/3ab8df7f5cb1cdef26283995fc7736ea359dc097))
+* remove commit-message guard from Release Please tag/release/sync jobs ([e5f9061](https://github.com/oaslananka/a2a-warp/commit/e5f9061b9d25606638fac8f00cf43303a67016ad))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp bumped to 8.0.0
+    * @oaslananka/a2a-warp-adapter-base bumped to 8.0.0
+
 ## [7.1.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-adapter-anthropic-v7.0.0...@oaslananka/a2a-warp-adapter-anthropic-v7.1.0) (2026-06-01)
 
 
