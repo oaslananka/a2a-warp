@@ -98,13 +98,15 @@ jobs:
       # ── Identity checks ──
       - run: pnpm run lint:identity
 
-      # ── Install pinned npm with sha256 verification ──
+      # ── Install pinned npm globally via the bundled npm ──
+      # Manual tarball extraction + GITHUB_PATH does not work on Node.js 24
+      # because npm's CLI module resolution depends on being inside the Node.js
+      # module tree. Using `npm install -g` places the pinned version in
+      # lib/node_modules/npm where module resolution succeeds.
       - name: Install pinned npm
         run: |
-          curl -sL "https://registry.npmjs.org/npm/-/npm-${NPM_VERSION}.tgz" -o npm.tgz
-          echo "c15ed81d98f5f4c45e30f71e5dcf83ae24e9af5beb5db8b1d58becea97ba38cc  npm.tgz" | sha256sum -c -
-          tar -xzf npm.tgz
-          echo "$(pwd)/package/bin" >> "$GITHUB_PATH"
+          npm install -g "npm@${NPM_VERSION}"
+          echo "npm version: $(npm --version)"
 
       # ── Build and test ──
       - run: pnpm run build
