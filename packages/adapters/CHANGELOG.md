@@ -1,5 +1,34 @@
 # Changelog
 
+## [9.0.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-adapters-v8.0.0...@oaslananka/a2a-warp-adapters-v9.0.0) (2026-06-01)
+
+
+### Features
+
+* **core:** split adapters into per-provider packages ([#169](https://github.com/oaslananka/a2a-warp/issues/169)) ([35f1c4f](https://github.com/oaslananka/a2a-warp/commit/35f1c4feff8c1b0a06d725053cb7e04bcae36932))
+
+
+### Bug Fixes
+
+* **deps:** update dependency @anthropic-ai/sdk to v0.100.0 ([#186](https://github.com/oaslananka/a2a-warp/issues/186)) ([3ab8df7](https://github.com/oaslananka/a2a-warp/commit/3ab8df7f5cb1cdef26283995fc7736ea359dc097))
+* **deps:** update dependency @anthropic-ai/sdk to v0.99.0 ([#135](https://github.com/oaslananka/a2a-warp/issues/135)) ([509d7b6](https://github.com/oaslananka/a2a-warp/commit/509d7b609329f2118c566debe645e9cc71a660d1))
+* protect main, fix Docker/version issues, sync runtime ([#59](https://github.com/oaslananka/a2a-warp/issues/59), [#63](https://github.com/oaslananka/a2a-warp/issues/63), [#91](https://github.com/oaslananka/a2a-warp/issues/91), [#103](https://github.com/oaslananka/a2a-warp/issues/103)) ([#110](https://github.com/oaslananka/a2a-warp/issues/110)) ([a1d74e0](https://github.com/oaslananka/a2a-warp/commit/a1d74e033dbd1f1b4c957334c3333647a8fba567))
+* remove commit-message guard from Release Please tag/release/sync jobs ([e5f9061](https://github.com/oaslananka/a2a-warp/commit/e5f9061b9d25606638fac8f00cf43303a67016ad))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp bumped to 9.0.0
+    * @oaslananka/a2a-warp-adapter-base bumped to 9.0.0
+    * @oaslananka/a2a-warp-adapter-openai bumped to 9.0.0
+    * @oaslananka/a2a-warp-adapter-anthropic bumped to 9.0.0
+    * @oaslananka/a2a-warp-adapter-langchain bumped to 9.0.0
+    * @oaslananka/a2a-warp-adapter-google-adk bumped to 9.0.0
+    * @oaslananka/a2a-warp-adapter-llamaindex bumped to 9.0.0
+    * @oaslananka/a2a-warp-adapter-crewai bumped to 9.0.0
+
 ## [8.0.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-adapters-v7.1.0...@oaslananka/a2a-warp-adapters-v8.0.0) (2026-06-01)
 
 
