@@ -15,7 +15,7 @@ manifest.
 
 The workspace engine range is Node.js `>=22.22.1 <25` and pnpm `>=11 <12`.
 In plain engine terms, use Node.js `>=22.22.1 <25` and pnpm >=11 <12.
-Development tooling pins pnpm `11.4.0` through `packageManager` and
+Development tooling pins pnpm `11.5.0` through `packageManager` and
 `tools/runtime-versions.json`.
 
 | Runtime            | Repository status         | Current repository version                | Upstream status on 2026-05-26                                 | Support policy                                                                 |
