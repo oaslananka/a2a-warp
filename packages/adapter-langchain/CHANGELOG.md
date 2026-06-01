@@ -1,5 +1,25 @@
 # Changelog
 
+## [6.1.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-adapter-langchain-v6.0.0...@oaslananka/a2a-warp-adapter-langchain-v6.1.0) (2026-06-01)
+
+
+### Features
+
+* **core:** split adapters into per-provider packages ([#169](https://github.com/oaslananka/a2a-warp/issues/169)) ([35f1c4f](https://github.com/oaslananka/a2a-warp/commit/35f1c4feff8c1b0a06d725053cb7e04bcae36932))
+
+
+### Bug Fixes
+
+* remove commit-message guard from Release Please tag/release/sync jobs ([e5f9061](https://github.com/oaslananka/a2a-warp/commit/e5f9061b9d25606638fac8f00cf43303a67016ad))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp bumped to 6.1.0
+    * @oaslananka/a2a-warp-adapter-base bumped to 6.1.0
+
 ## [6.0.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-adapter-langchain-v5.1.2...@oaslananka/a2a-warp-adapter-langchain-v6.0.0) (2026-05-31)
 
 
