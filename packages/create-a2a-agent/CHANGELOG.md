@@ -1,5 +1,19 @@
 # Changelog
 
+## [6.0.0](https://github.com/oaslananka/a2a-warp/compare/create-a2a-warp-v5.1.2...create-a2a-warp-v6.0.0) (2026-05-31)
+
+
+### Miscellaneous Chores
+
+* **create-a2a-warp:** Synchronize A2A Warp packages versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp-cli bumped to 6.0.0
+
 ## [5.1.2](https://github.com/oaslananka/a2a-warp/compare/create-a2a-warp-v5.1.1...create-a2a-warp-v5.1.2) (2026-05-31)
 
 

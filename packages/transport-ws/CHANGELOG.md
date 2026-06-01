@@ -1,5 +1,31 @@
 # Changelog
 
+## [6.0.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-transport-ws-v5.1.2...@oaslananka/a2a-warp-transport-ws-v6.0.0) (2026-05-31)
+
+
+### ⚠ BREAKING CHANGES
+
+* **packaging:** Package names changed:
+    - @oaslananka/a2a-warp-ws → @oaslananka/a2a-warp-transport-ws
+    - @oaslananka/a2a-warp-grpc → @oaslananka/a2a-warp-transport-grpc
+    - @oaslananka/a2a-warp-mcp-bridge → @oaslananka/a2a-warp-bridge-mcp
+
+### Features
+
+* **packaging:** rename transport and bridge packages to category-prefix pattern ([7f85d71](https://github.com/oaslananka/a2a-warp/commit/7f85d71b0f2fbf2cdac7a7fd7cac43da9e701c67))
+
+
+### Bug Fixes
+
+* remove commit-message guard from Release Please tag/release/sync jobs ([e5f9061](https://github.com/oaslananka/a2a-warp/commit/e5f9061b9d25606638fac8f00cf43303a67016ad))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp bumped to 6.0.0
+
 ## [5.1.2](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-transport-ws-v5.1.1...@oaslananka/a2a-warp-transport-ws-v5.1.2) (2026-05-31)
 
 
