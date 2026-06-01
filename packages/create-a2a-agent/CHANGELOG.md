@@ -1,5 +1,19 @@
 # Changelog
 
+## [8.1.0](https://github.com/oaslananka/a2a-warp/compare/create-a2a-warp-v8.0.0...create-a2a-warp-v8.1.0) (2026-06-01)
+
+
+### Features
+
+* add consumer smoke test matrix (closes [#80](https://github.com/oaslananka/a2a-warp/issues/80)) ([#213](https://github.com/oaslananka/a2a-warp/issues/213)) ([b3ad43c](https://github.com/oaslananka/a2a-warp/commit/b3ad43c47eb96a729aaaa886c92aa16845bac258))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp-cli bumped to 8.1.0
+
 ## [8.0.0](https://github.com/oaslananka/a2a-warp/compare/create-a2a-warp-v7.1.0...create-a2a-warp-v8.0.0) (2026-06-01)
 
 

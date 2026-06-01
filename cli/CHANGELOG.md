@@ -1,5 +1,21 @@
 # Changelog
 
+## [8.1.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-cli-v8.0.0...@oaslananka/a2a-warp-cli-v8.1.0) (2026-06-01)
+
+
+### Features
+
+* add conformance badge generator and local dev smoke environment ([d0982aa](https://github.com/oaslananka/a2a-warp/commit/d0982aa939fca54d1af0e967809fdaf68341663a))
+* add consumer smoke test matrix (closes [#80](https://github.com/oaslananka/a2a-warp/issues/80)) ([#213](https://github.com/oaslananka/a2a-warp/issues/213)) ([b3ad43c](https://github.com/oaslananka/a2a-warp/commit/b3ad43c47eb96a729aaaa886c92aa16845bac258))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp bumped to 8.1.0
+    * @oaslananka/a2a-warp-registry bumped to 8.1.0
+
 ## [8.0.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-cli-v7.1.0...@oaslananka/a2a-warp-cli-v8.0.0) (2026-06-01)
 
 

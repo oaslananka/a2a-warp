@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.1.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-schemas-v8.0.0...@oaslananka/a2a-warp-schemas-v8.1.0) (2026-06-01)
+
+
+### Miscellaneous Chores
+
+* **@oaslananka/a2a-warp-schemas:** Synchronize A2A Warp packages versions
+
 ## [8.0.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-schemas-v7.1.0...@oaslananka/a2a-warp-schemas-v8.0.0) (2026-06-01)
 
 
