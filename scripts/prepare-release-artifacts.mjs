@@ -89,14 +89,10 @@ await runPnpm([
   '--pack-destination',
   npmArtifactDir,
 ]);
-// Prune package tarballs whose version does not match the core release version.
-// Individually-versioned packages (auth, telemetry, etc.) are excluded so the
-// preflight validation in publish.yml does not reject them.
-const corePkg = JSON.parse(
-  await readFile(join(import.meta.dirname, '..', 'packages', 'core', 'package.json'), 'utf-8'),
-);
-await pruneNonMatchingPackages(npmArtifactDir, corePkg.version);
+// Keep all freshly-generated package tarballs. Independently-versioned packages
+// (auth, telemetry) publish at their own version along with core-aligned packages.
+// The publish.yml preflight validation handles version-mismatch warnings.
 
-// Checksums must be written after pruning so they reflect only the release set.
+// Checksums must be written after all tarballs are generated.
 await writeChecksums(npmArtifactDir);
 await generateSbom();

@@ -246,13 +246,14 @@ jobs:
           for package_file in "${GITHUB_WORKSPACE}"/.artifacts/npm/*.tgz; do
             pkg_json="$(tar -xOzf "$package_file" package/package.json)"
             pkg_name="$(node -e "const p=JSON.parse(require('fs').readFileSync(0,'utf8'));process.stdout.write(p.name);" <<< "$pkg_json")"
+            pkg_version="$(node -e "const p=JSON.parse(require('fs').readFileSync(0,'utf8'));process.stdout.write(p.version);" <<< "$pkg_json")"
 
             current_latest="$(npm view "${pkg_name}" dist-tags.latest 2>/dev/null || echo 'unknown')"
-            if [ "${current_latest}" != "${VERSION}" ]; then
-              echo "⇢  ${pkg_name}: updating latest dist-tag ${current_latest} → ${VERSION}"
-              npm dist-tag add "${pkg_name}@${VERSION}" latest || { echo "⚠  Failed to update dist-tag for ${pkg_name}"; rc=1; }
+            if [ "${current_latest}" != "${pkg_version}" ]; then
+              echo "⇢  ${pkg_name}: updating latest dist-tag ${current_latest} → ${pkg_version}"
+              npm dist-tag add "${pkg_name}@${pkg_version}" latest || { echo "⚠  Failed to update dist-tag for ${pkg_name}"; rc=1; }
             else
-              echo "✓  ${pkg_name}: latest dist-tag already at ${VERSION}"
+              echo "✓  ${pkg_name}: latest dist-tag already at ${pkg_version}"
             fi
           done
           exit $rc
