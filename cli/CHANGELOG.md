@@ -1,5 +1,21 @@
 # Changelog
 
+## [8.1.2](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-cli-v8.1.1...@oaslananka/a2a-warp-cli-v8.1.2) (2026-06-02)
+
+
+### Bug Fixes
+
+* regenerate cli generated files for 8.1.1 ([6f5b8d6](https://github.com/oaslananka/a2a-warp/commit/6f5b8d619e9264d2665a7f688d0329bf9e6eb21c))
+* regenerate cli generated files for 8.1.1 ([f14ad86](https://github.com/oaslananka/a2a-warp/commit/f14ad86bc867ee4590c4768a20bc3ff8f353ac01))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp bumped to 8.1.2
+    * @oaslananka/a2a-warp-registry bumped to 8.1.2
+
 ## [8.1.1](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-cli-v8.1.0...@oaslananka/a2a-warp-cli-v8.1.1) (2026-06-02)
 
 
