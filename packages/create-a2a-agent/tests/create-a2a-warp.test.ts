@@ -8,6 +8,10 @@ import { describe, expect, it, vi } from 'vitest';
 import { run } from '../src/index.js';
 import type { spawnSync } from 'node:child_process';
 
+const runtimeVersions = JSON.parse(
+  await readFile(new URL('../../../tools/runtime-versions.json', import.meta.url), 'utf8'),
+) as { node: string; pnpm: string; npmForPublish: string; nodeCompatibility: string[] };
+
 const execFileAsync = promisify(execFile);
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 const createBinary = resolve(repoRoot, 'packages/create-a2a-agent/bin/create-a2a-warp.js');
@@ -236,7 +240,7 @@ describe('create-a2a-warp binary scaffolds typechecked templates', () => {
       const indexSource = await readProjectFile(projectDir, 'src/index.ts');
 
       expect(packageJson).toContain(`"${template.packageDependency}"`);
-      expect(packageJson).toContain('"packageManager": "pnpm@11.5.0"');
+      expect(packageJson).toContain(`"packageManager": "pnpm@${runtimeVersions.pnpm}"`);
       expect(tsconfigJson).toContain('"module": "NodeNext"');
       expect(readme).toContain(`- Adapter: \`${template.adapter}\``);
       expect(agentSource).toContain(template.sourceMarker);
