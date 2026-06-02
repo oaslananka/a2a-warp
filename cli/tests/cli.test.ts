@@ -104,6 +104,10 @@ describe('a2a CLI', () => {
     const indexFile = await readFile(join(tempDir, 'sample-agent', 'src', 'index.ts'), 'utf8');
     expect(packageJson).toContain('"@oaslananka/a2a-warp"');
     expect(packageJson).toContain('"@types/node"');
+    const runtimeVersions = JSON.parse(
+      await readFile(join(repoRoot, 'tools', 'runtime-versions.json'), 'utf8'),
+    ) as { pnpm: string };
+    expect(packageJson).toContain(`"packageManager": "pnpm@${runtimeVersions.pnpm}"`);
     expect(tsconfigJson).toContain('"types"');
     expect(tsconfigJson).toContain('"node"');
     expect(agentFile).toContain('BaseAdapter');
