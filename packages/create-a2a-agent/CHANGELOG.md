@@ -1,5 +1,19 @@
 # Changelog
 
+## [8.1.1](https://github.com/oaslananka/a2a-warp/compare/create-a2a-warp-v8.1.0...create-a2a-warp-v8.1.1) (2026-06-02)
+
+
+### Bug Fixes
+
+* update stale pnpm version references and add dynamic version test ([#220](https://github.com/oaslananka/a2a-warp/issues/220)) ([4720eec](https://github.com/oaslananka/a2a-warp/commit/4720eecfdd2ab0a61ff9a5e1f50576a4c99ff579))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp-cli bumped to 8.1.1
+
 ## [8.1.0](https://github.com/oaslananka/a2a-warp/compare/create-a2a-warp-v8.0.0...create-a2a-warp-v8.1.0) (2026-06-01)
 
 
