@@ -51,6 +51,7 @@ a2a-warp send http://127.0.0.1:3000 "hello"
 a2a-warp task status http://127.0.0.1:3000 task-123
 a2a-warp health http://127.0.0.1:3000 --timeout-ms 1000 --json
 a2a-warp conformance http://127.0.0.1:3000 --protocol-version 1.0 --json
+a2a-warp conformance-badge report.json --output badge.svg
 a2a-warp registry export --url http://127.0.0.1:3099 --output ./registry-export.json
 a2a-warp registry import --url http://127.0.0.1:3099 --input ./registry-export.json
 a2a-warp export-card http://127.0.0.1:3000 --output ./agent-card.json
@@ -70,6 +71,7 @@ a2a-warp send http://127.0.0.1:3000 "hello"
 a2a-warp task status http://127.0.0.1:3000 task-123
 a2a-warp health http://127.0.0.1:3000 --timeout-ms 1000 --json
 a2a-warp conformance http://127.0.0.1:3000 --protocol-version 1.0 --json
+a2a-warp conformance-badge report.json --output badge.svg
 a2a-warp registry export --url http://127.0.0.1:3099 --output .\registry-export.json
 a2a-warp registry import --url http://127.0.0.1:3099 --input .\registry-export.json
 a2a-warp export-card http://127.0.0.1:3000 --output .\agent-card.json
