@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * Validate that pnpm-workspace.yaml is the single source of truth
  * for workspace package declarations and that all patterns resolve.

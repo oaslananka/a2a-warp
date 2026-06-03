@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { extname, join, relative } from 'node:path';
 
 const repoRoot = process.cwd();
@@ -78,6 +78,7 @@ function listGitFiles() {
       .split('\0')
       .filter(Boolean)
       .map(normalizePath)
+      .filter((file) => existsSync(join(repoRoot, file)))
       .filter((file) => !isSkippedPath(file))
       .sort();
   } catch {
@@ -108,6 +109,22 @@ export function readText(relPath) {
 
 export function readJson(relPath) {
   return JSON.parse(readText(relPath));
+}
+
+export function runCommandSync(file, args, options = {}) {
+  if (process.platform === 'win32' && file.toLowerCase().endsWith('.cmd')) {
+    return execFileSync('cmd.exe', ['/d', '/s', '/c', file, ...args], options);
+  }
+  return execFileSync(file, args, options);
+}
+
+export function runPnpmSync(args, options = {}) {
+  const pnpmExecPath = process.env.npm_execpath;
+  if (pnpmExecPath) {
+    return execFileSync(process.execPath, [pnpmExecPath, ...args], options);
+  }
+  const command = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
+  return runCommandSync(command, args, options);
 }
 
 export function fail(message, details = []) {

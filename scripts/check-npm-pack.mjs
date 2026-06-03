@@ -1,19 +1,17 @@
-import { execFileSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { gunzipSync } from 'node:zlib';
-import { getWorkspacePackages, fail } from './check-utils.mjs';
+import { getWorkspacePackages, fail, runCommandSync, runPnpmSync } from './check-utils.mjs';
 
 const require = createRequire(import.meta.url);
 const failures = [];
-const pnpmExecPath = process.env.npm_execpath;
 const scriptPath = fileURLToPath(import.meta.url);
 
 function runCommand(file, args, options = {}) {
-  return execFileSync(file, args, {
+  return runCommandSync(file, args, {
     encoding: 'utf8',
     stdio: 'pipe',
     ...options,
@@ -21,12 +19,9 @@ function runCommand(file, args, options = {}) {
 }
 
 function runPnpm(args, options = {}) {
-  if (pnpmExecPath) {
-    return runCommand(process.execPath, [pnpmExecPath, ...args], options);
-  }
-
-  return runCommand('pnpm', args, {
-    shell: process.platform === 'win32',
+  return runPnpmSync(args, {
+    encoding: 'utf8',
+    stdio: 'pipe',
     ...options,
   });
 }
@@ -78,7 +73,7 @@ function isExportJson(packageJson, specifier) {
   const exportMap = packageJson.exports;
   if (!exportMap || typeof exportMap !== 'object') return false;
   for (const [key, value] of Object.entries(exportMap)) {
-    const target = typeof value === 'string' ? value : value?.import ?? value?.default ?? '';
+    const target = typeof value === 'string' ? value : (value?.import ?? value?.default ?? '');
     if (target.endsWith('.json')) {
       const exportName = key === '.' ? packageJson.name : `${packageJson.name}/${key.slice(2)}`;
       if (exportName === specifier) return true;

@@ -9,6 +9,7 @@ const execFileAsync = promisify(execFile);
 const artifactDir = '.artifacts';
 const npmArtifactDir = '.artifacts/npm';
 const pnpmExecPath = process.env.npm_execpath;
+const pnpmCommand = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
 
 async function runPnpm(args) {
   if (pnpmExecPath) {
@@ -18,9 +19,11 @@ async function runPnpm(args) {
     return;
   }
 
-  await execFileAsync('pnpm', args, {
+  const file = process.platform === 'win32' ? 'cmd.exe' : pnpmCommand;
+  const commandArgs =
+    process.platform === 'win32' ? ['/d', '/s', '/c', pnpmCommand, ...args] : args;
+  await execFileAsync(file, commandArgs, {
     maxBuffer: 10 * 1024 * 1024,
-    shell: process.platform === 'win32',
   });
 }
 

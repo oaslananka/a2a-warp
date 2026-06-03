@@ -5,6 +5,18 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 const execFileAsync = promisify(execFile);
 const repoRoot = new URL('../..', import.meta.url);
+const pnpmCommand = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
+
+function runPnpm(args: string[]) {
+  if (process.platform === 'win32') {
+    return execFileAsync('cmd.exe', ['/d', '/s', '/c', pnpmCommand, ...args], {
+      cwd: repoRoot,
+    });
+  }
+  return execFileAsync(pnpmCommand, args, {
+    cwd: repoRoot,
+  });
+}
 
 describe('release artifact validation', () => {
   beforeEach(async () => {
@@ -73,9 +85,7 @@ describe('release artifact validation', () => {
   });
 
   it('generates a CycloneDX SBOM during release artifact preparation', async () => {
-    await execFileAsync('pnpm', ['run', 'release:artifacts'], {
-      cwd: repoRoot,
-    });
+    await runPnpm(['run', 'release:artifacts']);
 
     const sbom = JSON.parse(
       await readFile(new URL('.artifacts/sbom/a2a-warp.cdx.json', repoRoot), 'utf8'),
@@ -93,9 +103,7 @@ describe('release artifact validation', () => {
   });
 
   it('generates SHA256SUMS for prepared release tarballs', async () => {
-    await execFileAsync('pnpm', ['run', 'release:artifacts'], {
-      cwd: repoRoot,
-    });
+    await runPnpm(['run', 'release:artifacts']);
 
     const tarballs = (await readdir(new URL('.artifacts/npm', repoRoot)))
       .filter((entry) => entry.endsWith('.tgz'))

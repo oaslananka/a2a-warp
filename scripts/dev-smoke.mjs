@@ -26,11 +26,12 @@ async function fetchJson(url) {
 }
 
 function runPnpm(args) {
-  return spawn(pnpmCmd, args, {
+  const file = process.platform === 'win32' ? 'cmd.exe' : pnpmCmd;
+  const commandArgs = process.platform === 'win32' ? ['/d', '/s', '/c', pnpmCmd, ...args] : args;
+  return spawn(file, commandArgs, {
     cwd: repoRoot,
     stdio: ['ignore', 'pipe', 'pipe'],
     env,
-    shell: true,
   });
 }
 

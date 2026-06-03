@@ -78,7 +78,7 @@
     "release:validate": "node scripts/validate-release-config.mjs",
     "release:parity": "node scripts/check-package-registry-parity.mjs",
     "release:state": "node scripts/release-state.mjs",
-    "release:ready": "a2a-warp release-check",
+    "release:ready": "pnpm --filter @oaslananka/a2a-warp-cli run build && node cli/bin/a2a-warp.js release-check",
     "check:name-collisions": "node scripts/check-name-collisions.mjs",
     "check:bundle-sizes": "node scripts/check-bundle-sizes.mjs",
     "check:pre-push": "pnpm run lint && pnpm run build && pnpm run typecheck && pnpm run test:coverage && pnpm run test:integration && pnpm run pack:dry-run && pnpm run schemas:check && pnpm run docs:build && pnpm run docs:check && pnpm run security && pnpm run verify:structure && pnpm run gc",
