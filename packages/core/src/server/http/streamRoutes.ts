@@ -116,7 +116,7 @@ async function handleStreamRequest(
   deps.streamer.sendTaskUpdate(taskId, task);
 }
 
-export function initSseResponse(req: Request, res: Response, runtimeMetrics: RuntimeMetrics): void {
+function initSseResponse(req: Request, res: Response, runtimeMetrics: RuntimeMetrics): void {
   runtimeMetrics.recordSseConnectionOpened(Boolean(req.header('last-event-id')));
   res.status(200);
   res.setHeader('Content-Type', 'text/event-stream');

@@ -6,12 +6,12 @@
 import type { AuthScheme } from './auth.js';
 import type { A2AExtension } from './extensions.js';
 
-export interface TextPart {
+interface TextPart {
   type: 'text';
   text: string;
 }
 
-export interface FilePart {
+interface FilePart {
   type: 'file';
   file: {
     name?: string;
@@ -21,16 +21,16 @@ export interface FilePart {
   };
 }
 
-export interface DataPart {
+interface DataPart {
   type: 'data';
   data: Record<string, unknown>;
 }
 
-export type Part = TextPart | FilePart | DataPart;
+type Part = TextPart | FilePart | DataPart;
 
 export type MessageRole = 'ROLE_USER' | 'ROLE_AGENT';
 export type LegacyMessageRole = 'user' | 'agent';
-export type MessageRoleInput = MessageRole | LegacyMessageRole;
+type MessageRoleInput = MessageRole | LegacyMessageRole;
 
 export interface Message {
   kind?: 'message';
@@ -134,7 +134,7 @@ export interface TaskCounts {
   working: number;
 }
 
-export interface MessageRequestConfiguration {
+interface MessageRequestConfiguration {
   blocking?: boolean;
   acceptedOutputModes?: string[];
   pushNotificationConfig?: PushNotificationConfig;

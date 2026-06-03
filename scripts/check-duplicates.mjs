@@ -1,4 +1,4 @@
-import { execFileSync } from 'node:child_process';
+import { runPnpmSync } from './check-utils.mjs';
 
 const paths = [
   'packages/core/src',
@@ -26,12 +26,4 @@ const jscpdArgs = [
   ...paths,
 ];
 
-const pnpmExecPath = process.env.npm_execpath;
-if (pnpmExecPath) {
-  execFileSync(process.execPath, [pnpmExecPath, 'exec', ...jscpdArgs], { stdio: 'inherit' });
-} else {
-  execFileSync('pnpm', ['exec', ...jscpdArgs], {
-    stdio: 'inherit',
-    shell: process.platform === 'win32',
-  });
-}
+runPnpmSync(['exec', ...jscpdArgs], { stdio: 'inherit' });

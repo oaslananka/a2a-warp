@@ -1,20 +1,16 @@
-import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { format } from 'prettier';
+import { runPnpmSync } from './check-utils.mjs';
 
 const generatedMarker = '<!-- Synced from scripts/generate-command-docs.mjs. -->';
 const checkMode = process.argv.includes('--check');
 const repoRoot = process.cwd();
 const cliDocsHelpWidth = 100;
 
-function pnpmCommand() {
-  return process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
-}
-
 function buildCliPackage() {
-  execFileSync(pnpmCommand(), ['--filter', '@oaslananka/a2a-warp-cli', 'run', 'build'], {
+  runPnpmSync(['--filter', '@oaslananka/a2a-warp-cli', 'run', 'build'], {
     cwd: repoRoot,
     stdio: 'inherit',
   });

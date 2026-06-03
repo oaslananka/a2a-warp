@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 /**
  * @fileoverview
  * Check REUSE compliance by running `reuse lint`.

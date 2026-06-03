@@ -27,7 +27,8 @@ describe('generated CLI command documentation', () => {
   it('keeps the command docs generator portable across shells and line endings', () => {
     const generator = readRepoFile('scripts/generate-command-docs.mjs');
 
-    expect(generator).toContain("process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'");
+    expect(generator).toContain("import { runPnpmSync } from './check-utils.mjs'");
+    expect(generator).toContain('runPnpmSync([');
     expect(generator).toContain('function renderMarkdownTableCell');
     expect(generator).toContain("replace(/\\\\/g, '\\\\\\\\')");
     expect(generator).toContain("replace(/\\r?\\n/g, ' ')");

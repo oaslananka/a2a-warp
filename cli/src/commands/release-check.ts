@@ -62,8 +62,14 @@ function runCheck(
   options: ExecFileSyncOptions,
 ): CheckResult {
   const start = performance.now();
+  const file =
+    process.platform === 'win32' && command.toLowerCase().endsWith('.cmd') ? 'cmd.exe' : command;
+  const commandArgs =
+    process.platform === 'win32' && command.toLowerCase().endsWith('.cmd')
+      ? ['/d', '/s', '/c', command, ...args]
+      : args;
   try {
-    execFileSync(command, args, { ...options, stdio: 'pipe', timeout: 120_000 });
+    execFileSync(file, commandArgs, { ...options, stdio: 'pipe', timeout: 120_000 });
     return { name, status: 'passed', duration: Math.round(performance.now() - start) };
   } catch (error: unknown) {
     const err = error as NodeJS.ErrnoException & { stdout?: Buffer; stderr?: Buffer };
@@ -82,7 +88,11 @@ function runNodeScript(name: string, script: string, cwd: string): CheckResult {
 }
 
 function runPnpm(name: string, args: readonly string[], cwd: string): CheckResult {
-  return runCheck(name, 'pnpm', args, { cwd });
+  const pnpmExecPath = process.env['npm_execpath'];
+  if (pnpmExecPath) {
+    return runCheck(name, process.execPath, [pnpmExecPath, ...args], { cwd });
+  }
+  return runCheck(name, process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm', args, { cwd });
 }
 
 function runGit(name: string, args: readonly string[], cwd: string): CheckResult {
@@ -198,9 +208,10 @@ export function createReleaseCheckCommand(getOptions: RootOptionsProvider): Comm
     );
 
     // 9. Release artifact validation
+    checks.push(runPnpm('Release artifacts', ['run', 'release:artifacts'], workspaceRoot));
     checks.push(
       runNodeScript(
-        'Release artifacts',
+        'Release artifact validation',
         resolve(workspaceRoot, 'scripts/validate-release-config.mjs'),
         workspaceRoot,
       ),

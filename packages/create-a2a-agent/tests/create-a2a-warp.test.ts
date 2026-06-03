@@ -15,6 +15,7 @@ const runtimeVersions = JSON.parse(
 const execFileAsync = promisify(execFile);
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 const createBinary = resolve(repoRoot, 'packages/create-a2a-agent/bin/create-a2a-warp.js');
+const pnpmCommand = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
 
 type ScaffoldAdapter =
   | 'custom'
@@ -106,8 +107,13 @@ async function execIn(
   command: string,
   args: string[],
 ): Promise<{ stdout: string; stderr: string }> {
+  const file = process.platform === 'win32' && command === pnpmCommand ? 'cmd.exe' : command;
+  const commandArgs =
+    process.platform === 'win32' && command === pnpmCommand
+      ? ['/d', '/s', '/c', command, ...args]
+      : args;
   try {
-    return await execFileAsync(command, args, {
+    return await execFileAsync(file, commandArgs, {
       cwd,
       env: {
         ...process.env,
@@ -144,7 +150,7 @@ async function packLocalPackageOverrides(tempDir: string): Promise<LocalPackageO
 
   const overrides: LocalPackageOverride[] = [];
   for (const [name, packageDir] of localPackageDirs) {
-    const { stdout } = await execIn(repoRoot, 'pnpm', [
+    const { stdout } = await execIn(repoRoot, pnpmCommand, [
       '--dir',
       resolve(repoRoot, packageDir),
       'pack',
@@ -252,10 +258,10 @@ describe('create-a2a-warp binary scaffolds typechecked templates', () => {
         expect(await readProjectFile(projectDir, 'Dockerfile')).toContain('pnpm install');
       }
 
-      await execIn(projectDir, 'pnpm', ['install', '--lockfile-only']);
+      await execIn(projectDir, pnpmCommand, ['install', '--lockfile-only']);
       await stat(join(projectDir, 'pnpm-lock.yaml'));
-      await execIn(projectDir, 'pnpm', ['install', '--frozen-lockfile', '--ignore-scripts']);
-      await execIn(projectDir, 'pnpm', ['exec', 'tsc', '-p', 'tsconfig.json', '--noEmit']);
+      await execIn(projectDir, pnpmCommand, ['install', '--frozen-lockfile', '--ignore-scripts']);
+      await execIn(projectDir, pnpmCommand, ['exec', 'tsc', '-p', 'tsconfig.json', '--noEmit']);
     }
   }, 240_000);
 });

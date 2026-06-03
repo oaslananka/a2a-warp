@@ -1,3 +1,3 @@
-import { execFileSync } from 'node:child_process';
+import { runPnpmSync } from './check-utils.mjs';
 
-execFileSync('pnpm', ['run', 'docs:api'], { stdio: 'inherit' });
+runPnpmSync(['run', 'docs:api'], { stdio: 'inherit' });

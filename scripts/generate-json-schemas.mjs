@@ -29,7 +29,7 @@ for (const definition of definitions) {
 }
 const failures = [];
 
-  for (const directory of schemaDirectories) {
+for (const directory of schemaDirectories) {
   const absoluteDirectory = resolve(repoRoot, directory);
   if (!checkOnly) {
     mkdirSync(absoluteDirectory, { recursive: true });

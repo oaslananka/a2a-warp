@@ -6,8 +6,8 @@
 import type { AuthScheme } from './auth.js';
 import type { A2AExtension } from './extensions.js';
 
-export type ProtocolVersion = '0.3' | '1.0' | '1.2';
-export type ProtocolBinding = 'HTTP+JSON' | 'gRPC' | 'WebSocket';
+type ProtocolVersion = '0.3' | '1.0' | '1.2';
+type ProtocolBinding = 'HTTP+JSON' | 'gRPC' | 'WebSocket';
 
 export interface AgentCardSignature {
   algorithm: 'ES256' | 'RS256' | 'EdDSA';
@@ -25,7 +25,7 @@ export interface SupportedInterface {
 /**
  * Agent capabilities.
  */
-export interface AgentCapabilities {
+interface AgentCapabilities {
   streaming?: boolean;
   pushNotifications?: boolean;
   stateTransitionHistory?: boolean;
@@ -37,7 +37,7 @@ export interface AgentCapabilities {
 /**
  * Definition of an agent skill.
  */
-export interface AgentSkill {
+interface AgentSkill {
   id: string;
   name: string;
   description: string;
@@ -50,7 +50,7 @@ export interface AgentSkill {
 /**
  * Legacy v0.3 Agent Card structure.
  */
-export interface AgentCardV03 {
+interface AgentCardV03 {
   protocolVersion: '0.3';
   name: string;
   description: string;
