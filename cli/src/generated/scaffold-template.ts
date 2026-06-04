@@ -11,7 +11,7 @@ export const scaffoldTemplateConfig = {
   },
   devDependencies: {
     '@types/node': '22.19.19',
-    tsx: '4.22.3',
+    tsx: '4.22.4',
     typescript: '6.0.3',
   },
   runtime: {
