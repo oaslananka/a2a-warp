@@ -16,3 +16,6 @@ apps/registry-ui/test-results/
 
 # Audit files
 docs/audits/
+
+# IDE / tool config
+.serena/

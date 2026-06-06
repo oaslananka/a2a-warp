@@ -35,7 +35,7 @@
     "format:write": "prettier --ignore-path .prettierignore --ignore-unknown --write .",
     "format:check": "prettier --ignore-path .prettierignore --ignore-unknown --check .",
     "lint": "pnpm run lint:code && pnpm run lint:md && pnpm run lint:yaml && pnpm run lint:identity",
-    "lint:code": "eslint .",
+    "lint:code": "NODE_OPTIONS=\"--max-old-space-size=8192\" eslint .",
     "lint:fix": "eslint . --fix",
     "lint:md": "markdownlint-cli2",
     "lint:yaml": "node scripts/check-yaml.mjs",
