@@ -1,5 +1,20 @@
 # Changelog
 
+## [8.1.4](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-cli-v8.1.3...@oaslananka/a2a-warp-cli-v8.1.4) (2026-06-06)
+
+
+### Bug Fixes
+
+* **security:** address CodeQL shell injection and pip pinning alerts ([8642ef7](https://github.com/oaslananka/a2a-warp/commit/8642ef7cfc0b7df5f40aae784b5f70a0189a48c3))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp bumped to 8.1.4
+    * @oaslananka/a2a-warp-registry bumped to 8.1.4
+
 ## [8.1.3](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-cli-v8.1.2...@oaslananka/a2a-warp-cli-v8.1.3) (2026-06-06)
 
 
