@@ -1,5 +1,19 @@
 # Changelog
 
+## [8.1.3](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-registry-v8.1.2...@oaslananka/a2a-warp-registry-v8.1.3) (2026-06-06)
+
+
+### Miscellaneous Chores
+
+* **@oaslananka/a2a-warp-registry:** Synchronize A2A Warp packages versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp bumped to 8.1.3
+
 ## [8.1.2](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-registry-v8.1.1...@oaslananka/a2a-warp-registry-v8.1.2) (2026-06-02)
 
 

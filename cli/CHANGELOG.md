@@ -1,5 +1,22 @@
 # Changelog
 
+## [8.1.3](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-cli-v8.1.2...@oaslananka/a2a-warp-cli-v8.1.3) (2026-06-06)
+
+
+### Bug Fixes
+
+* **cli:** sync scaffold template dependency ([a3a7446](https://github.com/oaslananka/a2a-warp/commit/a3a7446dd1bf7da4fc27eed3cf4c0cf4d0f9df31)), closes [#238](https://github.com/oaslananka/a2a-warp/issues/238)
+* **dx:** make Windows validation use portable pnpm execution ([2173e3d](https://github.com/oaslananka/a2a-warp/commit/2173e3dd5a35b62c14201a076f1045ec24537065)), closes [#229](https://github.com/oaslananka/a2a-warp/issues/229)
+* sync generated files for v8.1.2 ([#225](https://github.com/oaslananka/a2a-warp/issues/225)) ([6f7a648](https://github.com/oaslananka/a2a-warp/commit/6f7a6486ab3e9448174290aed3a47d5c4e5f9e72))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp bumped to 8.1.3
+    * @oaslananka/a2a-warp-registry bumped to 8.1.3
+
 ## [8.1.2](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-cli-v8.1.1...@oaslananka/a2a-warp-cli-v8.1.2) (2026-06-02)
 
 
