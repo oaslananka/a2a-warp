@@ -64,9 +64,13 @@ function runCheck(
   const start = performance.now();
   const file =
     process.platform === 'win32' && command.toLowerCase().endsWith('.cmd') ? 'cmd.exe' : command;
+  // Quote the .cmd path so cmd.exe /c treats it as a single token even if
+  // the absolute path contains spaces.  execFileSync already avoids a
+  // shell, but /c still concatenates the remaining arguments into one
+  // command line string.
   const commandArgs =
     process.platform === 'win32' && command.toLowerCase().endsWith('.cmd')
-      ? ['/d', '/s', '/c', command, ...args]
+      ? ['/d', '/s', '/c', `"${command}"`, ...args]
       : args;
   try {
     execFileSync(file, commandArgs, { ...options, stdio: 'pipe', timeout: 120_000 });

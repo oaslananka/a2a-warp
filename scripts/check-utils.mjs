@@ -113,7 +113,11 @@ export function readJson(relPath) {
 
 export function runCommandSync(file, args, options = {}) {
   if (process.platform === 'win32' && file.toLowerCase().endsWith('.cmd')) {
-    return execFileSync('cmd.exe', ['/d', '/s', '/c', file, ...args], options);
+    // Quote the .cmd path so cmd.exe /c treats it as a single token even if
+    // the absolute path contains spaces.  execFileSync already avoids a
+    // shell, but /c still concatenates the remaining arguments into one
+    // command line string.
+    return execFileSync('cmd.exe', ['/d', '/s', '/c', `"${file}"`, ...args], options);
   }
   return execFileSync(file, args, options);
 }

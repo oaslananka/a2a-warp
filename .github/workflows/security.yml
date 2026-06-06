@@ -134,5 +134,5 @@ jobs:
         with:
           persist-credentials: false
       - name: Install reuse
-        run: pip install --user reuse
+        run: pip install --user reuse==6.2.0
       - run: reuse lint
