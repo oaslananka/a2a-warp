@@ -1,5 +1,19 @@
 # Changelog
 
+## [8.1.3](https://github.com/oaslananka/a2a-warp/compare/create-a2a-warp-v8.1.2...create-a2a-warp-v8.1.3) (2026-06-06)
+
+
+### Bug Fixes
+
+* **dx:** make Windows validation use portable pnpm execution ([2173e3d](https://github.com/oaslananka/a2a-warp/commit/2173e3dd5a35b62c14201a076f1045ec24537065)), closes [#229](https://github.com/oaslananka/a2a-warp/issues/229)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp-cli bumped to 8.1.3
+
 ## [8.1.2](https://github.com/oaslananka/a2a-warp/compare/create-a2a-warp-v8.1.1...create-a2a-warp-v8.1.2) (2026-06-02)
 
 
