@@ -102,6 +102,21 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
+      # workflow_dispatch events ARE exempt from the GITHUB_TOKEN limitation
+      # that prevents release/push events from triggering other workflows.
+      - name: Trigger Publish workflow
+        run: |
+          set -euo pipefail
+          VERSION="$(jq -r '."packages/core"' .release-please-manifest.json)"
+          TAG="@oaslananka/a2a-warp-v${VERSION}"
+          echo "Triggering Publish workflow for ${TAG}"
+          gh workflow run publish.yml \
+            --repo "${{ github.repository }}" \
+            -f tag="${TAG}"
+          echo "✅ Publish workflow triggered for ${TAG}"
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
   sync:
     name: Release Please / sync-generated-files
     if: github.event_name == 'push'
