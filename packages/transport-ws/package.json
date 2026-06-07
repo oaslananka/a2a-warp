@@ -1,6 +1,6 @@
 {
   "name": "@oaslananka/a2a-warp-transport-ws",
-  "version": "8.1.4",
+  "version": "9.0.0",
   "description": "WebSocket transport helpers for A2A Warp agents.",
   "keywords": [
     "a2a",
