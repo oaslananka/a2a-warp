@@ -117,7 +117,7 @@ importers:
         version: link:../../packages/core
       '@oaslananka/a2a-warp-adapters':
         specifier: workspace:*
-        version: link:../../packages/adapters
+        version: file:packages/adapters(@anthropic-ai/sdk@0.100.1(zod@4.4.3))(@opentelemetry/exporter-metrics-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/exporter-trace-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/resources@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-metrics@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-node@0.218.0(@opentelemetry/api@1.9.1))(openai@6.39.1(ws@8.21.0)(zod@4.4.3))
       '@oaslananka/a2a-warp-registry':
         specifier: workspace:*
         version: link:../../packages/registry
@@ -432,8 +432,8 @@ importers:
         version: link:../adapter-base
     devDependencies:
       openai:
-        specifier: 6.39.1
-        version: 6.39.1(ws@8.21.0)(zod@4.4.3)
+        specifier: 6.42.0
+        version: 6.42.0(ws@8.21.0)(zod@4.4.3)
       typescript:
         specifier: 6.0.3
         version: 6.0.3
@@ -466,8 +466,8 @@ importers:
         version: link:../adapter-openai
     devDependencies:
       openai:
-        specifier: 6.39.1
-        version: 6.39.1(ws@8.21.0)(zod@4.4.3)
+        specifier: 6.42.0
+        version: 6.42.0(ws@8.21.0)(zod@4.4.3)
       typescript:
         specifier: 6.0.3
         version: 6.0.3
@@ -1711,6 +1711,60 @@ packages:
   '@oaslananka/a2a-warp-adapter-base@file:packages/adapter-base':
     resolution: {directory: packages/adapter-base, type: directory}
     engines: {node: '>=22.22.1 <25'}
+
+  '@oaslananka/a2a-warp-adapter-crewai@file:packages/adapter-crewai':
+    resolution: {directory: packages/adapter-crewai, type: directory}
+    engines: {node: '>=22.22.1 <25'}
+
+  '@oaslananka/a2a-warp-adapter-google-adk@file:packages/adapter-google-adk':
+    resolution: {directory: packages/adapter-google-adk, type: directory}
+    engines: {node: '>=22.22.1 <25'}
+
+  '@oaslananka/a2a-warp-adapter-langchain@file:packages/adapter-langchain':
+    resolution: {directory: packages/adapter-langchain, type: directory}
+    engines: {node: '>=22.22.1 <25'}
+    peerDependencies:
+      langchain: ^0.3.37 || ^1.0.0
+    peerDependenciesMeta:
+      langchain:
+        optional: true
+
+  '@oaslananka/a2a-warp-adapter-llamaindex@file:packages/adapter-llamaindex':
+    resolution: {directory: packages/adapter-llamaindex, type: directory}
+    engines: {node: '>=22.22.1 <25'}
+    peerDependencies:
+      llamaindex: ^0.9.11 || ^0.12.0
+    peerDependenciesMeta:
+      llamaindex:
+        optional: true
+
+  '@oaslananka/a2a-warp-adapter-openai@file:packages/adapter-openai':
+    resolution: {directory: packages/adapter-openai, type: directory}
+    engines: {node: '>=22.22.1 <25'}
+    peerDependencies:
+      openai: ^4.20.0 || ^6.0.0
+    peerDependenciesMeta:
+      openai:
+        optional: true
+
+  '@oaslananka/a2a-warp-adapters@file:packages/adapters':
+    resolution: {directory: packages/adapters, type: directory}
+    engines: {node: '>=22.22.1 <25'}
+    deprecated: 'This package is deprecated. Install individual adapters: @oaslananka/a2a-warp-adapter-openai, @oaslananka/a2a-warp-adapter-anthropic, @oaslananka/a2a-warp-adapter-langchain, @oaslananka/a2a-warp-adapter-google-adk, @oaslananka/a2a-warp-adapter-llamaindex, @oaslananka/a2a-warp-adapter-crewai'
+    peerDependencies:
+      '@anthropic-ai/sdk': ^0.39.0 || ^0.95.0 || ^0.96.0 || ^0.99.0 || ^0.100.0
+      langchain: ^0.3.37 || ^1.0.0
+      llamaindex: ^0.9.11 || ^0.12.0
+      openai: ^4.20.0 || ^6.0.0
+    peerDependenciesMeta:
+      '@anthropic-ai/sdk':
+        optional: true
+      langchain:
+        optional: true
+      llamaindex:
+        optional: true
+      openai:
+        optional: true
 
   '@oaslananka/a2a-warp-auth@file:packages/auth':
     resolution: {directory: packages/auth, type: directory}
@@ -4586,6 +4640,17 @@ packages:
       zod:
         optional: true
 
+  openai@6.42.0:
+    resolution: {integrity: sha512-1WFEt/uXMXOLhYRNkgJWo08Y2YNvNwpVU72K7ibrWgWpNOXd4VojXLbe6SQ4bLiUQ3Y8jz4IiyVkylJCL1DtZg==}
+    peerDependencies:
+      ws: ^8.18.0
+      zod: ^3.25 || ^4.0
+    peerDependenciesMeta:
+      ws:
+        optional: true
+      zod:
+        optional: true
+
   optionator@0.9.4:
     resolution: {integrity: sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g==}
     engines: {node: '>= 0.8.0'}
@@ -6684,6 +6749,89 @@ snapshots:
   '@oaslananka/a2a-warp-adapter-base@file:packages/adapter-base(@opentelemetry/exporter-metrics-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/exporter-trace-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/resources@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-metrics@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-node@0.218.0(@opentelemetry/api@1.9.1))':
     dependencies:
       '@oaslananka/a2a-warp': file:packages/core(@opentelemetry/exporter-metrics-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/exporter-trace-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/resources@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-metrics@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-node@0.218.0(@opentelemetry/api@1.9.1))
+    transitivePeerDependencies:
+      - '@opentelemetry/exporter-metrics-otlp-http'
+      - '@opentelemetry/exporter-trace-otlp-http'
+      - '@opentelemetry/resources'
+      - '@opentelemetry/sdk-metrics'
+      - '@opentelemetry/sdk-node'
+      - supports-color
+
+  '@oaslananka/a2a-warp-adapter-crewai@file:packages/adapter-crewai(@opentelemetry/exporter-metrics-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/exporter-trace-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/resources@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-metrics@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-node@0.218.0(@opentelemetry/api@1.9.1))':
+    dependencies:
+      '@oaslananka/a2a-warp': file:packages/core(@opentelemetry/exporter-metrics-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/exporter-trace-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/resources@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-metrics@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-node@0.218.0(@opentelemetry/api@1.9.1))
+      '@oaslananka/a2a-warp-adapter-base': file:packages/adapter-base(@opentelemetry/exporter-metrics-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/exporter-trace-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/resources@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-metrics@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-node@0.218.0(@opentelemetry/api@1.9.1))
+    transitivePeerDependencies:
+      - '@opentelemetry/exporter-metrics-otlp-http'
+      - '@opentelemetry/exporter-trace-otlp-http'
+      - '@opentelemetry/resources'
+      - '@opentelemetry/sdk-metrics'
+      - '@opentelemetry/sdk-node'
+      - supports-color
+
+  '@oaslananka/a2a-warp-adapter-google-adk@file:packages/adapter-google-adk(@opentelemetry/exporter-metrics-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/exporter-trace-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/resources@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-metrics@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-node@0.218.0(@opentelemetry/api@1.9.1))':
+    dependencies:
+      '@oaslananka/a2a-warp': file:packages/core(@opentelemetry/exporter-metrics-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/exporter-trace-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/resources@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-metrics@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-node@0.218.0(@opentelemetry/api@1.9.1))
+      '@oaslananka/a2a-warp-adapter-base': file:packages/adapter-base(@opentelemetry/exporter-metrics-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/exporter-trace-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/resources@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-metrics@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-node@0.218.0(@opentelemetry/api@1.9.1))
+    transitivePeerDependencies:
+      - '@opentelemetry/exporter-metrics-otlp-http'
+      - '@opentelemetry/exporter-trace-otlp-http'
+      - '@opentelemetry/resources'
+      - '@opentelemetry/sdk-metrics'
+      - '@opentelemetry/sdk-node'
+      - supports-color
+
+  '@oaslananka/a2a-warp-adapter-langchain@file:packages/adapter-langchain(@opentelemetry/exporter-metrics-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/exporter-trace-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/resources@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-metrics@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-node@0.218.0(@opentelemetry/api@1.9.1))':
+    dependencies:
+      '@oaslananka/a2a-warp': file:packages/core(@opentelemetry/exporter-metrics-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/exporter-trace-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/resources@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-metrics@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-node@0.218.0(@opentelemetry/api@1.9.1))
+      '@oaslananka/a2a-warp-adapter-base': file:packages/adapter-base(@opentelemetry/exporter-metrics-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/exporter-trace-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/resources@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-metrics@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-node@0.218.0(@opentelemetry/api@1.9.1))
+    transitivePeerDependencies:
+      - '@opentelemetry/exporter-metrics-otlp-http'
+      - '@opentelemetry/exporter-trace-otlp-http'
+      - '@opentelemetry/resources'
+      - '@opentelemetry/sdk-metrics'
+      - '@opentelemetry/sdk-node'
+      - supports-color
+
+  '@oaslananka/a2a-warp-adapter-llamaindex@file:packages/adapter-llamaindex(@opentelemetry/exporter-metrics-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/exporter-trace-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/resources@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-metrics@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-node@0.218.0(@opentelemetry/api@1.9.1))':
+    dependencies:
+      '@oaslananka/a2a-warp': file:packages/core(@opentelemetry/exporter-metrics-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/exporter-trace-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/resources@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-metrics@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-node@0.218.0(@opentelemetry/api@1.9.1))
+      '@oaslananka/a2a-warp-adapter-base': file:packages/adapter-base(@opentelemetry/exporter-metrics-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/exporter-trace-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/resources@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-metrics@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-node@0.218.0(@opentelemetry/api@1.9.1))
+    transitivePeerDependencies:
+      - '@opentelemetry/exporter-metrics-otlp-http'
+      - '@opentelemetry/exporter-trace-otlp-http'
+      - '@opentelemetry/resources'
+      - '@opentelemetry/sdk-metrics'
+      - '@opentelemetry/sdk-node'
+      - supports-color
+
+  '@oaslananka/a2a-warp-adapter-openai@file:packages/adapter-openai(@opentelemetry/exporter-metrics-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/exporter-trace-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/resources@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-metrics@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-node@0.218.0(@opentelemetry/api@1.9.1))(openai@6.39.1(ws@8.21.0)(zod@4.4.3))':
+    dependencies:
+      '@oaslananka/a2a-warp': file:packages/core(@opentelemetry/exporter-metrics-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/exporter-trace-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/resources@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-metrics@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-node@0.218.0(@opentelemetry/api@1.9.1))
+      '@oaslananka/a2a-warp-adapter-base': file:packages/adapter-base(@opentelemetry/exporter-metrics-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/exporter-trace-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/resources@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-metrics@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-node@0.218.0(@opentelemetry/api@1.9.1))
+    optionalDependencies:
+      openai: 6.39.1(ws@8.21.0)(zod@4.4.3)
+    transitivePeerDependencies:
+      - '@opentelemetry/exporter-metrics-otlp-http'
+      - '@opentelemetry/exporter-trace-otlp-http'
+      - '@opentelemetry/resources'
+      - '@opentelemetry/sdk-metrics'
+      - '@opentelemetry/sdk-node'
+      - supports-color
+
+  '@oaslananka/a2a-warp-adapters@file:packages/adapters(@anthropic-ai/sdk@0.100.1(zod@4.4.3))(@opentelemetry/exporter-metrics-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/exporter-trace-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/resources@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-metrics@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-node@0.218.0(@opentelemetry/api@1.9.1))(openai@6.39.1(ws@8.21.0)(zod@4.4.3))':
+    dependencies:
+      '@oaslananka/a2a-warp': file:packages/core(@opentelemetry/exporter-metrics-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/exporter-trace-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/resources@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-metrics@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-node@0.218.0(@opentelemetry/api@1.9.1))
+      '@oaslananka/a2a-warp-adapter-anthropic': file:packages/adapter-anthropic(@anthropic-ai/sdk@0.100.1(zod@4.4.3))(@opentelemetry/exporter-metrics-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/exporter-trace-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/resources@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-metrics@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-node@0.218.0(@opentelemetry/api@1.9.1))
+      '@oaslananka/a2a-warp-adapter-base': file:packages/adapter-base(@opentelemetry/exporter-metrics-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/exporter-trace-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/resources@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-metrics@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-node@0.218.0(@opentelemetry/api@1.9.1))
+      '@oaslananka/a2a-warp-adapter-crewai': file:packages/adapter-crewai(@opentelemetry/exporter-metrics-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/exporter-trace-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/resources@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-metrics@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-node@0.218.0(@opentelemetry/api@1.9.1))
+      '@oaslananka/a2a-warp-adapter-google-adk': file:packages/adapter-google-adk(@opentelemetry/exporter-metrics-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/exporter-trace-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/resources@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-metrics@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-node@0.218.0(@opentelemetry/api@1.9.1))
+      '@oaslananka/a2a-warp-adapter-langchain': file:packages/adapter-langchain(@opentelemetry/exporter-metrics-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/exporter-trace-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/resources@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-metrics@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-node@0.218.0(@opentelemetry/api@1.9.1))
+      '@oaslananka/a2a-warp-adapter-llamaindex': file:packages/adapter-llamaindex(@opentelemetry/exporter-metrics-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/exporter-trace-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/resources@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-metrics@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-node@0.218.0(@opentelemetry/api@1.9.1))
+      '@oaslananka/a2a-warp-adapter-openai': file:packages/adapter-openai(@opentelemetry/exporter-metrics-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/exporter-trace-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/resources@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-metrics@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-node@0.218.0(@opentelemetry/api@1.9.1))(openai@6.39.1(ws@8.21.0)(zod@4.4.3))
+    optionalDependencies:
+      '@anthropic-ai/sdk': 0.100.1(zod@4.4.3)
+      openai: 6.39.1(ws@8.21.0)(zod@4.4.3)
     transitivePeerDependencies:
       - '@opentelemetry/exporter-metrics-otlp-http'
       - '@opentelemetry/exporter-trace-otlp-http'
@@ -9603,6 +9751,11 @@ snapshots:
       regex-recursion: 6.0.2
 
   openai@6.39.1(ws@8.21.0)(zod@4.4.3):
+    optionalDependencies:
+      ws: 8.21.0
+      zod: 4.4.3
+
+  openai@6.42.0(ws@8.21.0)(zod@4.4.3):
     optionalDependencies:
       ws: 8.21.0
       zod: 4.4.3
