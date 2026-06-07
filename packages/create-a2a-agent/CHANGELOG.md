@@ -1,5 +1,19 @@
 # Changelog
 
+## [8.1.4](https://github.com/oaslananka/a2a-warp/compare/create-a2a-warp-v8.1.3...create-a2a-warp-v8.1.4) (2026-06-06)
+
+
+### Miscellaneous Chores
+
+* **create-a2a-warp:** Synchronize A2A Warp packages versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp-cli bumped to 8.1.4
+
 ## [8.1.3](https://github.com/oaslananka/a2a-warp/compare/create-a2a-warp-v8.1.2...create-a2a-warp-v8.1.3) (2026-06-06)
 
 
