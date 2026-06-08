@@ -1,5 +1,13 @@
 # Changelog
 
+## [9.0.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-schemas-v8.1.4...@oaslananka/a2a-warp-schemas-v9.0.0) (2026-06-07)
+
+
+### Bug Fixes
+
+* **packaging:** consolidate client, testing, and codex-bridge into core subpath exports ([#125](https://github.com/oaslananka/a2a-warp/issues/125)) ([76ea7dd](https://github.com/oaslananka/a2a-warp/commit/76ea7dd28bdec8c91567c18b2e1fa367d44633e4))
+* remove commit-message guard from Release Please tag/release/sync jobs ([e5f9061](https://github.com/oaslananka/a2a-warp/commit/e5f9061b9d25606638fac8f00cf43303a67016ad))
+
 ## [8.1.4](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-schemas-v8.1.3...@oaslananka/a2a-warp-schemas-v8.1.4) (2026-06-06)
 
 

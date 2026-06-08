@@ -1,5 +1,25 @@
 # Changelog
 
+## [9.0.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-adapter-base-v8.1.4...@oaslananka/a2a-warp-adapter-base-v9.0.0) (2026-06-07)
+
+
+### Features
+
+* **core:** split adapters into per-provider packages ([#169](https://github.com/oaslananka/a2a-warp/issues/169)) ([35f1c4f](https://github.com/oaslananka/a2a-warp/commit/35f1c4feff8c1b0a06d725053cb7e04bcae36932))
+
+
+### Bug Fixes
+
+* **dx:** make Windows validation use portable pnpm execution ([2173e3d](https://github.com/oaslananka/a2a-warp/commit/2173e3dd5a35b62c14201a076f1045ec24537065)), closes [#229](https://github.com/oaslananka/a2a-warp/issues/229)
+* remove commit-message guard from Release Please tag/release/sync jobs ([e5f9061](https://github.com/oaslananka/a2a-warp/commit/e5f9061b9d25606638fac8f00cf43303a67016ad))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp bumped to 9.0.0
+
 ## [8.1.4](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-adapter-base-v8.1.3...@oaslananka/a2a-warp-adapter-base-v8.1.4) (2026-06-06)
 
 
