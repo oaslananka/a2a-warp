@@ -30,49 +30,49 @@ range and is already EOL in the Node.js project schedule checked for this policy
 
 ## Package Version Matrix
 
-All public packages in the 5.1.x, 6.0.x, 6.1.x, 7.0.x, 7.1.x, 8.0.x, and 8.1.x lines share the same Node engine
+All public packages in the 5.1.x, 6.0.x, 6.1.x, 7.0.x, 7.1.x, 8.0.x, 8.1.x, and 9.0.x lines share the same Node engine
 range: `>=22.22.1 <25`.
 
 | Package                                   | Current version | Node range      | Compatibility notes                                                                                              |
 | ----------------------------------------- | --------------- | --------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `@oaslananka/a2a-warp`                    | `8.1.3`         | `>=22.22.1 <25` | Core runtime, client APIs, storage, testing helpers, and Codex-style tools — re-exports auth and telemetry APIs. |
-| `@oaslananka/a2a-warp-adapter-anthropic`  | `8.1.3`         | `>=22.22.1 <25` | Anthropic Claude Messages API adapter.                                                                           |
-| `@oaslananka/a2a-warp-adapter-base`       | `8.1.3`         | `>=22.22.1 <25` | Abstract base adapter and contract helpers.                                                                      |
-| `@oaslananka/a2a-warp-adapter-crewai`     | `8.1.3`         | `>=22.22.1 <25` | CrewAI HTTP bridge adapter.                                                                                      |
-| `@oaslananka/a2a-warp-adapter-google-adk` | `8.1.3`         | `>=22.22.1 <25` | Google Agent Development Kit HTTP adapter.                                                                       |
-| `@oaslananka/a2a-warp-adapter-langchain`  | `8.1.3`         | `>=22.22.1 <25` | LangChain / LangGraph runnable adapter.                                                                          |
-| `@oaslananka/a2a-warp-adapter-llamaindex` | `8.1.3`         | `>=22.22.1 <25` | LlamaIndex query/chat engine adapter.                                                                            |
-| `@oaslananka/a2a-warp-adapter-openai`     | `8.1.3`         | `>=22.22.1 <25` | OpenAI Chat API adapter.                                                                                         |
-| `@oaslananka/a2a-warp-adapters`           | `8.1.3`         | `>=22.22.1 <25` | **Deprecated** — use individual `@oaslananka/a2a-warp-adapter-*` packages instead.                               |
-| `@oaslananka/a2a-warp-core`               | `8.1.3`         | `>=22.22.1 <25` | Protocol types, interfaces, constants, and validators. Zero runtime dependencies.                                |
+| `@oaslananka/a2a-warp`                    | `9.0.0`         | `>=22.22.1 <25` | Core runtime, client APIs, storage, testing helpers, and Codex-style tools — re-exports auth and telemetry APIs. |
+| `@oaslananka/a2a-warp-adapter-anthropic`  | `9.0.0`         | `>=22.22.1 <25` | Anthropic Claude Messages API adapter.                                                                           |
+| `@oaslananka/a2a-warp-adapter-base`       | `9.0.0`         | `>=22.22.1 <25` | Abstract base adapter and contract helpers.                                                                      |
+| `@oaslananka/a2a-warp-adapter-crewai`     | `9.0.0`         | `>=22.22.1 <25` | CrewAI HTTP bridge adapter.                                                                                      |
+| `@oaslananka/a2a-warp-adapter-google-adk` | `9.0.0`         | `>=22.22.1 <25` | Google Agent Development Kit HTTP adapter.                                                                       |
+| `@oaslananka/a2a-warp-adapter-langchain`  | `9.0.0`         | `>=22.22.1 <25` | LangChain / LangGraph runnable adapter.                                                                          |
+| `@oaslananka/a2a-warp-adapter-llamaindex` | `9.0.0`         | `>=22.22.1 <25` | LlamaIndex query/chat engine adapter.                                                                            |
+| `@oaslananka/a2a-warp-adapter-openai`     | `9.0.0`         | `>=22.22.1 <25` | OpenAI Chat API adapter.                                                                                         |
+| `@oaslananka/a2a-warp-adapters`           | `9.0.0`         | `>=22.22.1 <25` | **Deprecated** — use individual `@oaslananka/a2a-warp-adapter-*` packages instead.                               |
+| `@oaslananka/a2a-warp-core`               | `9.0.0`         | `>=22.22.1 <25` | Protocol types, interfaces, constants, and validators. Zero runtime dependencies.                                |
 | `@oaslananka/a2a-warp-auth`               | `1.0.0`         | `>=22.22.1 <25` | Authentication and authorization middleware, helpers, and JWT/JWKS utilities.                                    |
 | `@oaslananka/a2a-warp-telemetry`          | `1.0.0`         | `>=22.22.1 <25` | OpenTelemetry integration, trace context propagation, and W3C TraceContext helpers.                              |
-| `@oaslananka/a2a-warp-registry`           | `8.1.3`         | `>=22.22.1 <25` | Registry server, discovery, health, and storage helpers.                                                         |
-| `@oaslananka/a2a-warp-cli`                | `8.1.3`         | `>=22.22.1 <25` | Published `a2a-warp` command-line interface.                                                                     |
-| `create-a2a-warp`                         | `8.1.3`         | `>=22.22.1 <25` | Project scaffolder.                                                                                              |
-| `@oaslananka/a2a-warp-bridge-mcp`         | `8.1.3`         | `>=22.22.1 <25` | A2A and MCP mapping helpers.                                                                                     |
-| `@oaslananka/a2a-warp-transport-ws`       | `8.1.3`         | `>=22.22.1 <25` | WebSocket transport helpers.                                                                                     |
-| `@oaslananka/a2a-warp-transport-grpc`     | `8.1.3`         | `>=22.22.1 <25` | gRPC transport helpers.                                                                                          |
-| `@oaslananka/a2a-warp-schemas`            | `8.1.3`         | `>=22.22.1 <25` | Standalone JSON Schema files for editor and CI validation.                                                       |
-| `@oaslananka/a2a-warp`                    | `8.1.2`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
-| `@oaslananka/a2a-warp-adapter-anthropic`  | `8.1.2`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
-| `@oaslananka/a2a-warp-adapter-base`       | `8.1.2`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
-| `@oaslananka/a2a-warp-adapter-crewai`     | `8.1.2`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
-| `@oaslananka/a2a-warp-adapter-google-adk` | `8.1.2`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
-| `@oaslananka/a2a-warp-adapter-langchain`  | `8.1.2`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
-| `@oaslananka/a2a-warp-adapter-llamaindex` | `8.1.2`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
-| `@oaslananka/a2a-warp-adapter-openai`     | `8.1.2`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
-| `@oaslananka/a2a-warp-adapters`           | `8.1.2`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
-| `@oaslananka/a2a-warp-core`               | `8.1.2`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
+| `@oaslananka/a2a-warp-registry`           | `9.0.0`         | `>=22.22.1 <25` | Registry server, discovery, health, and storage helpers.                                                         |
+| `@oaslananka/a2a-warp-cli`                | `9.0.0`         | `>=22.22.1 <25` | Published `a2a-warp` command-line interface.                                                                     |
+| `create-a2a-warp`                         | `9.0.0`         | `>=22.22.1 <25` | Project scaffolder.                                                                                              |
+| `@oaslananka/a2a-warp-bridge-mcp`         | `9.0.0`         | `>=22.22.1 <25` | A2A and MCP mapping helpers.                                                                                     |
+| `@oaslananka/a2a-warp-transport-ws`       | `9.0.0`         | `>=22.22.1 <25` | WebSocket transport helpers.                                                                                     |
+| `@oaslananka/a2a-warp-transport-grpc`     | `9.0.0`         | `>=22.22.1 <25` | gRPC transport helpers.                                                                                          |
+| `@oaslananka/a2a-warp-schemas`            | `9.0.0`         | `>=22.22.1 <25` | Standalone JSON Schema files for editor and CI validation.                                                       |
+| `@oaslananka/a2a-warp`                    | `8.1.3`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
+| `@oaslananka/a2a-warp-adapter-anthropic`  | `8.1.3`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
+| `@oaslananka/a2a-warp-adapter-base`       | `8.1.3`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
+| `@oaslananka/a2a-warp-adapter-crewai`     | `8.1.3`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
+| `@oaslananka/a2a-warp-adapter-google-adk` | `8.1.3`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
+| `@oaslananka/a2a-warp-adapter-langchain`  | `8.1.3`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
+| `@oaslananka/a2a-warp-adapter-llamaindex` | `8.1.3`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
+| `@oaslananka/a2a-warp-adapter-openai`     | `8.1.3`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
+| `@oaslananka/a2a-warp-adapters`           | `8.1.3`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
+| `@oaslananka/a2a-warp-core`               | `8.1.3`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
 | `@oaslananka/a2a-warp-auth`               | `1.0.0`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
 | `@oaslananka/a2a-warp-telemetry`          | `1.0.0`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
-| `@oaslananka/a2a-warp-registry`           | `8.1.2`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
-| `@oaslananka/a2a-warp-cli`                | `8.1.2`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
-| `create-a2a-warp`                         | `8.1.2`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
-| `@oaslananka/a2a-warp-bridge-mcp`         | `8.1.2`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
-| `@oaslananka/a2a-warp-transport-ws`       | `8.1.2`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
-| `@oaslananka/a2a-warp-transport-grpc`     | `8.1.2`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
-| `@oaslananka/a2a-warp-schemas`            | `8.1.2`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
+| `@oaslananka/a2a-warp-registry`           | `8.1.3`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
+| `@oaslananka/a2a-warp-cli`                | `8.1.3`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
+| `create-a2a-warp`                         | `8.1.3`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
+| `@oaslananka/a2a-warp-bridge-mcp`         | `8.1.3`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
+| `@oaslananka/a2a-warp-transport-ws`       | `8.1.3`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
+| `@oaslananka/a2a-warp-transport-grpc`     | `8.1.3`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
+| `@oaslananka/a2a-warp-schemas`            | `8.1.3`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
 | `@oaslananka/a2a-warp`                    | `8.1.2`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
 | `@oaslananka/a2a-warp-adapter-anthropic`  | `8.1.2`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
 | `@oaslananka/a2a-warp-adapter-base`       | `8.1.2`         | `>=22.22.1 <25` | Previous line — still compatible.                                                                                |
