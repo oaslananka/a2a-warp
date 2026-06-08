@@ -432,7 +432,7 @@ importers:
         version: link:../adapter-base
     devDependencies:
       openai:
-        specifier: 6.39.1
+        specifier: 6.42.0
         version: 6.42.0(ws@8.21.0)(zod@4.4.3)
       typescript:
         specifier: 6.0.3
@@ -466,7 +466,7 @@ importers:
         version: link:../adapter-openai
     devDependencies:
       openai:
-        specifier: 6.39.1
+        specifier: 6.42.0
         version: 6.42.0(ws@8.21.0)(zod@4.4.3)
       typescript:
         specifier: 6.0.3
