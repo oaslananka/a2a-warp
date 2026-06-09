@@ -155,8 +155,9 @@ jobs:
               while IFS= read -r dir; do
                 pkg_name="$(jq -r '.name' "${dir}/package.json")"
                 esc_name="$(printf '%s\n' "$pkg_name" | sed 's/[\/&]/\\&/g')"
+                # Only update "Current version" rows; skip "Previous line" rows
                 sed -i -E \
-                  "/\`${esc_name}\`/ s/\`[0-9]+\.[0-9]+\.[0-9]+\`/\`${VERSION}\`/" \
+                  "/Previous line/! { /\`${esc_name}\`/ s/\`[0-9]+\.[0-9]+\.[0-9]+\`/\`${VERSION}\`/ }" \
                   "$f"
               done
               echo "Updated $f"

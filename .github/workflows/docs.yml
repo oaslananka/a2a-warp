@@ -37,8 +37,8 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - run: pnpm run docs:build
 
-  links:
-    name: Docs / links
+  lint-md:
+    name: Docs / lint-md
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -80,7 +80,7 @@ jobs:
   deploy:
     name: Docs / deploy
     if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
-    needs: [build, links, command-parity]
+    needs: [build, lint-md, command-parity]
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions:

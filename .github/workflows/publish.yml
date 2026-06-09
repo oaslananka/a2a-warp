@@ -195,14 +195,17 @@ jobs:
 
             # Publish with --provenance where OIDC trusted publisher is configured;
             # fall back to token-only auth if provenance is unsupported
-            if npm publish "$package_file" --access public --provenance 2>/dev/null; then
+            if npm publish "$package_file" --access public --provenance 2>&1; then
               echo "✅ Published ${pkg_name}@${pkg_version} with provenance"
-            elif npm publish "$package_file" --access public; then
-              echo "✅ Published ${pkg_name}@${pkg_version} (without provenance)"
             else
-              echo "❌ Failed to publish ${pkg_name}@${pkg_version}"
-              publish_failed=true
-              break
+              echo "⚠ Provenance publish failed, falling back to standard publish"
+              if npm publish "$package_file" --access public; then
+                echo "✅ Published ${pkg_name}@${pkg_version} (without provenance)"
+              else
+                echo "❌ Failed to publish ${pkg_name}@${pkg_version}"
+                publish_failed=true
+                break
+              fi
             fi
           done
 
