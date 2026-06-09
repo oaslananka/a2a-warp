@@ -54,7 +54,7 @@
     "@oaslananka/a2a-warp-cli": "workspace:^"
   },
   "devDependencies": {
-    "@types/node": "22.19.19"
+    "@types/node": "22.19.20"
   },
   "publishConfig": {
     "access": "public",
