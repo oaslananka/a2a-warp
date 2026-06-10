@@ -9,5 +9,5 @@
     "langchain",
     "llamaindex"
   ],
-  "ignoreBinaries": ["gitleaks", "playwright", "view"]
+  "ignoreBinaries": ["gh", "gitleaks", "playwright", "view", "where.exe"]
 }
