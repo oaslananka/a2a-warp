@@ -4,7 +4,7 @@ export const scaffoldTemplateConfig = {
     '@oaslananka/a2a-warp': '^9.0.0',
     '@oaslananka/a2a-warp-adapters': '^9.0.0',
     '@oaslananka/a2a-warp-registry': '^9.0.0',
-    '@anthropic-ai/sdk': '^0.100.0',
+    '@anthropic-ai/sdk': '^0.102.0',
     langchain: '^0.3.37 || ^1.0.0',
     openai: '6.42.0',
     zod: '^4.4.3',
