@@ -10,7 +10,7 @@
     "smoke-test": "tsx run-demo.ts"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.100.0",
+    "@anthropic-ai/sdk": "^0.102.0",
     "@oaslananka/a2a-warp": "workspace:*",
     "@oaslananka/a2a-warp-adapters": "workspace:*",
     "@oaslananka/a2a-warp-registry": "workspace:*",
