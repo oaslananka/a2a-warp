@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { extname, join, relative } from 'node:path';
+import { extname, isAbsolute, join, relative } from 'node:path';
 
 const repoRoot = process.cwd();
 const textExtensions = new Set([
@@ -113,13 +113,37 @@ export function readJson(relPath) {
 
 export function runCommandSync(file, args, options = {}) {
   if (process.platform === 'win32' && file.toLowerCase().endsWith('.cmd')) {
-    // Quote the .cmd path so cmd.exe /c treats it as a single token even if
-    // the absolute path contains spaces.  execFileSync already avoids a
-    // shell, but /c still concatenates the remaining arguments into one
-    // command line string.
-    return execFileSync('cmd.exe', ['/d', '/s', '/c', `"${file}"`, ...args], options);
+    const resolvedFile = resolveWindowsCommand(file, options.env);
+    const command = [
+      `call "${resolvedFile.replaceAll('"', '""')}"`,
+      ...args.map(quoteCmdArgument),
+    ].join(' ');
+    return execFileSync(process.env.ComSpec ?? 'cmd.exe', ['/d', '/s', '/c', command], {
+      ...options,
+      windowsVerbatimArguments: true,
+    });
   }
   return execFileSync(file, args, options);
+}
+
+function resolveWindowsCommand(file, env) {
+  if (isAbsolute(file)) return file;
+  try {
+    return execFileSync('where.exe', [file], {
+      encoding: 'utf8',
+      env,
+      stdio: ['ignore', 'pipe', 'ignore'],
+    })
+      .split(/\r?\n/)
+      .find(Boolean);
+  } catch {
+    return file;
+  }
+}
+
+function quoteCmdArgument(value) {
+  if (/^[A-Za-z0-9_./:=@+-]+$/.test(value)) return value;
+  return `"${value.replaceAll('"', '""')}"`;
 }
 
 export function runPnpmSync(args, options = {}) {

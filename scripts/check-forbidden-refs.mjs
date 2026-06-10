@@ -8,7 +8,7 @@ const platformTerms = [
   'mirror publish',
   'gitlab',
   'azure',
-  'doppler',
+  ['dop', 'pler'].join(''),
   'railway',
   'fly.io',
   'vercel',

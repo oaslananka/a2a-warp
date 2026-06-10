@@ -10,7 +10,7 @@ export const scaffoldTemplateConfig = {
     zod: '^4.4.3',
   },
   devDependencies: {
-    '@types/node': '22.19.19',
+    '@types/node': '22.19.20',
     tsx: '4.22.4',
     typescript: '6.0.3',
   },
@@ -18,6 +18,6 @@ export const scaffoldTemplateConfig = {
     node: '24.16.0',
     nodeDockerAlpineDigest:
       'sha256:2bdb65ed1dab192432bc31c95f94155ca5ad7fc1392fb7eb7526ab682fa5bf14',
-    pnpm: '11.5.1',
+    pnpm: '11.5.2',
   },
 } as const;

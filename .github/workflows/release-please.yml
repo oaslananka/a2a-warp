@@ -57,13 +57,25 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
+      actions: write
       contents: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           fetch-depth: 0
           persist-credentials: true
+      - name: Detect release commit
+        id: detect
+        run: |
+          commit_msg="$(git log -1 --format=%s)"
+          if [[ "$commit_msg" == "chore: release main"* ]]; then
+            echo "is_release=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_release=false" >> "$GITHUB_OUTPUT"
+            echo "No release commit detected; skipping release creation."
+          fi
       - name: Create release tags and GitHub Release
+        if: steps.detect.outputs.is_release == 'true'
         run: |
           set -euo pipefail
           VERSION="$(jq -r '."packages/core"' .release-please-manifest.json)"
@@ -105,6 +117,7 @@ jobs:
       # workflow_dispatch events ARE exempt from the GITHUB_TOKEN limitation
       # that prevents release/push events from triggering other workflows.
       - name: Trigger Publish workflow
+        if: steps.detect.outputs.is_release == 'true'
         run: |
           set -euo pipefail
           VERSION="$(jq -r '."packages/core"' .release-please-manifest.json)"

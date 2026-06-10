@@ -42,6 +42,12 @@ tasks:
     cmds:
       - pnpm run verify
 
+  release:
+    cmds:
+      - pnpm run release:dry-run
+      - pnpm run release:artifacts
+      - pnpm run release:validate
+
   clean:
     cmds:
       - pnpm run clean

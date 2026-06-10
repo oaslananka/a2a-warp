@@ -151,6 +151,11 @@ See [Compatibility](docs/compatibility.md) for the supported Node.js, package, p
 
 Docs site: [https://oaslananka.github.io/a2a-warp/](https://oaslananka.github.io/a2a-warp/)
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, validation, and pull request guidance.
+Run `pnpm run verify` before submitting changes.
+
 ## License
 
 Apache-2.0. See [LICENSE](LICENSE).

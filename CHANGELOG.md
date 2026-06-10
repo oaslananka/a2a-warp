@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Keep generated scaffold runtime versions synchronized with workspace manifests.
+- Run release creation only for Release Please commits and allow the publish dispatch.
+- Add a repository-level environment template and complete Taskfile release tooling.
+- Fix Windows packed-binary smoke execution and remove unused docs dependencies.
+
 ## 1.0.0 - 2026-05-18
 
 Initial A2A Warp release baseline.
