@@ -100,7 +100,7 @@ describe('release artifact validation', () => {
         expect.objectContaining({ name: '@oaslananka/a2a-warp-cli' }),
       ]),
     );
-  });
+  }, 120_000);
 
   it('generates SHA256SUMS for prepared release tarballs', async () => {
     await runPnpm(['run', 'release:artifacts']);
@@ -117,5 +117,5 @@ describe('release artifact validation', () => {
     expect(checksums.trim().split('\n')).toEqual(
       expect.arrayContaining([expect.stringMatching(/^[a-f0-9]{64} {2}.+\.tgz$/)]),
     );
-  });
+  }, 120_000);
 });

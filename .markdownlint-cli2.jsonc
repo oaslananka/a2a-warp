@@ -14,6 +14,7 @@
     "**/*.md",
     "!node_modules/**",
     "!**/node_modules/**",
+    "!.artifacts/**",
     "!docs-site/**/dist/**",
     "!.codex-checkpoints/**",
     "!CHANGELOG.md",

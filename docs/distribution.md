@@ -152,10 +152,10 @@ Formula location: `oaslananka/homebrew-tap/Formula/a2a-warp.rb` (external reposi
 | Action                      | Tag format        | Triggered by             | Produces               |
 | --------------------------- | ----------------- | ------------------------ | ---------------------- |
 | Release Please version bump | (PR only, no tag) | Merge to main            | Updated `package.json` |
-| npm publish                 | `v<version>`      | Release Please PR merged | npm packages           |
+| GitHub Release              | `v<version>`      | Maintainer action        | Release notes and tag  |
+| npm publish                 | (release tag)     | Owner workflow dispatch  | npm packages           |
 | JSR publish                 | (same git tag)    | Manual after npm publish | JSR packages           |
 | Homebrew formula update     | (same git tag)    | Manual after release     | `homebrew-tap` update  |
-| GitHub Release              | `v<version>`      | `publish.yml` workflow   | Release artifact       |
 
 All `@oaslananka/*` packages within the same release share the same `v<version>` tag.
 `create-a2a-warp` uses its own version and tag (`create-a2a-warp-v<version>`).
@@ -171,14 +171,12 @@ All `@oaslananka/*` packages within the same release share the same `v<version>`
 
 ### Secrets required
 
-| Secret name          | Scope       | Used by            | Description                         |
-| -------------------- | ----------- | ------------------ | ----------------------------------- |
-| `npm` registry token | repo secret | `publish.yml`      | npm granular access token (classic) |
-| `JSR_TOKEN` (future) | repo secret | Manual JSR publish | JSR API token (future automation)   |
+| Secret name          | Scope       | Used by            | Description                       |
+| -------------------- | ----------- | ------------------ | --------------------------------- |
+| `JSR_TOKEN` (future) | repo secret | Manual JSR publish | JSR API token (future automation) |
 
-NOTE: npm publishing uses OIDC/Trusted Publishing — the npm registry token is a fallback
-for local or emergency publishing. The primary path goes through GitHub OIDC without
-a long-lived token.
+npm publishing uses GitHub OIDC through npm Trusted Publishing. The workflow does
+not load a registry token.
 
 ### Dry-run strategy
 

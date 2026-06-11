@@ -64,9 +64,6 @@ const ignored = [
   /(^|\/)LICENSE$/,
   /(^|\/)LICENSES\//,
 ];
-const platformTermExceptions = {
-  '.github/workflows/publish.yml': ['NPM_TOKEN', 'FALLBACK_NODE_AUTH_TOKEN'],
-};
 const failures = [];
 for (const file of listFiles()) {
   if (!isTextFile(file)) continue;
@@ -75,8 +72,7 @@ for (const file of listFiles()) {
   const lower = text.toLowerCase();
   for (const term of platformTerms) {
     if (lower.includes(term.toLowerCase())) {
-      const allowed = (platformTermExceptions[file] ?? []).includes(term);
-      if (!allowed) failures.push(`${file}: ${term}`);
+      failures.push(`${file}: ${term}`);
     }
   }
   for (const phrase of hypePhrases) {
