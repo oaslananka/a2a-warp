@@ -26,6 +26,7 @@ env:
 jobs:
   identity:
     name: CI / identity
+    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -41,6 +42,7 @@ jobs:
 
   install:
     name: CI / install
+    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -53,6 +55,7 @@ jobs:
 
   lint:
     name: CI / lint
+    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -66,6 +69,7 @@ jobs:
 
   typecheck:
     name: CI / typecheck
+    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -80,6 +84,7 @@ jobs:
 
   unit:
     name: CI / unit
+    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -93,6 +98,7 @@ jobs:
 
   integration:
     name: CI / integration
+    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -106,6 +112,7 @@ jobs:
 
   performance-smoke:
     name: CI / performance-smoke
+    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -122,6 +129,7 @@ jobs:
 
   conformance:
     name: CI / conformance
+    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -135,6 +143,7 @@ jobs:
 
   schemas:
     name: CI / schemas
+    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -148,6 +157,7 @@ jobs:
 
   mutation:
     name: CI / mutation
+    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
     needs: [identity]
     runs-on: ubuntu-latest
     timeout-minutes: 45
@@ -184,6 +194,7 @@ jobs:
 
   ui-e2e:
     name: CI / ui-e2e
+    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
     needs: [identity]
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -209,6 +220,7 @@ jobs:
 
   build:
     name: CI / build
+    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -222,6 +234,7 @@ jobs:
 
   package-dry-run:
     name: CI / package-dry-run
+    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -236,6 +249,7 @@ jobs:
 
   workspace-graph:
     name: CI / workspace-graph
+    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -251,6 +265,7 @@ jobs:
 
   public-surface:
     name: CI / public-surface
+    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -266,6 +281,7 @@ jobs:
 
   command-surface:
     name: CI / command-surface
+    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -281,6 +297,7 @@ jobs:
 
   no-generated-artifacts:
     name: CI / no-generated-artifacts
+    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -296,6 +313,7 @@ jobs:
 
   compatibility-smoke:
     name: CI / compatibility-smoke (${{ matrix.os }}, node ${{ matrix.node }})
+    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 20
     strategy:
@@ -322,6 +340,7 @@ jobs:
 
   consumer-smoke:
     name: CI / consumer-smoke (${{ matrix.os }}, node ${{ matrix.node }})
+    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
     needs: [identity]
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 30
