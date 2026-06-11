@@ -1,5 +1,21 @@
 # Changelog
 
+## [9.0.1](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-cli-v9.0.0...@oaslananka/a2a-warp-cli-v9.0.1) (2026-06-11)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @anthropic-ai/sdk to v0.102.0 ([4585289](https://github.com/oaslananka/a2a-warp/commit/45852891874ffc4246571853d30d12d0765ff751))
+* update version to 9.0.0 in generated files and compatibility docs ([3c9debf](https://github.com/oaslananka/a2a-warp/commit/3c9debfaf36ab53df3019d00e44faefe6745d121))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp bumped to 9.0.1
+    * @oaslananka/a2a-warp-registry bumped to 9.0.1
+
 ## [9.0.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-cli-v8.1.4...@oaslananka/a2a-warp-cli-v9.0.0) (2026-06-07)
 
 

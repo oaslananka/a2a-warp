@@ -1,5 +1,26 @@
 # Changelog
 
+## [9.0.1](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-adapters-v9.0.0...@oaslananka/a2a-warp-adapters-v9.0.1) (2026-06-11)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @anthropic-ai/sdk to v0.102.0 ([4585289](https://github.com/oaslananka/a2a-warp/commit/45852891874ffc4246571853d30d12d0765ff751))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp bumped to 9.0.1
+    * @oaslananka/a2a-warp-adapter-base bumped to 9.0.1
+    * @oaslananka/a2a-warp-adapter-openai bumped to 9.0.1
+    * @oaslananka/a2a-warp-adapter-anthropic bumped to 9.0.1
+    * @oaslananka/a2a-warp-adapter-langchain bumped to 9.0.1
+    * @oaslananka/a2a-warp-adapter-google-adk bumped to 9.0.1
+    * @oaslananka/a2a-warp-adapter-llamaindex bumped to 9.0.1
+    * @oaslananka/a2a-warp-adapter-crewai bumped to 9.0.1
+
 ## [9.0.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-adapters-v8.1.4...@oaslananka/a2a-warp-adapters-v9.0.0) (2026-06-07)
 
 

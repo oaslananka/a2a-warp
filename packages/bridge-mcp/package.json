@@ -1,6 +1,6 @@
 {
   "name": "@oaslananka/a2a-warp-bridge-mcp",
-  "version": "9.0.0",
+  "version": "9.0.1",
   "description": "Bridge utilities for mapping Agent2Agent agents and MCP tools.",
   "keywords": [
     "a2a",
