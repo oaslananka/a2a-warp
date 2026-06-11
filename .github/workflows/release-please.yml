@@ -22,6 +22,7 @@ env:
 jobs:
   release-pr:
     name: Release Please / pull-request
+    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
@@ -53,7 +54,7 @@ jobs:
 
   release:
     name: Release Please / create-release
-    if: github.event_name == 'push'
+    if: ${{ github.event_name == 'push' && (github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
@@ -132,7 +133,7 @@ jobs:
 
   sync:
     name: Release Please / sync-generated-files
-    if: github.event_name == 'push'
+    if: ${{ github.event_name == 'push' && (github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops') }}
     needs: [release]
     runs-on: ubuntu-24.04
     timeout-minutes: 15

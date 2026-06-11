@@ -26,6 +26,7 @@ env:
 jobs:
   build:
     name: Docs / build
+    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -39,6 +40,7 @@ jobs:
 
   lint-md:
     name: Docs / lint-md
+    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -52,6 +54,7 @@ jobs:
 
   command-parity:
     name: Docs / command-parity
+    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -65,7 +68,7 @@ jobs:
 
   public-links:
     name: Docs / public links
-    if: ${{ github.event_name == 'schedule' }}
+    if: ${{ github.event_name == 'schedule' && (github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -79,7 +82,7 @@ jobs:
 
   deploy:
     name: Docs / deploy
-    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
+    if: ${{ (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && (github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops') }}
     needs: [build, lint-md, command-parity]
     runs-on: ubuntu-24.04
     timeout-minutes: 20

@@ -1,0 +1,12 @@
+# Keep this file for security alerts and GitHub Actions updates only.
+# Renovate manages all other dependency updates.
+version: 2
+updates:
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+    open-pull-requests-limit: 5
+    labels:
+      - 'area:deps'
+      - 'area:ci'

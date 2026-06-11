@@ -31,6 +31,7 @@ env:
 jobs:
   gitleaks:
     name: Security / gitleaks
+    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -51,6 +52,7 @@ jobs:
 
   audit:
     name: Security / audit
+    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -64,6 +66,7 @@ jobs:
 
   osv:
     name: Security / osv
+    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -79,6 +82,7 @@ jobs:
 
   zizmor:
     name: Security / zizmor
+    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -98,6 +102,7 @@ jobs:
 
   actionlint:
     name: Security / actionlint
+    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -117,6 +122,7 @@ jobs:
 
   dependency-license:
     name: Security / dependency-license
+    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -130,6 +136,7 @@ jobs:
 
   reuse:
     name: Security / REUSE
+    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
