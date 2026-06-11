@@ -17,5 +17,6 @@ Significant changes such as breaking API changes, new packages or architectural 
 
 1. release-please derives release pull requests from Conventional Commits merged to `main`.
 2. Contributors verify changes locally with `pnpm run lint`, `pnpm run typecheck`, `pnpm run build`, and `pnpm run test`.
-3. Merging a release pull request creates the GitHub Release and GitHub Actions-generated assets.
-4. GitHub Actions is the supported CI/CD system for validation, release, publishing, security scanning, and artifact preparation.
+3. Merging a release pull request only updates versions and changelogs.
+4. Maintainers create the release tag/GitHub Release deliberately, then dispatch the guarded publish workflow.
+5. GitHub Actions is the supported CI/CD system for validation, security scanning, artifact preparation, and owner-triggered npm publishing.
