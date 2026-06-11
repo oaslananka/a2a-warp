@@ -2,10 +2,15 @@
 
 ## Unreleased
 
-- Keep generated scaffold runtime versions synchronized with workspace manifests.
-- Run release creation only for Release Please commits and allow the publish dispatch.
-- Add a repository-level environment template and complete Taskfile release tooling.
-- Fix Windows packed-binary smoke execution and remove unused docs dependencies.
+## 9.0.1 - 2026-06-11
+
+### Fixed
+- Added org-only guard (`github.repository_owner`) to all CI/CD workflow jobs.
+- Added `.github/dependabot.yml` for GitHub Actions security updates.
+
+### Changed
+- Updated prettier from 3.8.3 to 3.8.4.
+- Updated typescript-eslint from 8.60.0 to 8.61.0.
 
 ## 1.0.0 - 2026-05-18
 
