@@ -24,7 +24,7 @@ overrides:
   '@typescript-eslint/utils': 8.60.0
   '@typescript-eslint/visitor-keys': 8.60.0
   '@hono/node-server': 1.19.14
-  hono: 4.12.23
+  hono: 4.12.25
   langsmith: 0.7.5
   postcss: 8.5.15
   protobufjs: 7.6.2
