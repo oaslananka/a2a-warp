@@ -34,7 +34,7 @@
     "@oaslananka/a2a-warp-adapter-base": "workspace:^"
   },
   "peerDependencies": {
-    "@anthropic-ai/sdk": "^0.39.0 || ^0.95.0 || ^0.96.0 || ^0.99.0 || ^0.100.0 || ^0.102.0"
+    "@anthropic-ai/sdk": "^0.39.0 || ^0.95.0 || ^0.96.0 || ^0.99.0 || ^0.100.0 || ^0.102.0 || ^0.103.0"
   },
   "peerDependenciesMeta": {
     "@anthropic-ai/sdk": {
