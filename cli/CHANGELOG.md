@@ -1,5 +1,20 @@
 # Changelog
 
+## [9.0.1](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-cli-v9.0.0...@oaslananka/a2a-warp-cli-v9.0.1) (2026-06-12)
+
+
+### Miscellaneous Chores
+
+* **@oaslananka/a2a-warp-cli:** Synchronize A2A Warp packages versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @oaslananka/a2a-warp bumped to 9.0.1
+    * @oaslananka/a2a-warp-registry bumped to 9.0.1
+
 ## [9.0.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-cli-v8.1.4...@oaslananka/a2a-warp-cli-v9.0.0) (2026-06-07)
 
 

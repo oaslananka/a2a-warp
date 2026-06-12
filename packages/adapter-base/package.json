@@ -1,6 +1,6 @@
 {
   "name": "@oaslananka/a2a-warp-adapter-base",
-  "version": "9.0.0",
+  "version": "9.0.1",
   "description": "Abstract base adapter and contract helpers for provider-specific A2A adapters.",
   "keywords": [
     "a2a",

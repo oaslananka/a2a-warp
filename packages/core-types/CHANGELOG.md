@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.0.1](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-core-v9.0.0...@oaslananka/a2a-warp-core-v9.0.1) (2026-06-12)
+
+
+### Miscellaneous Chores
+
+* **@oaslananka/a2a-warp-core:** Synchronize A2A Warp packages versions
+
 ## [9.0.0](https://github.com/oaslananka/a2a-warp/compare/@oaslananka/a2a-warp-core-v8.1.4...@oaslananka/a2a-warp-core-v9.0.0) (2026-06-07)
 
 
