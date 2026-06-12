@@ -27,7 +27,7 @@ overrides:
   hono: 4.12.25
   langsmith: 0.7.5
   postcss: 8.5.15
-  protobufjs: 7.6.2
+  protobufjs: 7.6.3
   qs: 6.15.2
   smol-toml: 1.6.1
   typescript-eslint: 8.61.0
