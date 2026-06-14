@@ -60,9 +60,13 @@ const hypePhrases = [
 const exactAllowed = 'It is not an official Google, Linux Foundation, or a2aproject package.';
 const ignored = [
   /^scripts\/check-.*\.mjs$/,
+  /^scripts\/build-.*\.mjs$/,
+  /^scripts\/sync-.*\.mjs$/,
   /^pnpm-lock\.yaml$/,
   /(^|\/)LICENSE$/,
   /(^|\/)LICENSES\//,
+  /^cli\/src\/generated\//,
+  /^tests\/integration\/sync-deps-script\.test\.ts$/,
 ];
 const failures = [];
 for (const file of listFiles()) {

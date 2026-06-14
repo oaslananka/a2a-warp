@@ -24,6 +24,95 @@ env:
   NODE_VERSION: '24.16.0'
 
 jobs:
+  # ── Change classification ─────────────────────────────────────────────────
+  changes:
+    name: CI / changes
+    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      identity: ${{ steps.filter.outputs.identity }}
+      toolchain: ${{ steps.filter.outputs.toolchain }}
+      production: ${{ steps.filter.outputs.production }}
+      provider-sdk: ${{ steps.filter.outputs.provider-sdk }}
+      test-tooling: ${{ steps.filter.outputs.test-tooling }}
+      docs: ${{ steps.filter.outputs.docs }}
+      registry-ui: ${{ steps.filter.outputs.registry-ui }}
+      github-actions: ${{ steps.filter.outputs.github-actions }}
+      docker: ${{ steps.filter.outputs.docker }}
+      release: ${{ steps.filter.outputs.release }}
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          persist-credentials: false
+      - id: filter
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+        with:
+          filters: |
+            identity:
+              - 'scripts/check-package-names.mjs'
+              - 'scripts/check-identity.mjs'
+              - 'scripts/check-forbidden-refs.mjs'
+              - 'scripts/check-no-secrets.mjs'
+              - 'scripts/check-runtime-versions.mjs'
+              - 'scripts/sync-deps.mjs'
+              - 'tools/runtime-versions.json'
+              - '.github/rulesets/**'
+              - 'package.json'
+              - 'pnpm-workspace.yaml'
+              - 'cli/package.json'
+              - 'cli/src/generated/**'
+            toolchain:
+              - 'package.json'
+              - 'pnpm-workspace.yaml'
+              - 'tools/runtime-versions.json'
+              - '.node-version'
+              - '.nvmrc'
+              - '.github/actions/setup-pnpm/**'
+              - 'scripts/sync-deps.mjs'
+              - 'scripts/check-runtime-versions.mjs'
+              - 'scripts/build-tsc-package.mjs'
+              - 'cli/src/generated/**'
+            production:
+              - 'packages/**'
+              - 'cli/src/**'
+              - 'pnpm-lock.yaml'
+              - 'tsconfig*.json'
+            provider-sdk:
+              - 'packages/adapter-*/**'
+              - 'packages/adapters/**'
+              - 'apps/demo/**'
+            test-tooling:
+              - 'vitest.config.ts'
+              - 'vitest.workspace.ts'
+              - 'stryker.config.json'
+              - 'tsconfig.test.json'
+            docs:
+              - 'docs/**'
+              - 'docs-site/**'
+              - 'README.md'
+              - 'CONTRIBUTING.md'
+              - 'scripts/check-docs-*.mjs'
+              - 'scripts/check-compatibility-docs.mjs'
+            registry-ui:
+              - 'apps/registry-ui/**'
+            github-actions:
+              - '.github/workflows/**'
+              - '.github/actions/**'
+            docker:
+              - '**/Dockerfile*'
+              - 'docker-compose*'
+            release:
+              - 'release-please-config.json'
+              - '.release-please-manifest.json'
+              - 'scripts/check-release-config.mjs'
+              - 'scripts/validate-release-config.mjs'
+              - 'scripts/prepare-release-artifacts.mjs'
+              - 'scripts/release-state.mjs'
+
   identity:
     name: CI / identity
     if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
@@ -53,6 +142,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+  # ── Quick checks (always run) ──────────────────────────────────────────────
   lint:
     name: CI / lint
     if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
@@ -67,9 +157,18 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - run: pnpm run lint
 
+  # ── Build and typecheck ────────────────────────────────────────────────────
   typecheck:
     name: CI / typecheck
-    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
+    if: |
+      (github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops') &&
+      (github.event_name != 'pull_request' ||
+       needs.changes.outputs.production == 'true' ||
+       needs.changes.outputs.toolchain == 'true' ||
+       needs.changes.outputs.test-tooling == 'true' ||
+       needs.changes.outputs.registry-ui == 'true' ||
+       needs.changes.outputs.github-actions == 'true')
+    needs: [changes]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -82,9 +181,17 @@ jobs:
       - run: pnpm run build
       - run: pnpm run typecheck
 
+  # ── Tests ──────────────────────────────────────────────────────────────────
   unit:
     name: CI / unit
-    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
+    if: |
+      (github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops') &&
+      (github.event_name != 'pull_request' ||
+       needs.changes.outputs.production == 'true' ||
+       needs.changes.outputs.provider-sdk == 'true' ||
+       needs.changes.outputs.toolchain == 'true' ||
+       needs.changes.outputs.test-tooling == 'true')
+    needs: [changes]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -98,7 +205,14 @@ jobs:
 
   integration:
     name: CI / integration
-    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
+    if: |
+      (github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops') &&
+      (github.event_name != 'pull_request' ||
+       needs.changes.outputs.production == 'true' ||
+       needs.changes.outputs.provider-sdk == 'true' ||
+       needs.changes.outputs.toolchain == 'true' ||
+       needs.changes.outputs.test-tooling == 'true')
+    needs: [changes]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -110,9 +224,34 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - run: pnpm run test:integration
 
+  conformance:
+    name: CI / conformance
+    if: |
+      (github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops') &&
+      (github.event_name != 'pull_request' ||
+       needs.changes.outputs.production == 'true' ||
+       needs.changes.outputs.provider-sdk == 'true')
+    needs: [changes]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - run: pnpm run test:conformance
+
+  # ── Performance smoke ──────────────────────────────────────────────────────
   performance-smoke:
     name: CI / performance-smoke
-    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
+    if: |
+      (github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops') &&
+      (github.event_name != 'pull_request' ||
+       needs.changes.outputs.production == 'true' ||
+       needs.changes.outputs.docker == 'true')
+    needs: [changes]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -127,23 +266,15 @@ jobs:
           k6-version: '2.0.0'
       - run: pnpm run perf:smoke
 
-  conformance:
-    name: CI / conformance
-    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup-pnpm
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-      - run: pnpm run test:conformance
-
+  # ── Schema checks ──────────────────────────────────────────────────────────
   schemas:
     name: CI / schemas
-    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
+    if: |
+      (github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops') &&
+      (github.event_name != 'pull_request' ||
+       needs.changes.outputs.production == 'true' ||
+       needs.changes.outputs.toolchain == 'true')
+    needs: [changes]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -155,10 +286,14 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - run: pnpm run schemas:check
 
+  # ── Mutation ───────────────────────────────────────────────────────────────
   mutation:
     name: CI / mutation
-    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
-    needs: [identity]
+    if: |
+      (github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops') &&
+      (github.event_name != 'pull_request' ||
+       needs.changes.outputs.production == 'true')
+    needs: [changes, identity]
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -166,36 +301,22 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - name: Detect mutation-relevant changes
-        id: changes
-        env:
-          BASE_REF: ${{ github.base_ref }}
-        run: |
-          if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
-            git fetch --no-tags --depth=1 origin "$BASE_REF"
-            changed_files="$(git diff --name-only FETCH_HEAD...HEAD)"
-            if grep -Eq '^(packages/(core|adapters|registry)/|vitest\.config\.ts$|stryker\.config\.json$)' <<< "$changed_files"; then
-              echo "run=true" >> "$GITHUB_OUTPUT"
-            else
-              echo "run=false" >> "$GITHUB_OUTPUT"
-              echo "No mutation-relevant changes detected."
-            fi
-          else
-            echo "run=true" >> "$GITHUB_OUTPUT"
-          fi
-      - if: steps.changes.outputs.run == 'true'
-        uses: ./.github/actions/setup-pnpm
+      - uses: ./.github/actions/setup-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - if: steps.changes.outputs.run == 'true'
-        run: pnpm run build
-      - if: steps.changes.outputs.run == 'true'
-        run: pnpm run test:mutation
+      - run: pnpm run build
+      - run: pnpm run test:mutation
 
+  # ── UI E2E ─────────────────────────────────────────────────────────────────
   ui-e2e:
     name: CI / ui-e2e
-    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
-    needs: [identity]
+    if: |
+      (github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops') &&
+      (github.event_name != 'pull_request' ||
+       needs.changes.outputs.registry-ui == 'true' ||
+       needs.changes.outputs.production == 'true' ||
+       needs.changes.outputs.toolchain == 'true')
+    needs: [changes, identity]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -218,9 +339,16 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
+  # ── Build and package ──────────────────────────────────────────────────────
   build:
     name: CI / build
-    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
+    if: |
+      (github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops') &&
+      (github.event_name != 'pull_request' ||
+       needs.changes.outputs.production == 'true' ||
+       needs.changes.outputs.toolchain == 'true' ||
+       needs.changes.outputs.registry-ui == 'true')
+    needs: [changes]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -234,7 +362,12 @@ jobs:
 
   package-dry-run:
     name: CI / package-dry-run
-    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
+    if: |
+      (github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops') &&
+      (github.event_name != 'pull_request' ||
+       needs.changes.outputs.production == 'true' ||
+       needs.changes.outputs.toolchain == 'true')
+    needs: [changes]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -249,7 +382,12 @@ jobs:
 
   workspace-graph:
     name: CI / workspace-graph
-    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
+    if: |
+      (github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops') &&
+      (github.event_name != 'pull_request' ||
+       needs.changes.outputs.production == 'true' ||
+       needs.changes.outputs.toolchain == 'true')
+    needs: [changes]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -265,7 +403,11 @@ jobs:
 
   public-surface:
     name: CI / public-surface
-    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
+    if: |
+      (github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops') &&
+      (github.event_name != 'pull_request' ||
+       needs.changes.outputs.production == 'true')
+    needs: [changes]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -281,7 +423,12 @@ jobs:
 
   command-surface:
     name: CI / command-surface
-    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
+    if: |
+      (github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops') &&
+      (github.event_name != 'pull_request' ||
+       needs.changes.outputs.production == 'true' ||
+       needs.changes.outputs.toolchain == 'true')
+    needs: [changes]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -297,7 +444,12 @@ jobs:
 
   no-generated-artifacts:
     name: CI / no-generated-artifacts
-    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
+    if: |
+      (github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops') &&
+      (github.event_name != 'pull_request' ||
+       needs.changes.outputs.production == 'true' ||
+       needs.changes.outputs.toolchain == 'true')
+    needs: [changes]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -313,7 +465,13 @@ jobs:
 
   compatibility-smoke:
     name: CI / compatibility-smoke (${{ matrix.os }}, node ${{ matrix.node }})
-    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
+    if: |
+      (github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops') &&
+      (github.event_name != 'pull_request' ||
+       needs.changes.outputs.identity == 'true' ||
+       needs.changes.outputs.production == 'true' ||
+       needs.changes.outputs.toolchain == 'true')
+    needs: [changes]
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 20
     strategy:
@@ -340,8 +498,12 @@ jobs:
 
   consumer-smoke:
     name: CI / consumer-smoke (${{ matrix.os }}, node ${{ matrix.node }})
-    if: github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops'
-    needs: [identity]
+    if: |
+      (github.repository_owner == 'oaslananka' || github.repository_owner == 'oaslananka-ops') &&
+      (github.event_name != 'pull_request' ||
+       needs.changes.outputs.production == 'true' ||
+       needs.changes.outputs.toolchain == 'true')
+    needs: [changes, identity]
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 30
     strategy:
@@ -368,3 +530,45 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - run: node scripts/run-consumer-smoke.mjs
+
+  # ── Required checks aggregator ────────────────────────────────────────────
+  # Provides a stable, documented required check that depends on all meaningful
+  # CI jobs. Skipped jobs (due to path filtering) count as success. Cancelled
+  # or failed jobs make this job fail.
+  required:
+    name: CI / required
+    if: always()
+    needs:
+      - identity
+      - install
+      - lint
+      - typecheck
+      - unit
+      - integration
+      - conformance
+      - schemas
+      - mutation
+      - ui-e2e
+      - build
+      - package-dry-run
+      - workspace-graph
+      - public-surface
+      - command-surface
+      - no-generated-artifacts
+      - compatibility-smoke
+      - consumer-smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check all required jobs passed
+        env:
+          RESULTS: ${{ toJSON(needs.*.result) }}
+        run: |
+          echo "Job results: $RESULTS"
+          cancelled=$(echo "$RESULTS" | grep -c '"cancelled"' || true)
+          failures=$(echo "$RESULTS" | grep -c '"failure"' || true)
+          if [ "$cancelled" -gt 0 ] || [ "$failures" -gt 0 ]; then
+            echo "One or more required jobs failed or were cancelled."
+            exit 1
+          fi
+          echo "All required jobs passed or were skipped."

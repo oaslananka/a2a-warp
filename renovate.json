@@ -14,18 +14,94 @@
   "internalChecksFilter": "strict",
   "packageRules": [
     {
+      "description": "Only inform about minor/patch updates via the Dependency Dashboard; do not auto-merge.",
       "matchUpdateTypes": ["minor", "patch"],
       "automerge": false
     },
     {
+      "description": "Major updates require explicit Dependency Dashboard approval.",
       "matchUpdateTypes": ["major"],
       "dependencyDashboardApproval": true,
       "automerge": false,
       "labels": ["area:deps", "type:breaking"]
     },
     {
+      "description": "Ignore the legacy @a2a-warp scoped packages (no longer published).",
       "matchPackageNames": ["/^@a2a-warp\\//"],
       "enabled": false
+    },
+    {
+      "description": "Runtime/toolchain group: pnpm must be updated in lockstep across packageManager, runtime-versions.json, scaffold, corepack setup, and docs.",
+      "groupName": "pnpm toolchain",
+      "groupSlug": "pnpm-toolchain",
+      "matchPackageNames": ["pnpm"],
+      "automerge": false,
+      "labels": ["area:deps", "area:toolchain"]
+    },
+    {
+      "description": "Node.js runtime group: coordinate Node version updates across workflows, Docker, compatibility matrix, scaffold, and rulesets. Major upgrades require dashboard approval.",
+      "groupName": "Node.js runtime",
+      "groupSlug": "node-runtime",
+      "matchPackageNames": ["node", "/^@types/node$/"],
+      "matchManagers": ["dockerfile", "nodenv", "nvm"],
+      "automerge": false,
+      "dependencyDashboardApproval": true,
+      "labels": ["area:deps", "area:toolchain", "type:breaking"]
+    },
+    {
+      "description": "Docker base image digest updates — separate from application deps.",
+      "matchManagers": ["dockerfile", "docker-compose"],
+      "groupName": "Docker images",
+      "groupSlug": "docker-images",
+      "automerge": false,
+      "labels": ["area:deps", "area:ci"]
+    },
+    {
+      "description": "GitHub Actions updates — digest pinning enabled, separate from application deps.",
+      "matchManagers": ["github-actions"],
+      "pinDigests": true,
+      "automerge": false,
+      "labels": ["area:deps", "area:ci"]
+    },
+    {
+      "description": "OpenAI SDK — update demo, adapter peer ranges, scaffold, and compatibility docs together.",
+      "groupName": "OpenAI SDK",
+      "groupSlug": "openai-sdk",
+      "matchPackageNames": ["openai"],
+      "automerge": false,
+      "labels": ["area:deps", "area:openai"]
+    },
+    {
+      "description": "Anthropic SDK — update demo, adapter peer ranges, scaffold, and compatibility docs together.",
+      "groupName": "Anthropic SDK",
+      "groupSlug": "anthropic-sdk",
+      "matchPackageNames": ["@anthropic-ai/sdk"],
+      "automerge": false,
+      "labels": ["area:deps", "area:anthropic"]
+    },
+    {
+      "description": "LangChain monorepo — @langchain/* and langchain packages.",
+      "groupName": "LangChain monorepo",
+      "groupSlug": "langchain",
+      "matchPackageNames": ["langchain", "/^@langchain\\//"],
+      "automerge": false,
+      "labels": ["area:deps", "area:langchain"]
+    },
+    {
+      "description": "LlamaIndex monorepo.",
+      "groupName": "LlamaIndex monorepo",
+      "groupSlug": "llamaindex",
+      "matchPackageNames": ["llamaindex", "/^@llamaindex\\//"],
+      "automerge": false,
+      "labels": ["area:deps", "area:llamaindex"]
+    },
+    {
+      "description": "CrewAI SDK updates.",
+      "groupName": "CrewAI SDK",
+      "groupSlug": "crewai",
+      "matchPackageNames": ["crewai"],
+      "automerge": false,
+      "labels": ["area:deps", "area:crewai"]
     },
     {
       "groupName": "vitest monorepo",
@@ -40,22 +116,36 @@
       "matchPackageNames": ["/^@opentelemetry\\//"]
     },
     {
-      "description": "Keep registry UI dependency updates visible as one workspace-scoped PR.",
-      "groupName": "registry UI dependencies",
-      "matchFileNames": ["apps/registry-ui/**"]
+      "groupName": "typescript-eslint monorepo",
+      "matchPackageNames": ["typescript-eslint", "/^@typescript-eslint\\//"]
     },
     {
-      "description": "Keep docs site dependency updates visible as one workspace-scoped PR.",
-      "groupName": "docs site dependencies",
-      "matchFileNames": ["docs-site/**"]
+      "description": "Registry UI application dependencies — excludes toolchain (pnpm, Node) and root devDependencies to prevent duplicate PRs.",
+      "groupName": "Registry UI dependencies",
+      "groupSlug": "registry-ui",
+      "matchFileNames": ["apps/registry-ui/package.json"],
+      "excludePackageNames": ["pnpm", "node"],
+      "excludePackagePatterns": ["^eslint", "^prettier", "^typescript$"]
     },
     {
-      "matchManagers": ["github-actions", "dockerfile", "docker-compose"],
-      "pinDigests": true,
-      "automerge": false,
-      "labels": ["area:deps", "area:ci"]
+      "description": "Docs site dependencies — excludes toolchain to prevent duplicate pnpm/Node/toolchain PRs.",
+      "groupName": "Docs site dependencies",
+      "groupSlug": "docs-site",
+      "matchFileNames": ["docs-site/package.json"],
+      "excludePackageNames": ["pnpm", "node"]
+    },
+    {
+      "description": "Demo app dependencies — kept together for review simplicity.",
+      "groupName": "Demo app dependencies",
+      "groupSlug": "demo-app",
+      "matchFileNames": ["apps/demo/package.json"]
     }
   ],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 6am on Monday"],
+    "automerge": false
+  },
   "vulnerabilityAlerts": {
     "enabled": true,
     "labels": ["area:deps", "type:security"]

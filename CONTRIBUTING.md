@@ -6,9 +6,10 @@ Thanks for helping improve A2A Warp.
 
 1. Use Node `24.16.0` and pnpm `11.2.2` by default (`.node-version`, `.nvmrc`, and `packageManager` are the source of truth).
 2. Install dependencies with `pnpm run setup`.
-3. Run focused tests while iterating.
-4. Run `pnpm run ui:install:browsers` once per machine before the full UI smoke path.
-5. Run `pnpm run verify` before opening a PR.
+3. After updating any dependency or runtime version in `package.json` or `tools/runtime-versions.json`, run `pnpm run deps:sync` to regenerate derived files (`.node-version`, `.nvmrc`, CLI generated modules, workflow envs, rulesets, and compatibility docs). Run `pnpm run deps:check` to verify they are in sync without writing.
+4. Run focused tests while iterating.
+5. Run `pnpm run ui:install:browsers` once per machine before the full UI smoke path.
+6. Run `pnpm run verify` before opening a PR.
 
 ## Pull requests
 
